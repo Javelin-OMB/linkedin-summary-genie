@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-const REDIRECT_URI = "http://localhost:5173/about"; // Explicit localhost URL for development
+// Get the base URL dynamically
+const BASE_URL = window.location.origin; // This will be either http://localhost:5173 in development or your production URL
+const REDIRECT_URI = `${BASE_URL}/about`;
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
