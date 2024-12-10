@@ -3,8 +3,10 @@ import { mockProfileData } from './mockData';
 import { analyzeProfileForDisc } from './discAnalyzer';
 import { toast } from "@/components/ui/use-toast";
 
-// Use a proxy URL for LinkedIn API calls
-const PROXY_URL = 'https://api.lovable.app/proxy/linkedin';
+// Use a proxy URL for LinkedIn API calls with the correct environment
+const PROXY_URL = import.meta.env.PROD 
+  ? 'https://api.lovable.app/proxy/linkedin'
+  : 'http://localhost:3000/proxy/linkedin';
 
 const isTokenValid = () => {
   const authDataStr = localStorage.getItem("linkedin_auth_data");
@@ -41,8 +43,10 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Origin': window.location.origin
+        'Origin': window.location.origin,
+        'Accept': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({
         profile_id: profileId,
         auth_code: authCode
@@ -50,7 +54,8 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.error('Posts fetch error:', response.status);
+      return [];
     }
 
     const data = await response.json();
@@ -91,8 +96,10 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Origin': window.location.origin
+        'Origin': window.location.origin,
+        'Accept': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({
         profile_id: profileId,
         auth_code: authData.code
