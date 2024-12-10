@@ -18,52 +18,66 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   const authCode = localStorage.getItem("linkedin_auth_code");
   
   if (!authCode) {
-    throw new Error("LinkedIn authentication required. Please connect your account first.");
+    throw new Error("LinkedIn authenticatie vereist. Verbind eerst je account.");
   }
 
   try {
-    // Log the auth code for debugging
-    console.log("Using auth code:", authCode);
-    
-    // In a production environment, you would:
-    // 1. Send this auth code to your backend
-    // 2. Backend would exchange it for an access token
-    // 3. Backend would make the actual API calls
-    
-    // For demo purposes, we'll return mock data
-    return {
-      name: "John Doe",
-      headline: "Sales Professional at ABC Corp",
-      summary: "Experienced sales professional with 10+ years in B2B sales.",
-      discProfile: {
-        type: "I",
-        characteristics: [
-          "Enthusiastic",
-          "Persuasive",
-          "Optimistic",
-          "Social"
-        ],
-        talkingPoints: [
-          "Focus on building rapport",
-          "Share success stories",
-          "Keep the conversation dynamic",
-          "Use social proof"
-        ]
+    // Extract profile ID from URL
+    const urlParts = url.split('/');
+    const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+
+    // Make API call to LinkedIn
+    const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
+      headers: {
+        'Authorization': `Bearer ${authCode}`,
+        'Content-Type': 'application/json',
       },
-      recentPosts: [
-        "Excited to announce our new product launch!",
-        "Great meeting with clients today discussing innovation",
-        "Sharing insights from the latest sales conference"
-      ]
+    });
+
+    if (!response.ok) {
+      throw new Error(`LinkedIn API error: ${response.statusText}`);
+    }
+
+    const profileData = await response.json();
+    console.log("LinkedIn API response:", profileData);
+
+    // Extract relevant data from API response
+    const profile = {
+      name: `${profileData.firstName} ${profileData.lastName}`,
+      headline: profileData.headline || '',
+      summary: profileData.summary || '',
+      discProfile: analyzeProfileForDisc(profileData),
+      recentPosts: await fetchRecentPosts(profileId, authCode)
     };
+
+    return profile;
   } catch (error) {
     console.error("LinkedIn API Error:", error);
-    toast({
-      title: "Error",
-      description: error instanceof Error ? error.message : "Failed to fetch LinkedIn profile",
-      variant: "destructive",
-    });
     throw error;
+  }
+};
+
+const fetchRecentPosts = async (profileId: string, authCode: string): Promise<string[]> => {
+  try {
+    const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}/posts`, {
+      headers: {
+        'Authorization': `Bearer ${authCode}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      return [];
+    }
+
+    const postsData = await response.json();
+    return postsData.elements
+      .slice(0, 3)
+      .map((post: any) => post.commentary || post.text || '')
+      .filter(Boolean);
+  } catch (error) {
+    console.error("Error fetching posts:", error);
+    return [];
   }
 };
 
