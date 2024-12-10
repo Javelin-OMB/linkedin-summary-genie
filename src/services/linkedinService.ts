@@ -68,6 +68,7 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
 };
 
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
+  // Only use mock data in development
   if (import.meta.env.DEV) {
     console.log("Development mode: Returning mock profile data");
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -93,7 +94,7 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     console.log('Starting LinkedIn profile fetch');
     const authData: TokenData = JSON.parse(authDataStr);
     
-    // Extract profile ID from URL using the new helper function
+    // Extract profile ID from URL using the helper function
     const profileId = extractProfileId(url);
     console.log('Extracted profile ID:', profileId);
 
