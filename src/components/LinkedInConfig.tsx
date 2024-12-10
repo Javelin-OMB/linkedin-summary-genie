@@ -4,8 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-const BASE_URL = window.location.origin;
-const REDIRECT_URI = `${BASE_URL}/about`;
+const REDIRECT_URI = window.location.origin + "/about";
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -46,7 +45,7 @@ export const LinkedInConfig = () => {
   const handleOAuthCallback = async (code: string) => {
     try {
       console.log("Received authorization code:", code);
-      console.log("Redirect URI used:", REDIRECT_URI);
+      console.log("Using redirect URI:", REDIRECT_URI);
       
       localStorage.setItem("linkedin_auth_code", code);
       setIsConnected(true);
@@ -68,11 +67,10 @@ export const LinkedInConfig = () => {
   };
 
   const handleConnect = () => {
-    // Updated scope list with 'email' instead of 'r_emailaddress'
     const scopes = [
       'openid',
       'profile',
-      'email',  // Changed from r_emailaddress to email
+      'email',
       'r_basicprofile',
       'r_1st_connections_size',
       'r_ads_reporting',

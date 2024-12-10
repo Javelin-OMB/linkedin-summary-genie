@@ -26,6 +26,9 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     const urlParts = url.split('/');
     const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
 
+    console.log("Attempting to fetch profile with ID:", profileId);
+    console.log("Using auth code:", authCode);
+
     // Make API call to LinkedIn
     const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
       headers: {
@@ -35,6 +38,10 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     });
 
     if (!response.ok) {
+      console.error("LinkedIn API Response Status:", response.status);
+      console.error("LinkedIn API Response Status Text:", response.statusText);
+      const errorText = await response.text();
+      console.error("LinkedIn API Error Response:", errorText);
       throw new Error(`LinkedIn API error: ${response.statusText}`);
     }
 
@@ -67,6 +74,7 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
     });
 
     if (!response.ok) {
+      console.error("Error fetching posts:", response.statusText);
       return [];
     }
 
