@@ -41,41 +41,75 @@ const mockProfileData: LinkedInProfile = {
   ]
 };
 
+const isTokenValid = () => {
+  const authDataStr = localStorage.getItem("linkedin_auth_data");
+  if (!authDataStr) return false;
+
+  try {
+    const authData = JSON.parse(authDataStr);
+    const now = new Date().getTime();
+    const tokenAge = (now - authData.timestamp) / 1000; // Convert to seconds
+    return tokenAge < authData.expiresIn;
+  } catch {
+    return false;
+  }
+};
+
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
-  const authCode = localStorage.getItem("linkedin_auth_code");
-  
   // In development mode, return mock data
   if (import.meta.env.DEV) {
     console.log("Development mode: Returning mock profile data");
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simuleer API vertraging
+    await new Promise(resolve => setTimeout(resolve, 1000));
     return mockProfileData;
   }
 
-  if (!authCode) {
-    throw new Error("LinkedIn authenticatie vereist. Verbind eerst je account.");
+  // Check if token is valid
+  if (!isTokenValid()) {
+    toast({
+      title: "Authentication Required",
+      description: "Please reconnect your LinkedIn account",
+      variant: "destructive",
+    });
+    throw new Error("LinkedIn authentication expired. Please reconnect your account.");
+  }
+
+  const authDataStr = localStorage.getItem("linkedin_auth_data");
+  if (!authDataStr) {
+    throw new Error("LinkedIn authentication required. Please connect your account.");
   }
 
   try {
+    const authData = JSON.parse(authDataStr);
+    
     // Extract profile ID from URL
     const urlParts = url.split('/');
     const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
 
-    console.log("Attempting to fetch profile with ID:", profileId);
-    console.log("Using auth code:", authCode);
+    console.log("Fetching profile with ID:", profileId);
 
     // Make API call to LinkedIn
     const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
       headers: {
-        'Authorization': `Bearer ${authCode}`,
+        'Authorization': `Bearer ${authData.code}`,
         'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      console.error("LinkedIn API Response Status:", response.status);
-      console.error("LinkedIn API Response Status Text:", response.statusText);
+      console.error("LinkedIn API Response:", response.status, response.statusText);
       const errorText = await response.text();
-      console.error("LinkedIn API Error Response:", errorText);
+      console.error("Error details:", errorText);
+      
+      if (response.status === 401) {
+        localStorage.removeItem("linkedin_auth_data");
+        toast({
+          title: "Session Expired",
+          description: "Please reconnect your LinkedIn account",
+          variant: "destructive",
+        });
+        throw new Error("LinkedIn session expired. Please reconnect.");
+      }
+      
       throw new Error(`LinkedIn API error: ${response.statusText}`);
     }
 
@@ -88,7 +122,7 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
       headline: profileData.headline || '',
       summary: profileData.summary || '',
       discProfile: analyzeProfileForDisc(profileData),
-      recentPosts: await fetchRecentPosts(profileId, authCode)
+      recentPosts: await fetchRecentPosts(profileId, authData.code)
     };
 
     return profile;

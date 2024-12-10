@@ -31,10 +31,6 @@ export const LinkedInConfig = () => {
     const error = urlParams.get("error");
     const errorDescription = urlParams.get("error_description");
     if (error) {
-      console.error("LinkedIn OAuth Error:", error);
-      console.error("Error Description:", errorDescription);
-      console.error("Full URL:", window.location.href);
-      
       setError(errorDescription || "Failed to authenticate with LinkedIn");
       toast({
         title: "Authentication Error",
@@ -46,11 +42,14 @@ export const LinkedInConfig = () => {
 
   const handleOAuthCallback = async (code: string) => {
     try {
-      console.log("Received authorization code:", code);
-      console.log("Using redirect URI:", REDIRECT_URI);
-      console.log("Environment:", import.meta.env.DEV ? "Development" : "Production");
+      // Store both the auth code and a timestamp
+      const tokenData = {
+        code,
+        timestamp: new Date().getTime(),
+        expiresIn: 3600 // 1 hour in seconds
+      };
       
-      localStorage.setItem("linkedin_auth_code", code);
+      localStorage.setItem("linkedin_auth_data", JSON.stringify(tokenData));
       setIsConnected(true);
       setError(null);
       
@@ -71,27 +70,14 @@ export const LinkedInConfig = () => {
 
   const handleConnect = () => {
     const scopes = [
-      'openid',
-      'profile',
-      'email',
       'r_basicprofile',
-      'r_1st_connections_size',
-      'r_ads_reporting',
       'r_organization_social',
       'rw_organization_admin',
-      'w_member_social',
-      'r_ads',
-      'w_organization_social',
-      'rw_ads',
-      'r_organization_admin'
+      'w_member_social'
     ];
     
     const scope = encodeURIComponent(scopes.join(' '));
     const state = Math.random().toString(36).substring(7);
-    
-    console.log("Initiating LinkedIn OAuth with scopes:", scopes);
-    console.log("Using redirect URI:", REDIRECT_URI);
-    console.log("Environment:", import.meta.env.DEV ? "Development" : "Production");
     
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
     
@@ -99,8 +85,7 @@ export const LinkedInConfig = () => {
   };
 
   const handleDisconnect = () => {
-    localStorage.removeItem("linkedin_auth_code");
-    localStorage.removeItem("linkedin_access_token");
+    localStorage.removeItem("linkedin_auth_data");
     setIsConnected(false);
     setError(null);
     
