@@ -3,7 +3,8 @@ import { mockProfileData } from './mockData';
 import { analyzeProfileForDisc } from './discAnalyzer';
 import { toast } from "@/components/ui/use-toast";
 
-const LINKEDIN_API_URL = 'https://api.linkedin.com/v2';
+// Gebruik een proxy URL voor de LinkedIn API calls
+const PROXY_URL = 'https://api.lovable.app/proxy/linkedin';
 
 const isTokenValid = () => {
   const authDataStr = localStorage.getItem("linkedin_auth_data");
@@ -22,18 +23,22 @@ const isTokenValid = () => {
 const fetchRecentPosts = async (profileId: string, authCode: string): Promise<string[]> => {
   try {
     console.log('Fetching posts for profile:', profileId);
-    const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}/posts`, {
+    const response = await fetch(`${PROXY_URL}/v2/people/${profileId}/posts`, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authCode}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        auth_token: authCode,
+        target_url: `https://api.linkedin.com/v2/people/${profileId}/posts`
+      })
     });
 
     if (!response.ok) {
       console.error('Posts fetch response:', response.status, response.statusText);
       const errorText = await response.text();
       console.error('Posts fetch error details:', errorText);
-      throw new Error(`Failed to fetch posts: ${response.statusText}`);
+      throw new Error(`Fout bij ophalen berichten: ${response.statusText}`);
     }
 
     const postsData = await response.json();
@@ -57,16 +62,16 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   if (!isTokenValid()) {
     console.error("LinkedIn token invalid or expired");
     toast({
-      title: "Authentication Required",
+      title: "Authenticatie vereist",
       description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
       variant: "destructive",
     });
-    throw new Error("LinkedIn authentication expired. Please reconnect your account.");
+    throw new Error("LinkedIn authenticatie verlopen. Verbind je account opnieuw.");
   }
 
   const authDataStr = localStorage.getItem("linkedin_auth_data");
   if (!authDataStr) {
-    throw new Error("LinkedIn authentication required. Please connect your account.");
+    throw new Error("LinkedIn authenticatie vereist. Verbind je account.");
   }
 
   try {
@@ -78,11 +83,15 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
     console.log('Extracted profile ID:', profileId);
 
-    const response = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
+    const response = await fetch(`${PROXY_URL}/v2/people/${profileId}`, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${authData.code}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        auth_token: authData.code,
+        target_url: `https://api.linkedin.com/v2/people/${profileId}`
+      })
     });
 
     if (!response.ok) {
@@ -97,10 +106,10 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
           description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
           variant: "destructive",
         });
-        throw new Error("LinkedIn session expired. Please reconnect.");
+        throw new Error("LinkedIn sessie verlopen. Verbind opnieuw.");
       }
       
-      throw new Error(`LinkedIn API error: ${response.statusText}`);
+      throw new Error(`LinkedIn API fout: ${response.statusText}`);
     }
 
     const profileData = await response.json();
