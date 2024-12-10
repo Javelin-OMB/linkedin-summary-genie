@@ -4,7 +4,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-// Get the base URL dynamically
 const BASE_URL = window.location.origin;
 const REDIRECT_URI = `${BASE_URL}/about`;
 
@@ -64,8 +63,24 @@ export const LinkedInConfig = () => {
   };
 
   const handleConnect = () => {
-    // Updated scope to include all required permissions
-    const scope = encodeURIComponent("r_emailaddress r_liteprofile r_basicprofile w_member_social");
+    // Updated scope to include all granted permissions
+    const scopes = [
+      'openid',
+      'profile',
+      'email',
+      'r_basicprofile',
+      'r_1st_connections_size',
+      'r_ads_reporting',
+      'r_organization_social',
+      'rw_organization_admin',
+      'w_member_social',
+      'r_ads',
+      'w_organization_social',
+      'rw_ads',
+      'r_organization_admin'
+    ];
+    
+    const scope = encodeURIComponent(scopes.join(' '));
     const state = Math.random().toString(36).substring(7);
     
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
