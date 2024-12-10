@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-const REDIRECT_URI = `${window.location.origin}/about`; // This is your redirect URL
+const REDIRECT_URI = "http://localhost:5173/about"; // Explicit localhost URL for development
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -22,6 +22,18 @@ export const LinkedInConfig = () => {
     const code = urlParams.get("code");
     if (code) {
       handleOAuthCallback(code);
+    }
+
+    // Check for error response from LinkedIn
+    const error = urlParams.get("error");
+    const errorDescription = urlParams.get("error_description");
+    if (error) {
+      console.error("LinkedIn OAuth Error:", error, errorDescription);
+      toast({
+        title: "Authentication Error",
+        description: errorDescription || "Failed to authenticate with LinkedIn",
+        variant: "destructive",
+      });
     }
   }, []);
 
