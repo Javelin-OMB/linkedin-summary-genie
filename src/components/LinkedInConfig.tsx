@@ -68,11 +68,11 @@ export const LinkedInConfig = () => {
   };
 
   const handleConnect = () => {
-    // Updated scope to include all granted permissions
+    // Updated scope list with 'email' instead of 'r_emailaddress'
     const scopes = [
       'openid',
       'profile',
-      'email',
+      'email',  // Changed from r_emailaddress to email
       'r_basicprofile',
       'r_1st_connections_size',
       'r_ads_reporting',
