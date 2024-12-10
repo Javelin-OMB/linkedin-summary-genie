@@ -13,7 +13,7 @@ const REDIRECT_URI = (() => {
     return `${currentOrigin}/about`;
   }
   // For production environment
-  return `${currentOrigin}/about`;
+  return 'https://linkedin-summary-genie.lovable.app/about';
 })();
 
 export const LinkedInConfig = () => {
