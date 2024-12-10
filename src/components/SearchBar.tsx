@@ -3,12 +3,16 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { fetchLinkedInProfile } from "@/services/linkedinService";
+import ProfileSummary from "./ProfileSummary";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [profileData, setProfileData] = useState(null);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.includes("linkedin.com")) {
       toast({
@@ -18,33 +22,52 @@ const SearchBar = () => {
       });
       return;
     }
-    // Handle the LinkedIn URL processing here
-    toast({
-      title: "Processing",
-      description: "Analyzing LinkedIn profile...",
-    });
+
+    setIsLoading(true);
+    try {
+      const data = await fetchLinkedInProfile(url);
+      setProfileData(data);
+      toast({
+        title: "Success",
+        description: "Profile analysis complete",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to analyze profile",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Input
-            type="url"
-            placeholder="Paste LinkedIn profile URL here..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-linkedin-primary focus:outline-none focus:border-linkedin-hover"
-          />
+    <div className="w-full max-w-4xl mx-auto px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
+        <div className="flex items-center space-x-2">
+          <div className="relative flex-1">
+            <Input
+              type="url"
+              placeholder="Paste LinkedIn profile URL here..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-linkedin-primary focus:outline-none focus:border-linkedin-hover"
+              disabled={isLoading}
+            />
+          </div>
+          <Button 
+            type="submit"
+            className="bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
+            disabled={isLoading}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
         </div>
-        <Button 
-          type="submit"
-          className="bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
-        >
-          <Search className="h-5 w-5" />
-        </Button>
-      </div>
-    </form>
+      </form>
+
+      {profileData && <ProfileSummary data={profileData} />}
+    </div>
   );
 };
 
