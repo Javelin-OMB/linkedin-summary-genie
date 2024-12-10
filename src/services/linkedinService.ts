@@ -15,54 +15,49 @@ interface LinkedInProfile {
 }
 
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
-  // Extract LinkedIn ID/username from URL
-  const urlParts = url.split('/');
-  const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+  const authCode = localStorage.getItem("linkedin_auth_code");
+  
+  if (!authCode) {
+    throw new Error("LinkedIn authentication required. Please connect your account first.");
+  }
 
   try {
-    // First, we need to get the access token
-    const accessToken = localStorage.getItem('linkedin_access_token');
+    // Log the auth code for debugging
+    console.log("Using auth code:", authCode);
     
-    if (!accessToken) {
-      throw new Error('LinkedIn authentication required. Please login first.');
-    }
-
-    // Fetch basic profile information
-    const profileResponse = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      }
-    });
-
-    if (!profileResponse.ok) {
-      throw new Error('Failed to fetch LinkedIn profile');
-    }
-
-    const profileData = await profileResponse.json();
-
-    // Fetch recent posts
-    const postsResponse = await fetch(`${LINKEDIN_API_URL}/people/${profileId}/posts`, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      }
-    });
-
-    const postsData = await postsResponse.json();
-
-    // Analyze profile data to determine DISC profile (this would be a separate service in production)
-    const discProfile = analyzeProfileForDisc(profileData);
-
+    // In a production environment, you would:
+    // 1. Send this auth code to your backend
+    // 2. Backend would exchange it for an access token
+    // 3. Backend would make the actual API calls
+    
+    // For demo purposes, we'll return mock data
     return {
-      name: `${profileData.firstName} ${profileData.lastName}`,
-      headline: profileData.headline || '',
-      summary: profileData.summary || '',
-      discProfile: discProfile,
-      recentPosts: postsData.elements.map((post: any) => post.commentary) || []
+      name: "John Doe",
+      headline: "Sales Professional at ABC Corp",
+      summary: "Experienced sales professional with 10+ years in B2B sales.",
+      discProfile: {
+        type: "I",
+        characteristics: [
+          "Enthusiastic",
+          "Persuasive",
+          "Optimistic",
+          "Social"
+        ],
+        talkingPoints: [
+          "Focus on building rapport",
+          "Share success stories",
+          "Keep the conversation dynamic",
+          "Use social proof"
+        ]
+      },
+      recentPosts: [
+        "Excited to announce our new product launch!",
+        "Great meeting with clients today discussing innovation",
+        "Sharing insights from the latest sales conference"
+      ]
     };
   } catch (error) {
-    console.error('LinkedIn API Error:', error);
+    console.error("LinkedIn API Error:", error);
     toast({
       title: "Error",
       description: error instanceof Error ? error.message : "Failed to fetch LinkedIn profile",
@@ -72,7 +67,6 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   }
 };
 
-// Helper function to analyze profile and determine DISC profile
 const analyzeProfileForDisc = (profileData: any) => {
   // This is a simplified example. In production, you would want to use
   // natural language processing and machine learning to accurately determine DISC profile
