@@ -4,9 +4,17 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-const REDIRECT_URI = import.meta.env.DEV 
-  ? "http://localhost:8080/about"
-  : window.location.origin + "/about";
+
+// Dynamically determine the redirect URI based on the current environment
+const REDIRECT_URI = (() => {
+  const currentOrigin = window.location.origin;
+  // Check if we're in a development environment
+  if (currentOrigin.includes('localhost') || currentOrigin.includes('127.0.0.1')) {
+    return `${currentOrigin}/about`;
+  }
+  // For production environment
+  return `${currentOrigin}/about`;
+})();
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -31,10 +39,10 @@ export const LinkedInConfig = () => {
     const error = urlParams.get("error");
     const errorDescription = urlParams.get("error_description");
     if (error) {
-      setError(errorDescription || "Failed to authenticate with LinkedIn");
+      setError(errorDescription || "Fout bij authenticatie met LinkedIn");
       toast({
-        title: "Authentication Error",
-        description: `Error: ${error}. ${errorDescription || ""}`,
+        title: "Authenticatie Fout",
+        description: `Fout: ${error}. ${errorDescription || ""}`,
         variant: "destructive",
       });
     }
@@ -54,15 +62,22 @@ export const LinkedInConfig = () => {
       setError(null);
       
       toast({
-        title: "Success",
-        description: "Successfully connected with LinkedIn!",
+        title: "Succes",
+        description: "Succesvol verbonden met LinkedIn!",
+      });
+
+      // Log success for debugging
+      console.log("LinkedIn authentication successful", {
+        code,
+        redirectUri: REDIRECT_URI,
+        timestamp: new Date().toISOString()
       });
     } catch (error) {
       console.error("OAuth callback error:", error);
-      setError("Failed to complete LinkedIn authentication");
+      setError("Fout bij het voltooien van LinkedIn authenticatie");
       toast({
-        title: "Error",
-        description: "Failed to complete LinkedIn authentication",
+        title: "Fout",
+        description: "Fout bij het voltooien van LinkedIn authenticatie",
         variant: "destructive",
       });
     }
@@ -79,6 +94,13 @@ export const LinkedInConfig = () => {
     const scope = encodeURIComponent(scopes.join(' '));
     const state = Math.random().toString(36).substring(7);
     
+    // Log the authentication attempt
+    console.log("Initiating LinkedIn authentication", {
+      redirectUri: REDIRECT_URI,
+      origin: window.location.origin,
+      timestamp: new Date().toISOString()
+    });
+
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
     
     window.location.href = authUrl;
@@ -86,18 +108,19 @@ export const LinkedInConfig = () => {
 
   const handleDisconnect = () => {
     localStorage.removeItem("linkedin_auth_data");
+    localStorage.removeItem("linkedin_access_token");
     setIsConnected(false);
     setError(null);
     
     toast({
-      title: "Success",
-      description: "LinkedIn disconnected",
+      title: "Succes",
+      description: "LinkedIn verbinding verbroken",
     });
   };
 
   return (
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">LinkedIn Connection</h2>
+      <h2 className="text-2xl font-bold mb-6">LinkedIn Verbinding</h2>
       <div className="space-y-4">
         {error && (
           <Alert variant="destructive">
@@ -109,7 +132,7 @@ export const LinkedInConfig = () => {
           <>
             <div className="p-4 bg-green-50 rounded-md">
               <p className="text-green-800">
-                ✓ Connected with LinkedIn
+                ✓ Verbonden met LinkedIn
               </p>
             </div>
             <Button 
@@ -117,17 +140,17 @@ export const LinkedInConfig = () => {
               variant="outline"
               className="w-full"
             >
-              Disconnect LinkedIn
+              Verbreek LinkedIn verbinding
             </Button>
           </>
         ) : (
           <>
             <p className="text-sm text-gray-600 mb-4">
-              Click below to connect your LinkedIn account and start generating leads.
+              Klik hieronder om je LinkedIn account te verbinden en leads te genereren.
             </p>
             <div className="bg-blue-50 p-4 rounded-md mb-4">
               <p className="text-sm text-blue-800">
-                Important: Make sure these URLs are added to LinkedIn OAuth 2.0 Configuration:
+                Belangrijk: Zorg ervoor dat deze URL is toegevoegd aan LinkedIn OAuth 2.0 Configuratie:
                 <br />
                 <code className="bg-blue-100 px-2 py-1 rounded break-all">{REDIRECT_URI}</code>
               </p>
@@ -136,13 +159,13 @@ export const LinkedInConfig = () => {
               onClick={handleConnect}
               className="w-full bg-[#0077b5] hover:bg-[#006097]"
             >
-              Connect with LinkedIn
+              Verbind met LinkedIn
             </Button>
           </>
         )}
       </div>
       <p className="mt-4 text-sm text-gray-600">
-        Your connection is secure and we only request the necessary permissions to generate leads.
+        Je verbinding is veilig en we vragen alleen de noodzakelijke permissies aan om leads te genereren.
       </p>
     </div>
   );
