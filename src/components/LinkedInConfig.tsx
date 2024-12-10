@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = "779r8mygm8rgk1";
 // Get the base URL dynamically
-const BASE_URL = window.location.origin; // This will be either http://localhost:5173 in development or your production URL
+const BASE_URL = window.location.origin;
 const REDIRECT_URI = `${BASE_URL}/about`;
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -30,6 +32,7 @@ export const LinkedInConfig = () => {
     const errorDescription = urlParams.get("error_description");
     if (error) {
       console.error("LinkedIn OAuth Error:", error, errorDescription);
+      setError(errorDescription || "Failed to authenticate with LinkedIn");
       toast({
         title: "Authentication Error",
         description: errorDescription || "Failed to authenticate with LinkedIn",
@@ -43,6 +46,7 @@ export const LinkedInConfig = () => {
       console.log("Received authorization code:", code);
       localStorage.setItem("linkedin_auth_code", code);
       setIsConnected(true);
+      setError(null);
       
       toast({
         title: "Success",
@@ -50,6 +54,7 @@ export const LinkedInConfig = () => {
       });
     } catch (error) {
       console.error("OAuth callback error:", error);
+      setError("Failed to complete LinkedIn authentication");
       toast({
         title: "Error",
         description: "Failed to complete LinkedIn authentication",
@@ -59,8 +64,11 @@ export const LinkedInConfig = () => {
   };
 
   const handleConnect = () => {
-    const scope = "r_liteprofile r_emailaddress w_member_social";
-    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scope)}`;
+    // Updated scope to include all required permissions
+    const scope = encodeURIComponent("r_emailaddress r_liteprofile r_basicprofile w_member_social");
+    const state = Math.random().toString(36).substring(7);
+    
+    const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
     
     window.location.href = authUrl;
   };
@@ -69,6 +77,7 @@ export const LinkedInConfig = () => {
     localStorage.removeItem("linkedin_auth_code");
     localStorage.removeItem("linkedin_access_token");
     setIsConnected(false);
+    setError(null);
     
     toast({
       title: "Success",
@@ -80,6 +89,12 @@ export const LinkedInConfig = () => {
     <div className="max-w-md mx-auto mt-8 p-6 bg-white rounded-lg shadow-md">
       <h2 className="text-2xl font-bold mb-6">LinkedIn Connection</h2>
       <div className="space-y-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         {isConnected ? (
           <>
             <div className="p-4 bg-green-50 rounded-md">
@@ -102,9 +117,9 @@ export const LinkedInConfig = () => {
             </p>
             <div className="bg-blue-50 p-4 rounded-md mb-4">
               <p className="text-sm text-blue-800">
-                Important: Add this URL to LinkedIn OAuth 2.0 Configuration:
+                Important: Make sure these URLs are added to LinkedIn OAuth 2.0 Configuration:
                 <br />
-                <code className="bg-blue-100 px-2 py-1 rounded">{REDIRECT_URI}</code>
+                <code className="bg-blue-100 px-2 py-1 rounded break-all">{REDIRECT_URI}</code>
               </p>
             </div>
             <Button 
