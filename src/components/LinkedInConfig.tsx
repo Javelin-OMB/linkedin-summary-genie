@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 
-const CLIENT_ID = "779r8mygm8rgk1"; // Your LinkedIn Client ID
-const REDIRECT_URI = window.location.origin + "/about"; // Redirect back to about page
+const CLIENT_ID = "779r8mygm8rgk1";
+const REDIRECT_URI = `${window.location.origin}/about`; // This is your redirect URL
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -27,11 +27,7 @@ export const LinkedInConfig = () => {
 
   const handleOAuthCallback = async (code: string) => {
     try {
-      // In a real application, you would exchange this code for an access token
-      // using your backend server to keep the client secret secure
       console.log("Received authorization code:", code);
-      
-      // For demo purposes, we'll just store the code
       localStorage.setItem("linkedin_auth_code", code);
       setIsConnected(true);
       
@@ -50,7 +46,6 @@ export const LinkedInConfig = () => {
   };
 
   const handleConnect = () => {
-    // Initialize LinkedIn OAuth flow
     const scope = "r_liteprofile r_emailaddress w_member_social";
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(scope)}`;
     
@@ -92,6 +87,13 @@ export const LinkedInConfig = () => {
             <p className="text-sm text-gray-600 mb-4">
               Click below to connect your LinkedIn account and start generating leads.
             </p>
+            <div className="bg-blue-50 p-4 rounded-md mb-4">
+              <p className="text-sm text-blue-800">
+                Important: Add this URL to LinkedIn OAuth 2.0 Configuration:
+                <br />
+                <code className="bg-blue-100 px-2 py-1 rounded">{REDIRECT_URI}</code>
+              </p>
+            </div>
             <Button 
               onClick={handleConnect}
               className="w-full bg-[#0077b5] hover:bg-[#006097]"
