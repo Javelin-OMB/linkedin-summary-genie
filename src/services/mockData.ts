@@ -1,27 +1,24 @@
-import { LinkedInProfile } from './linkedinTypes';
-
-export const mockProfileData: LinkedInProfile = {
-  name: "John van der Tech",
-  headline: "Senior Software Engineer | AI Specialist | Tech Lead",
-  summary: "Ervaren software engineer met 10+ jaar ervaring in het bouwen van schaalbare applicaties. Gespecialiseerd in AI/ML implementaties en team leadership.",
+export const mockProfileData = {
+  name: "John Doe",
+  headline: "Senior Software Engineer | AI Enthusiast | Tech Leader",
+  summary: "Ervaren software engineer met meer dan 10 jaar ervaring in het ontwikkelen van schaalbare applicaties. Gespecialiseerd in AI en machine learning toepassingen.",
   discProfile: {
     type: "D",
     characteristics: [
       "Resultaatgericht",
-      "Direct communicerend",
       "Besluitvaardig",
-      "Ambitieus"
+      "Direct",
+      "Daadkrachtig"
     ],
     talkingPoints: [
-      "Focus op concrete resultaten en ROI",
-      "Directe aanpak van uitdagingen",
-      "Innovatieve technische oplossingen",
-      "Strategische planning en uitvoering"
+      "Focus op concrete resultaten en doelen",
+      "Efficiënte oplossingen voor complexe problemen",
+      "Leiderschapservaring in technische teams"
     ]
   },
   recentPosts: [
-    "Net een succesvol AI-implementatieproject afgerond voor een grote klant. 30% efficiëntieverbetering behaald!",
-    "Deelde mijn inzichten over microservices architectuur op het Tech Summit 2024",
-    "Blij om aan te kondigen dat ons team is uitgebreid met drie nieuwe developers"
+    "Zojuist een interessant artikel gepubliceerd over AI-trends in 2024",
+    "Blij om aan te kondigen dat ons team een nieuwe milestone heeft bereikt",
+    "Deelde mijn ervaringen op de TechConf 2024"
   ]
 };

@@ -20,6 +20,21 @@ const isTokenValid = () => {
   }
 };
 
+const extractProfileId = (url: string): string => {
+  // Remove trailing slash if present
+  const cleanUrl = url.replace(/\/$/, '');
+  
+  // Try to extract the profile ID or vanity URL
+  const matches = cleanUrl.match(/(?:\/in\/|\/pub\/|company\/|profile\/view\?id=)([^\/\?]+)/);
+  if (matches && matches[1]) {
+    return matches[1];
+  }
+  
+  // If no match found, try to get the last part of the URL
+  const urlParts = cleanUrl.split('/');
+  return urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+};
+
 const fetchRecentPosts = async (profileId: string, authCode: string): Promise<string[]> => {
   try {
     console.log('Fetching posts for profile:', profileId);
@@ -78,9 +93,8 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     console.log('Starting LinkedIn profile fetch');
     const authData: TokenData = JSON.parse(authDataStr);
     
-    // Extract profile ID from URL
-    const urlParts = url.split('/');
-    const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+    // Extract profile ID from URL using the new helper function
+    const profileId = extractProfileId(url);
     console.log('Extracted profile ID:', profileId);
 
     const response = await fetch(`${PROXY_URL}/v2/people/${profileId}`, {
