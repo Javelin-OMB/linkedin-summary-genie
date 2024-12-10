@@ -14,9 +14,43 @@ interface LinkedInProfile {
   recentPosts: string[];
 }
 
+// Mock data voor development omgeving
+const mockProfileData: LinkedInProfile = {
+  name: "John van der Tech",
+  headline: "Senior Software Engineer | AI Specialist | Tech Lead",
+  summary: "Ervaren software engineer met 10+ jaar ervaring in het bouwen van schaalbare applicaties. Gespecialiseerd in AI/ML implementaties en team leadership.",
+  discProfile: {
+    type: "D",
+    characteristics: [
+      "Resultaatgericht",
+      "Direct communicerend",
+      "Besluitvaardig",
+      "Ambitieus"
+    ],
+    talkingPoints: [
+      "Focus op concrete resultaten en ROI",
+      "Directe aanpak van uitdagingen",
+      "Innovatieve technische oplossingen",
+      "Strategische planning en uitvoering"
+    ]
+  },
+  recentPosts: [
+    "Net een succesvol AI-implementatieproject afgerond voor een grote klant. 30% efficiëntieverbetering behaald!",
+    "Deelde mijn inzichten over microservices architectuur op het Tech Summit 2024",
+    "Blij om aan te kondigen dat ons team is uitgebreid met drie nieuwe developers"
+  ]
+};
+
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
   const authCode = localStorage.getItem("linkedin_auth_code");
   
+  // In development mode, return mock data
+  if (import.meta.env.DEV) {
+    console.log("Development mode: Returning mock profile data");
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simuleer API vertraging
+    return mockProfileData;
+  }
+
   if (!authCode) {
     throw new Error("LinkedIn authenticatie vereist. Verbind eerst je account.");
   }
