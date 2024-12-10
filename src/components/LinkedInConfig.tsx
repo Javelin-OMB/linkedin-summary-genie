@@ -4,7 +4,9 @@ import { useToast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CLIENT_ID = "779r8mygm8rgk1";
-const REDIRECT_URI = window.location.origin + "/about";
+const REDIRECT_URI = import.meta.env.DEV 
+  ? "http://localhost:8080/about"
+  : window.location.origin + "/about";
 
 export const LinkedInConfig = () => {
   const [isConnected, setIsConnected] = useState(false);
@@ -46,6 +48,7 @@ export const LinkedInConfig = () => {
     try {
       console.log("Received authorization code:", code);
       console.log("Using redirect URI:", REDIRECT_URI);
+      console.log("Environment:", import.meta.env.DEV ? "Development" : "Production");
       
       localStorage.setItem("linkedin_auth_code", code);
       setIsConnected(true);
@@ -88,6 +91,7 @@ export const LinkedInConfig = () => {
     
     console.log("Initiating LinkedIn OAuth with scopes:", scopes);
     console.log("Using redirect URI:", REDIRECT_URI);
+    console.log("Environment:", import.meta.env.DEV ? "Development" : "Production");
     
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
     
