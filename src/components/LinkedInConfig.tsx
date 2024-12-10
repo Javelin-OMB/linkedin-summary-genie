@@ -30,11 +30,14 @@ export const LinkedInConfig = () => {
     const error = urlParams.get("error");
     const errorDescription = urlParams.get("error_description");
     if (error) {
-      console.error("LinkedIn OAuth Error:", error, errorDescription);
+      console.error("LinkedIn OAuth Error:", error);
+      console.error("Error Description:", errorDescription);
+      console.error("Full URL:", window.location.href);
+      
       setError(errorDescription || "Failed to authenticate with LinkedIn");
       toast({
         title: "Authentication Error",
-        description: errorDescription || "Failed to authenticate with LinkedIn",
+        description: `Error: ${error}. ${errorDescription || ""}`,
         variant: "destructive",
       });
     }
@@ -43,6 +46,8 @@ export const LinkedInConfig = () => {
   const handleOAuthCallback = async (code: string) => {
     try {
       console.log("Received authorization code:", code);
+      console.log("Redirect URI used:", REDIRECT_URI);
+      
       localStorage.setItem("linkedin_auth_code", code);
       setIsConnected(true);
       setError(null);
@@ -82,6 +87,9 @@ export const LinkedInConfig = () => {
     
     const scope = encodeURIComponent(scopes.join(' '));
     const state = Math.random().toString(36).substring(7);
+    
+    console.log("Initiating LinkedIn OAuth with scopes:", scopes);
+    console.log("Using redirect URI:", REDIRECT_URI);
     
     const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${scope}&state=${state}`;
     
