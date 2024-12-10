@@ -3,7 +3,7 @@ import { mockProfileData } from './mockData';
 import { analyzeProfileForDisc } from './discAnalyzer';
 import { toast } from "@/components/ui/use-toast";
 
-// Gebruik een proxy URL voor de LinkedIn API calls
+// Use a proxy URL for LinkedIn API calls
 const PROXY_URL = 'https://api.lovable.app/proxy/linkedin';
 
 const isTokenValid = () => {
@@ -37,33 +37,27 @@ const extractProfileId = (url: string): string => {
 
 const fetchRecentPosts = async (profileId: string, authCode: string): Promise<string[]> => {
   try {
-    console.log('Fetching posts for profile:', profileId);
-    const response = await fetch(`${PROXY_URL}/v2/people/${profileId}/posts`, {
+    const response = await fetch(`${PROXY_URL}/posts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': window.location.origin
       },
       body: JSON.stringify({
-        auth_token: authCode,
-        target_url: `https://api.linkedin.com/v2/people/${profileId}/posts`
+        profile_id: profileId,
+        auth_code: authCode
       })
     });
 
     if (!response.ok) {
-      console.error('Posts fetch response:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Posts fetch error details:', errorText);
-      throw new Error(`Fout bij ophalen berichten: ${response.statusText}`);
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const postsData = await response.json();
-    return postsData.elements
-      .slice(0, 3)
-      .map((post: any) => post.commentary || post.text || '')
-      .filter(Boolean);
+    const data = await response.json();
+    return data.posts || [];
   } catch (error) {
     console.error('Error fetching posts:', error);
-    throw error;
+    return [];
   }
 };
 
@@ -76,7 +70,6 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   }
 
   if (!isTokenValid()) {
-    console.error("LinkedIn token invalid or expired");
     toast({
       title: "Authenticatie vereist",
       description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
@@ -91,29 +84,22 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   }
 
   try {
-    console.log('Starting LinkedIn profile fetch');
     const authData: TokenData = JSON.parse(authDataStr);
-    
-    // Extract profile ID from URL using the helper function
     const profileId = extractProfileId(url);
-    console.log('Extracted profile ID:', profileId);
 
-    const response = await fetch(`${PROXY_URL}/v2/people/${profileId}`, {
+    const response = await fetch(`${PROXY_URL}/profile`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': window.location.origin
       },
       body: JSON.stringify({
-        auth_token: authData.code,
-        target_url: `https://api.linkedin.com/v2/people/${profileId}`
+        profile_id: profileId,
+        auth_code: authData.code
       })
     });
 
     if (!response.ok) {
-      console.error('Profile fetch response:', response.status, response.statusText);
-      const errorText = await response.text();
-      console.error('Profile fetch error details:', errorText);
-      
       if (response.status === 401) {
         localStorage.removeItem("linkedin_auth_data");
         toast({
@@ -123,24 +109,19 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
         });
         throw new Error("LinkedIn sessie verlopen. Verbind opnieuw.");
       }
-      
       throw new Error(`LinkedIn API fout: ${response.statusText}`);
     }
 
     const profileData = await response.json();
-    console.log('LinkedIn API response:', profileData);
-
     const recentPosts = await fetchRecentPosts(profileId, authData.code);
 
-    const profile: LinkedInProfile = {
+    return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
       summary: profileData.summary || '',
       discProfile: analyzeProfileForDisc(profileData),
       recentPosts
     };
-
-    return profile;
   } catch (error) {
     console.error("LinkedIn API Error:", error);
     toast({
