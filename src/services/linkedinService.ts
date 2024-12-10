@@ -23,16 +23,11 @@ const isTokenValid = () => {
 };
 
 const extractProfileId = (url: string): string => {
-  // Remove trailing slash if present
   const cleanUrl = url.replace(/\/$/, '');
-  
-  // Try to extract the profile ID or vanity URL
   const matches = cleanUrl.match(/(?:\/in\/|\/pub\/|company\/|profile\/view\?id=)([^\/\?]+)/);
   if (matches && matches[1]) {
     return matches[1];
   }
-  
-  // If no match found, try to get the last part of the URL
   const urlParts = cleanUrl.split('/');
   return urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
 };
@@ -44,9 +39,11 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
       headers: {
         'Content-Type': 'application/json',
         'Origin': window.location.origin,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       },
       credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify({
         profile_id: profileId,
         auth_code: authCode
@@ -67,7 +64,6 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
 };
 
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
-  // Only use mock data in development
   if (import.meta.env.DEV) {
     console.log("Development mode: Returning mock profile data");
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -97,9 +93,11 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
       headers: {
         'Content-Type': 'application/json',
         'Origin': window.location.origin,
-        'Accept': 'application/json'
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       },
       credentials: 'include',
+      mode: 'cors',
       body: JSON.stringify({
         profile_id: profileId,
         auth_code: authData.code
