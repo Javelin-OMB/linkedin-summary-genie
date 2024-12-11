@@ -44,21 +44,21 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full space-y-8 animate-fade-in">
-      <form onSubmit={handleSubmit} className="relative">
-        <div className="flex gap-4">
+    <div className="w-full space-y-6">
+      <form onSubmit={handleSubmit}>
+        <div className="flex gap-2">
           <Input
             type="url"
-            placeholder="Paste LinkedIn profile URL here..."
+            placeholder="LinkedIn URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 pl-4 pr-4 py-6 text-lg rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500 focus:ring-1 bg-white shadow-sm transition-all duration-200 hover:border-blue-400"
+            className="h-12"
             disabled={isLoading}
           />
           <Button 
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50"
             disabled={isLoading}
+            className="h-12 px-6"
           >
             {isLoading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
@@ -69,15 +69,11 @@ const SearchBar = () => {
         </div>
       </form>
 
-      <div className="text-sm text-gray-500 text-center">
-        10 free searches remaining
-      </div>
-
       {relevanceOutput && (
-        <Card className="p-8 bg-white shadow-lg rounded-xl border-l-4 border-blue-500 animate-fade-in hover:shadow-xl transition-shadow duration-200">
+        <Card className="p-6 bg-white">
           <div className="prose max-w-none">
-            <h3 className="text-xl font-semibold mb-4 text-gray-800">Profile Analysis</h3>
-            <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
+            <h3 className="text-lg font-medium mb-2">Profile Analysis</h3>
+            <div className="text-gray-700">
               {relevanceOutput}
             </div>
           </div>
