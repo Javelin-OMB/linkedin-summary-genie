@@ -64,7 +64,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-8">
+    <div className="w-full max-w-3xl mx-auto space-y-6">
       {!localStorage.getItem("RELEVANCE_API_KEY") && (
         <form onSubmit={handleApiKeySubmit} className="space-y-4">
           <div className="flex gap-2">
@@ -91,20 +91,18 @@ const SearchBar = () => {
 
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              type="url"
-              placeholder="Paste LinkedIn profile URL here..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border border-gray-300 focus:border-[#0077B5] focus:ring-[#0077B5]"
-              disabled={isLoading}
-            />
-          </div>
+          <Input
+            type="url"
+            placeholder="Paste LinkedIn profile URL here..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="flex-1 h-14 text-lg"
+            disabled={isLoading}
+          />
           <Button 
             type="submit"
             size="lg"
-            className="bg-[#0077B5] hover:bg-[#006399] text-white px-8 py-6 rounded-lg"
+            className="bg-[#0077B5] hover:bg-[#006399] text-white h-14 px-8"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
