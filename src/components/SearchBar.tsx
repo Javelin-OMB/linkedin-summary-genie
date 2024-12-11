@@ -43,28 +43,34 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4">
-      <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-        <div className="flex items-center space-x-2">
+    <div className="w-full max-w-2xl mx-auto space-y-4">
+      <form onSubmit={handleSubmit} className="relative">
+        <div className="flex gap-2">
           <div className="relative flex-1">
             <Input
               type="url"
               placeholder="Paste LinkedIn profile URL here..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-linkedin-primary focus:outline-none focus:border-linkedin-hover"
+              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border-2 border-gray-300 focus:border-linkedin-primary focus:ring-linkedin-primary"
               disabled={isLoading}
             />
           </div>
           <Button 
             type="submit"
-            className="bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
+            size="lg"
+            className="bg-linkedin-primary hover:bg-linkedin-hover text-white px-8 py-6 rounded-lg"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
+            <span className="sr-only">Search</span>
           </Button>
         </div>
       </form>
+
+      <div className="text-sm text-gray-500 text-center">
+        10 free searches remaining
+      </div>
 
       {profileData && <ProfileSummary data={profileData} />}
     </div>
