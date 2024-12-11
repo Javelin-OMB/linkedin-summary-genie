@@ -64,7 +64,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <div className="w-full max-w-3xl mx-auto space-y-8">
       {!localStorage.getItem("RELEVANCE_API_KEY") && (
         <form onSubmit={handleApiKeySubmit} className="space-y-4">
           <div className="flex gap-2">
@@ -73,12 +73,12 @@ const SearchBar = () => {
               placeholder="Enter your Relevance API key..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="flex-1"
+              className="flex-1 h-12 text-base border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
             <Button 
               type="submit"
               variant="outline"
-              className="whitespace-nowrap"
+              className="h-12 px-6 font-medium whitespace-nowrap border-gray-200 hover:bg-gray-50"
             >
               Save API Key
             </Button>
@@ -90,19 +90,19 @@ const SearchBar = () => {
       )}
 
       <form onSubmit={handleSubmit} className="relative">
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Input
             type="url"
             placeholder="Paste LinkedIn profile URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 h-14 text-lg pl-6 rounded-xl border border-gray-200 shadow-sm"
+            className="flex-1 h-14 text-lg pl-6 rounded-xl border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             disabled={isLoading}
           />
           <Button 
             type="submit"
             size="lg"
-            className="bg-[#0077B5] hover:bg-[#006399] text-white h-14 px-8 rounded-xl shadow-sm"
+            className="h-14 px-8 rounded-xl shadow-sm bg-[#0077B5] hover:bg-[#006399] text-white font-medium transition-colors"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
