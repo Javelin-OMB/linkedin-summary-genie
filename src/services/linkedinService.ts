@@ -9,13 +9,20 @@ const PROXY_URL = import.meta.env.PROD
 
 const RELEVANCE_API_URL = 'https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited';
 
+// Store API key in localStorage for now (in production, this should be handled more securely)
+const RELEVANCE_API_KEY = localStorage.getItem('RELEVANCE_API_KEY');
+
 const fetchRelevanceSummary = async (linkedinUrl: string): Promise<string> => {
+  if (!RELEVANCE_API_KEY) {
+    throw new Error('Relevance API key not found. Please set up your API key.');
+  }
+
   try {
     const response = await fetch(RELEVANCE_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'YOUR_API_KEY' // Note: You should store this securely
+        'Authorization': RELEVANCE_API_KEY
       },
       body: JSON.stringify({
         params: {
@@ -156,7 +163,7 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
-      summary: summary, // Using the Relevance-generated summary
+      summary: summary,
       discProfile: analyzeProfileForDisc(profileData),
       recentPosts
     };

@@ -8,9 +8,21 @@ import ProfileSummary from "./ProfileSummary";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
+  const [apiKey, setApiKey] = useState(localStorage.getItem("RELEVANCE_API_KEY") || "");
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const { toast } = useToast();
+
+  const handleApiKeySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (apiKey.trim()) {
+      localStorage.setItem("RELEVANCE_API_KEY", apiKey.trim());
+      toast({
+        title: "Success",
+        description: "API key has been saved",
+      });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +30,15 @@ const SearchBar = () => {
       toast({
         title: "Invalid URL",
         description: "Please enter a valid LinkedIn profile URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!localStorage.getItem("RELEVANCE_API_KEY")) {
+      toast({
+        title: "API Key Required",
+        description: "Please enter your Relevance API key first",
         variant: "destructive",
       });
       return;
@@ -43,7 +64,31 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
+    <div className="w-full max-w-2xl mx-auto space-y-8">
+      {!localStorage.getItem("RELEVANCE_API_KEY") && (
+        <form onSubmit={handleApiKeySubmit} className="space-y-4">
+          <div className="flex gap-2">
+            <Input
+              type="password"
+              placeholder="Enter your Relevance API key..."
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              type="submit"
+              variant="outline"
+              className="whitespace-nowrap"
+            >
+              Save API Key
+            </Button>
+          </div>
+          <p className="text-sm text-gray-500 text-center">
+            You need to set up your Relevance API key before using the service
+          </p>
+        </form>
+      )}
+
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex gap-2">
           <div className="relative flex-1">
