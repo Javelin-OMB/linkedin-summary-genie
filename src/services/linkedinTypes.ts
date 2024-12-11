@@ -9,9 +9,3 @@ export interface LinkedInProfile {
   };
   recentPosts: string[];
 }
-
-export interface TokenData {
-  code: string;
-  timestamp: number;
-  expiresIn: number;
-}
