@@ -40,7 +40,6 @@ const RelevanceLoginDialog = () => {
       return;
     }
 
-    // Save all config values to localStorage
     localStorage.setItem("relevance_api_key", config.apiKey);
     localStorage.setItem("relevance_project_id", config.projectId);
     localStorage.setItem("relevance_region", config.region);
@@ -58,7 +57,7 @@ const RelevanceLoginDialog = () => {
         <Button 
           variant="outline" 
           size="sm"
-          className="border-[#0FA0CE] text-[#0FA0CE] hover:bg-[#0FA0CE] hover:text-white transition-colors duration-200"
+          className="border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white transition-colors"
         >
           <Key className="h-4 w-4 mr-2" />
           Relevance API
@@ -75,7 +74,7 @@ const RelevanceLoginDialog = () => {
               href="https://docs.relevanceai.com/docs/api-keys" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-[#0FA0CE] hover:underline mt-2"
+              className="flex items-center gap-1 text-linkedin-primary hover:underline mt-2"
             >
               <ExternalLink className="h-4 w-4" />
               Learn how to get your API credentials
@@ -92,7 +91,6 @@ const RelevanceLoginDialog = () => {
                 placeholder="Enter your API key"
                 value={config.apiKey}
                 onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                className="w-full"
               />
             </div>
 
@@ -104,7 +102,6 @@ const RelevanceLoginDialog = () => {
                 placeholder="Enter your Project ID"
                 value={config.projectId}
                 onChange={(e) => setConfig({ ...config, projectId: e.target.value })}
-                className="w-full"
               />
             </div>
 
@@ -116,7 +113,6 @@ const RelevanceLoginDialog = () => {
                 placeholder="e.g., f1db6c"
                 value={config.region}
                 onChange={(e) => setConfig({ ...config, region: e.target.value })}
-                className="w-full"
               />
             </div>
 
@@ -128,7 +124,6 @@ const RelevanceLoginDialog = () => {
                 placeholder="ProjectId:APIKey format"
                 value={config.authToken}
                 onChange={(e) => setConfig({ ...config, authToken: e.target.value })}
-                className="w-full"
               />
             </div>
           </div>
@@ -137,7 +132,7 @@ const RelevanceLoginDialog = () => {
 
           <Button 
             onClick={handleSaveConfig} 
-            className="w-full bg-[#0FA0CE] hover:bg-[#0FA0CE]/90 text-white"
+            className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
           >
             Save Configuration
           </Button>
