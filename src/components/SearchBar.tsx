@@ -8,21 +8,9 @@ import ProfileSummary from "./ProfileSummary";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
-  const [apiKey, setApiKey] = useState(localStorage.getItem("RELEVANCE_API_KEY") || "");
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
   const { toast } = useToast();
-
-  const handleApiKeySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (apiKey.trim()) {
-      localStorage.setItem("RELEVANCE_API_KEY", apiKey.trim());
-      toast({
-        title: "Success",
-        description: "API key has been saved",
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,15 +18,6 @@ const SearchBar = () => {
       toast({
         title: "Invalid URL",
         description: "Please enter a valid LinkedIn profile URL",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!localStorage.getItem("RELEVANCE_API_KEY")) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter your Relevance API key first",
         variant: "destructive",
       });
       return;
@@ -64,45 +43,23 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-8">
-      {!localStorage.getItem("RELEVANCE_API_KEY") && (
-        <form onSubmit={handleApiKeySubmit} className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              type="password"
-              placeholder="Enter your Relevance API key..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="flex-1 h-12 text-base border-gray-200 rounded-lg shadow-sm"
-            />
-            <Button 
-              type="submit"
-              variant="outline"
-              className="h-12 px-6 font-medium border-gray-200 hover:bg-gray-50"
-            >
-              Save API Key
-            </Button>
-          </div>
-          <p className="text-sm text-gray-500 text-center">
-            You need to set up your Relevance API key before using the service
-          </p>
-        </form>
-      )}
-
+    <div className="w-full max-w-2xl mx-auto space-y-4">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="flex gap-3">
-          <Input
-            type="url"
-            placeholder="Paste LinkedIn profile URL here..."
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 h-14 text-lg pl-6 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[#0077B5] focus:border-transparent"
-            disabled={isLoading}
-          />
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Input
+              type="url"
+              placeholder="Paste LinkedIn profile URL here..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border-2 border-gray-300 focus:border-linkedin-primary focus:ring-linkedin-primary"
+              disabled={isLoading}
+            />
+          </div>
           <Button 
             type="submit"
             size="lg"
-            className="h-14 w-14 rounded-xl shadow-sm bg-[#0077B5] hover:bg-[#006399] text-white"
+            className="bg-linkedin-primary hover:bg-linkedin-hover text-white px-8 py-6 rounded-lg"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />

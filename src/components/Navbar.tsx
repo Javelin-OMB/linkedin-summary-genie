@@ -4,30 +4,38 @@ import { Button } from "@/components/ui/button";
 
 const Navbar = () => {
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-100 z-50">
-      <div className="max-w-7xl mx-auto px-4">
-        <div className="flex justify-between h-16 items-center">
-          <Link to="/" className="flex items-center gap-2">
-            <Home className="h-6 w-6 text-[#0077B5]" />
-            <span className="text-xl font-semibold text-[#1A1F2C]">LeadSummary</span>
-          </Link>
-          
-          <div className="flex items-center gap-8">
-            <Link to="/about" className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900">
-              <Info className="h-5 w-5" />
-              <span>About</span>
+    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center">
+              <Home className="h-6 w-6 text-linkedin-primary" />
+              <span className="ml-2 text-xl font-semibold text-gray-900">LeadSummary</span>
             </Link>
-            <Link to="/pricing" className="flex items-center gap-1.5 text-gray-600 hover:text-gray-900">
-              <DollarSign className="h-5 w-5" />
-              <span>Pricing</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Link to="/about">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                <Info className="h-4 w-4 mr-2" />
+                About
+              </Button>
             </Link>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 border-[#0077B5] text-[#0077B5] hover:bg-[#0077B5] hover:text-white"
-            >
-              <User className="h-5 w-5" />
-              Login
-            </Button>
+            <Link to="/pricing">
+              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+                <DollarSign className="h-4 w-4 mr-2" />
+                Pricing
+              </Button>
+            </Link>
+            <Link to="/login">
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
