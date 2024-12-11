@@ -44,7 +44,7 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-6">
+    <div className="w-full space-y-8 animate-fade-in">
       <form onSubmit={handleSubmit} className="relative">
         <div className="flex gap-4">
           <Input
@@ -52,12 +52,12 @@ const SearchBar = () => {
             placeholder="Paste LinkedIn profile URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 pl-4 pr-4 py-6 text-lg rounded-xl border border-gray-200 focus:border-[#0FA0CE] focus:ring-[#0FA0CE] focus:ring-1 bg-white shadow-sm transition-all duration-200"
+            className="flex-1 pl-4 pr-4 py-6 text-lg rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-blue-500 focus:ring-1 bg-white shadow-sm transition-all duration-200 hover:border-blue-400"
             disabled={isLoading}
           />
           <Button 
             type="submit"
-            className="bg-[#0FA0CE] hover:bg-[#0FA0CE]/90 text-white px-8 py-6 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-xl shadow-sm transition-all duration-200 hover:shadow-md disabled:opacity-50"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -74,7 +74,7 @@ const SearchBar = () => {
       </div>
 
       {relevanceOutput && (
-        <Card className="p-8 mt-8 bg-white shadow-lg rounded-xl border-l-4 border-[#0FA0CE] animate-fadeIn">
+        <Card className="p-8 bg-white shadow-lg rounded-xl border-l-4 border-blue-500 animate-fade-in hover:shadow-xl transition-shadow duration-200">
           <div className="prose max-w-none">
             <h3 className="text-xl font-semibold mb-4 text-gray-800">Profile Analysis</h3>
             <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
