@@ -97,7 +97,7 @@ const SearchBar = () => {
               placeholder="Paste LinkedIn profile URL here..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border border-gray-300 focus:border-linkedin-primary focus:ring-linkedin-primary"
+              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border border-gray-300 focus:border-[#0077B5] focus:ring-[#0077B5]"
               disabled={isLoading}
             />
           </div>

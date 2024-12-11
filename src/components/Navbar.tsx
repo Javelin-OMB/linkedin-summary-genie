@@ -9,33 +9,26 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
-              <Home className="h-6 w-6 text-linkedin-primary" />
+              <Home className="h-6 w-6 text-[#0077B5]" />
               <span className="ml-2 text-xl font-semibold text-gray-900">LeadSummary</span>
             </Link>
           </div>
-          <div className="flex items-center space-x-2">
-            <Link to="/about">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                <Info className="h-4 w-4 mr-2" />
-                About
-              </Button>
+          <div className="flex items-center space-x-4">
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 flex items-center">
+              <Info className="h-4 w-4 mr-1" />
+              <span>About</span>
             </Link>
-            <Link to="/pricing">
-              <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-                <DollarSign className="h-4 w-4 mr-2" />
-                Pricing
-              </Button>
+            <Link to="/pricing" className="text-gray-600 hover:text-gray-900 flex items-center">
+              <DollarSign className="h-4 w-4 mr-1" />
+              <span>Pricing</span>
             </Link>
-            <Link to="/login">
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              className="flex items-center border-[#0077B5] text-[#0077B5] hover:bg-[#0077B5] hover:text-white"
+            >
+              <User className="h-4 w-4 mr-2" />
+              Login
+            </Button>
           </div>
         </div>
       </div>
