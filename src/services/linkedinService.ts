@@ -67,6 +67,8 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
 
 const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
   try {
+    console.log('Sending profile data to Relevance:', profileData);
+    
     const response = await fetch(RELEVANCE_API_URL, {
       method: 'POST',
       headers: {
@@ -74,7 +76,14 @@ const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
       },
       body: JSON.stringify({
         input_variables: {
-          profile: JSON.stringify(profileData)
+          profile: {
+            name: `${profileData.firstName} ${profileData.lastName}`,
+            headline: profileData.headline || '',
+            summary: profileData.summary || '',
+            experience: profileData.experience || [],
+            skills: profileData.skills || [],
+            education: profileData.education || []
+          }
         }
       })
     });
@@ -85,6 +94,8 @@ const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
     }
 
     const data = await response.json();
+    console.log('Relevance API response:', data);
+    
     return data.output || 'No summary available';
   } catch (error) {
     console.error('Error getting summary from Relevance:', error);
@@ -155,7 +166,7 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
-      summary: summary, // Use the Relevance-generated summary
+      summary: summary,
       discProfile: analyzeProfileForDisc(profileData),
       recentPosts
     };
