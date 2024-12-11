@@ -16,38 +16,32 @@ import { Separator } from "@/components/ui/separator";
 
 interface RelevanceConfig {
   apiKey: string;
-  projectId: string;
-  region: string;
-  authToken: string;
+  endpoint: string;
 }
 
 const RelevanceLoginDialog = () => {
   const [config, setConfig] = useState<RelevanceConfig>({
     apiKey: localStorage.getItem("relevance_api_key") || "",
-    projectId: localStorage.getItem("relevance_project_id") || "",
-    region: localStorage.getItem("relevance_region") || "",
-    authToken: localStorage.getItem("relevance_auth_token") || "",
+    endpoint: localStorage.getItem("relevance_endpoint") || "",
   });
   const { toast } = useToast();
 
   const handleSaveConfig = () => {
-    if (!config.apiKey || !config.projectId || !config.region || !config.authToken) {
+    if (!config.apiKey || !config.endpoint) {
       toast({
         title: "Error",
-        description: "Please fill in all fields",
+        description: "Vul alstublieft alle velden in",
         variant: "destructive",
       });
       return;
     }
 
     localStorage.setItem("relevance_api_key", config.apiKey);
-    localStorage.setItem("relevance_project_id", config.projectId);
-    localStorage.setItem("relevance_region", config.region);
-    localStorage.setItem("relevance_auth_token", config.authToken);
+    localStorage.setItem("relevance_endpoint", config.endpoint);
 
     toast({
       title: "Success",
-      description: "Relevance API configuration saved successfully",
+      description: "Relevance API configuratie opgeslagen",
     });
   };
 
@@ -66,10 +60,10 @@ const RelevanceLoginDialog = () => {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl font-semibold text-gray-900">
-            Relevance API Configuration
+            Relevance API Configuratie
           </DialogTitle>
           <DialogDescription className="text-gray-600 mt-2">
-            Enter your Relevance API credentials to enable profile analysis.
+            Voer je Relevance API gegevens in om profielanalyse mogelijk te maken.
             <a 
               href="https://docs.relevanceai.com/docs/api-keys" 
               target="_blank" 
@@ -77,7 +71,7 @@ const RelevanceLoginDialog = () => {
               className="flex items-center gap-1 text-linkedin-primary hover:underline mt-2"
             >
               <ExternalLink className="h-4 w-4" />
-              Learn how to get your API credentials
+              Leer hoe je API gegevens kunt verkrijgen
             </a>
           </DialogDescription>
         </DialogHeader>
@@ -88,42 +82,20 @@ const RelevanceLoginDialog = () => {
               <Input
                 id="apiKey"
                 type="password"
-                placeholder="Enter your API key"
+                placeholder="Voer je API key in"
                 value={config.apiKey}
                 onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="projectId">Project ID</Label>
+              <Label htmlFor="endpoint">API Endpoint</Label>
               <Input
-                id="projectId"
+                id="endpoint"
                 type="text"
-                placeholder="Enter your Project ID"
-                value={config.projectId}
-                onChange={(e) => setConfig({ ...config, projectId: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="region">Region</Label>
-              <Input
-                id="region"
-                type="text"
-                placeholder="e.g., f1db6c"
-                value={config.region}
-                onChange={(e) => setConfig({ ...config, region: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="authToken">Authorization Token</Label>
-              <Input
-                id="authToken"
-                type="password"
-                placeholder="ProjectId:APIKey format"
-                value={config.authToken}
-                onChange={(e) => setConfig({ ...config, authToken: e.target.value })}
+                placeholder="Bijv: https://api.relevance.ai/latest/v1"
+                value={config.endpoint}
+                onChange={(e) => setConfig({ ...config, endpoint: e.target.value })}
               />
             </div>
           </div>
@@ -134,7 +106,7 @@ const RelevanceLoginDialog = () => {
             onClick={handleSaveConfig} 
             className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
           >
-            Save Configuration
+            Configuratie Opslaan
           </Button>
         </div>
       </DialogContent>
