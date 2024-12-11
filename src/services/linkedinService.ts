@@ -8,6 +8,8 @@ const PROXY_URL = import.meta.env.PROD
   ? 'https://api.lovable.app/proxy/linkedin'
   : 'http://localhost:3000/proxy/linkedin';
 
+const RELEVANCE_API_URL = 'https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited';
+
 const isTokenValid = () => {
   const authDataStr = localStorage.getItem("linkedin_auth_data");
   if (!authDataStr) return false;
@@ -60,6 +62,33 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
   } catch (error) {
     console.error('Error fetching posts:', error);
     return [];
+  }
+};
+
+const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
+  try {
+    const response = await fetch(RELEVANCE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        input_variables: {
+          profile: JSON.stringify(profileData)
+        }
+      })
+    });
+
+    if (!response.ok) {
+      console.error('Relevance API error:', response.status);
+      throw new Error('Failed to generate summary');
+    }
+
+    const data = await response.json();
+    return data.output || 'No summary available';
+  } catch (error) {
+    console.error('Error getting summary from Relevance:', error);
+    throw new Error('Failed to generate profile summary');
   }
 };
 
@@ -119,11 +148,14 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
 
     const profileData = await response.json();
     const recentPosts = await fetchRecentPosts(profileId, authData.code);
+    
+    // Get summary from Relevance API
+    const summary = await getSummaryFromRelevance(profileData);
 
     return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
-      summary: profileData.summary || '',
+      summary: summary, // Use the Relevance-generated summary
       discProfile: analyzeProfileForDisc(profileData),
       recentPosts
     };
