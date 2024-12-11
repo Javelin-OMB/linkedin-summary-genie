@@ -1,6 +1,7 @@
 import { Info, DollarSign, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import RelevanceLoginDialog from "./RelevanceLoginDialog";
 
 const Navbar = () => {
   return (
@@ -15,7 +16,8 @@ const Navbar = () => {
               <span className="text-xl font-semibold text-[#221F26]">LeadSummary</span>
             </Link>
           </div>
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center space-x-4">
+            <RelevanceLoginDialog />
             <Link to="/about" className="text-gray-600 hover:text-gray-900 flex items-center gap-2">
               <Info className="h-4 w-4" />
               About
