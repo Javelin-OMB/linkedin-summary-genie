@@ -44,41 +44,41 @@ const SearchBar = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="flex gap-2">
-          <Input
-            type="url"
-            placeholder="Enter LinkedIn URL"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="h-12 text-base"
-            disabled={isLoading}
-          />
-          <Button 
-            type="submit"
-            disabled={isLoading}
-            className="h-12 px-6 bg-linkedin-primary hover:bg-linkedin-hover"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
-            ) : (
-              <Search className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
-      </form>
+    <div className="space-y-8">
+      <Card className="p-8 bg-white shadow-lg rounded-2xl border-0">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="flex gap-3">
+            <Input
+              type="url"
+              placeholder="Enter LinkedIn URL"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="h-14 text-lg rounded-xl border-gray-200 focus:border-linkedin-primary focus:ring-linkedin-primary"
+              disabled={isLoading}
+            />
+            <Button 
+              type="submit"
+              disabled={isLoading}
+              className="h-14 px-8 bg-linkedin-primary hover:bg-linkedin-hover rounded-xl text-lg font-medium transition-all duration-200 hover:shadow-md"
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+              ) : (
+                <Search className="h-6 w-6" />
+              )}
+            </Button>
+          </div>
+        </form>
 
-      {relevanceOutput && (
-        <Card className="p-6 bg-white border rounded-lg shadow-sm">
-          <div className="prose max-w-none">
-            <h3 className="text-lg font-medium mb-2">Profile Analysis</h3>
-            <div className="text-gray-700">
+        {relevanceOutput && (
+          <div className="mt-8 p-6 bg-gray-50 rounded-xl animate-fade-in">
+            <h3 className="text-xl font-semibold mb-4 text-gray-900">Profile Analysis</h3>
+            <div className="text-gray-700 leading-relaxed">
               {relevanceOutput}
             </div>
           </div>
-        </Card>
-      )}
+        )}
+      </Card>
     </div>
   );
 };
