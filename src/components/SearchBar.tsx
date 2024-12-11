@@ -3,13 +3,13 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { processWithRelevance } from "@/services/relevanceService";
-import { Card } from "@/components/ui/card";
+import { fetchLinkedInProfile } from "@/services/linkedinService";
+import ProfileSummary from "./ProfileSummary";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [relevanceOutput, setRelevanceOutput] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,8 +25,8 @@ const SearchBar = () => {
 
     setIsLoading(true);
     try {
-      const output = await processWithRelevance(url);
-      setRelevanceOutput(output);
+      const data = await fetchLinkedInProfile(url);
+      setProfileData(data);
       toast({
         title: "Success",
         description: "Profile analysis complete",
@@ -37,48 +37,36 @@ const SearchBar = () => {
         description: error instanceof Error ? error.message : "Failed to analyze profile",
         variant: "destructive",
       });
-      setRelevanceOutput(null);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-8">
-      <Card className="p-8 bg-white shadow-lg rounded-2xl border-0">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="flex gap-3">
+    <div className="w-full max-w-4xl mx-auto px-4">
+      <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
+        <div className="flex items-center space-x-2">
+          <div className="relative flex-1">
             <Input
               type="url"
-              placeholder="Enter LinkedIn URL"
+              placeholder="Paste LinkedIn profile URL here..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="h-14 text-lg rounded-xl border-gray-200 focus:border-linkedin-primary focus:ring-linkedin-primary"
+              className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-linkedin-primary focus:outline-none focus:border-linkedin-hover"
               disabled={isLoading}
             />
-            <Button 
-              type="submit"
-              disabled={isLoading}
-              className="h-14 px-8 bg-linkedin-primary hover:bg-linkedin-hover rounded-xl text-lg font-medium transition-all duration-200 hover:shadow-md"
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
-              ) : (
-                <Search className="h-6 w-6" />
-              )}
-            </Button>
           </div>
-        </form>
+          <Button 
+            type="submit"
+            className="bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
+            disabled={isLoading}
+          >
+            <Search className="h-5 w-5" />
+          </Button>
+        </div>
+      </form>
 
-        {relevanceOutput && (
-          <div className="mt-8 p-6 bg-gray-50 rounded-xl animate-fade-in">
-            <h3 className="text-xl font-semibold mb-4 text-gray-900">Profile Analysis</h3>
-            <div className="text-gray-700 leading-relaxed">
-              {relevanceOutput}
-            </div>
-          </div>
-        )}
-      </Card>
+      {profileData && <ProfileSummary data={profileData} />}
     </div>
   );
 };

@@ -3,20 +3,19 @@ import SearchBar from "@/components/SearchBar";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
-      <main className="container mx-auto px-4 pt-32 pb-16">
-        <div className="max-w-3xl mx-auto space-y-12">
-          <div className="text-center space-y-6">
-            <h1 className="text-5xl font-bold text-gray-900 tracking-tight animate-fade-in">
-              LinkedIn Profile Analyzer
-            </h1>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto animate-fade-in delay-100">
-              Get instant insights from any LinkedIn profile
-            </p>
-          </div>
-          <div className="animate-fade-in delay-200">
-            <SearchBar />
+      <main className="pt-32 px-4">
+        <div className="max-w-4xl mx-auto text-center animate-fadeIn">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Get Instant Lead Insights
+          </h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Enter a LinkedIn profile URL to receive a comprehensive summary and personalized conversation starters
+          </p>
+          <SearchBar />
+          <div className="mt-4 text-sm text-gray-500">
+            10 free searches remaining
           </div>
         </div>
       </main>

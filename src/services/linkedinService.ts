@@ -1,182 +1,137 @@
-import { LinkedInProfile, TokenData } from './linkedinTypes';
-import { mockProfileData } from './mockData';
-import { analyzeProfileForDisc } from './discAnalyzer';
 import { toast } from "@/components/ui/use-toast";
 
-// Use a proxy URL for LinkedIn API calls with the correct environment
-const PROXY_URL = import.meta.env.PROD 
-  ? 'https://api.lovable.app/proxy/linkedin'
-  : 'http://localhost:3000/proxy/linkedin';
+const LINKEDIN_API_URL = 'https://api.linkedin.com/v2';
 
-const RELEVANCE_API_URL = 'https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited';
-
-const isTokenValid = () => {
-  const authDataStr = localStorage.getItem("linkedin_auth_data");
-  if (!authDataStr) return false;
-
-  try {
-    const authData: TokenData = JSON.parse(authDataStr);
-    const now = new Date().getTime();
-    const tokenAge = (now - authData.timestamp) / 1000;
-    return tokenAge < authData.expiresIn;
-  } catch {
-    return false;
-  }
-};
-
-const extractProfileId = (url: string): string => {
-  const cleanUrl = url.replace(/\/$/, '');
-  const matches = cleanUrl.match(/(?:\/in\/|\/pub\/|company\/|profile\/view\?id=)([^\/\?]+)/);
-  if (matches && matches[1]) {
-    return matches[1];
-  }
-  const urlParts = cleanUrl.split('/');
-  return urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
-};
-
-const fetchRecentPosts = async (profileId: string, authCode: string): Promise<string[]> => {
-  try {
-    const response = await fetch(`${PROXY_URL}/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin,
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      credentials: 'include',
-      mode: 'cors',
-      body: JSON.stringify({
-        profile_id: profileId,
-        auth_code: authCode
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Posts fetch error:', response.status);
-      return [];
-    }
-
-    const data = await response.json();
-    return data.posts || [];
-  } catch (error) {
-    console.error('Error fetching posts:', error);
-    return [];
-  }
-};
-
-const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
-  try {
-    console.log('Sending profile data to Relevance:', profileData);
-    
-    const response = await fetch(RELEVANCE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        input_variables: {
-          profile: {
-            name: `${profileData.firstName} ${profileData.lastName}`,
-            headline: profileData.headline || '',
-            summary: profileData.summary || '',
-            experience: profileData.experience || [],
-            skills: profileData.skills || [],
-            education: profileData.education || []
-          }
-        }
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Relevance API error:', response.status);
-      throw new Error('Failed to generate summary');
-    }
-
-    const data = await response.json();
-    console.log('Relevance API response:', data);
-    
-    return data.output || 'No summary available';
-  } catch (error) {
-    console.error('Error getting summary from Relevance:', error);
-    throw new Error('Failed to generate profile summary');
-  }
-};
+interface LinkedInProfile {
+  name: string;
+  headline: string;
+  summary: string;
+  discProfile: {
+    type: string;
+    characteristics: string[];
+    talkingPoints: string[];
+  };
+  recentPosts: string[];
+}
 
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
-  if (import.meta.env.DEV) {
-    console.log("Development mode: Returning mock profile data");
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return mockProfileData;
-  }
-
-  if (!isTokenValid()) {
-    toast({
-      title: "Authenticatie vereist",
-      description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
-      variant: "destructive",
-    });
-    throw new Error("LinkedIn authenticatie verlopen. Verbind je account opnieuw.");
-  }
-
-  const authDataStr = localStorage.getItem("linkedin_auth_data");
-  if (!authDataStr) {
-    throw new Error("LinkedIn authenticatie vereist. Verbind je account.");
-  }
+  // Extract LinkedIn ID/username from URL
+  const urlParts = url.split('/');
+  const profileId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
 
   try {
-    const authData: TokenData = JSON.parse(authDataStr);
-    const profileId = extractProfileId(url);
-
-    const response = await fetch(`${PROXY_URL}/profile`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin,
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      credentials: 'include',
-      mode: 'cors',
-      body: JSON.stringify({
-        profile_id: profileId,
-        auth_code: authData.code
-      })
-    });
-
-    if (!response.ok) {
-      if (response.status === 401) {
-        localStorage.removeItem("linkedin_auth_data");
-        toast({
-          title: "Sessie Verlopen",
-          description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
-          variant: "destructive",
-        });
-        throw new Error("LinkedIn sessie verlopen. Verbind opnieuw.");
-      }
-      throw new Error(`LinkedIn API fout: ${response.statusText}`);
+    // First, we need to get the access token
+    const accessToken = localStorage.getItem('linkedin_access_token');
+    
+    if (!accessToken) {
+      throw new Error('LinkedIn authentication required. Please login first.');
     }
 
-    const profileData = await response.json();
-    const recentPosts = await fetchRecentPosts(profileId, authData.code);
-    
-    // Get summary from Relevance API
-    const summary = await getSummaryFromRelevance(profileData);
+    // Fetch basic profile information
+    const profileResponse = await fetch(`${LINKEDIN_API_URL}/people/${profileId}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!profileResponse.ok) {
+      throw new Error('Failed to fetch LinkedIn profile');
+    }
+
+    const profileData = await profileResponse.json();
+
+    // Fetch recent posts
+    const postsResponse = await fetch(`${LINKEDIN_API_URL}/people/${profileId}/posts`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      }
+    });
+
+    const postsData = await postsResponse.json();
+
+    // Analyze profile data to determine DISC profile (this would be a separate service in production)
+    const discProfile = analyzeProfileForDisc(profileData);
 
     return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
-      summary: summary,
-      discProfile: analyzeProfileForDisc(profileData),
-      recentPosts
+      summary: profileData.summary || '',
+      discProfile: discProfile,
+      recentPosts: postsData.elements.map((post: any) => post.commentary) || []
     };
   } catch (error) {
-    console.error("LinkedIn API Error:", error);
+    console.error('LinkedIn API Error:', error);
     toast({
-      title: "Fout bij ophalen profiel",
-      description: error instanceof Error ? error.message : "Er ging iets mis bij het ophalen van het LinkedIn profiel",
+      title: "Error",
+      description: error instanceof Error ? error.message : "Failed to fetch LinkedIn profile",
       variant: "destructive",
     });
     throw error;
   }
+};
+
+// Helper function to analyze profile and determine DISC profile
+const analyzeProfileForDisc = (profileData: any) => {
+  // This is a simplified example. In production, you would want to use
+  // natural language processing and machine learning to accurately determine DISC profile
+  const keywords = {
+    D: ['leader', 'direct', 'decisive', 'driven'],
+    I: ['influencer', 'inspiring', 'interactive', 'impressive'],
+    S: ['steady', 'stable', 'supportive', 'sincere'],
+    C: ['compliant', 'careful', 'conscientious', 'calculating']
+  };
+
+  // Simple keyword matching (this should be much more sophisticated in production)
+  let scores = { D: 0, I: 0, S: 0, C: 0 };
+  const text = `${profileData.summary} ${profileData.headline}`.toLowerCase();
+
+  Object.entries(keywords).forEach(([type, words]) => {
+    words.forEach(word => {
+      if (text.includes(word.toLowerCase())) {
+        scores[type as keyof typeof scores]++;
+      }
+    });
+  });
+
+  // Find dominant type
+  const dominantType = Object.entries(scores).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+
+  return {
+    type: dominantType,
+    characteristics: keywords[dominantType as keyof typeof keywords],
+    talkingPoints: getTalkingPoints(dominantType)
+  };
+};
+
+const getTalkingPoints = (discType: string): string[] => {
+  const talkingPoints = {
+    D: [
+      "Focus on results and bottom line",
+      "Be brief and to the point",
+      "Stick to business, avoid small talk",
+      "Present facts and challenges"
+    ],
+    I: [
+      "Be friendly and show enthusiasm",
+      "Allow time for social interaction",
+      "Share stories and experiences",
+      "Focus on big picture ideas"
+    ],
+    S: [
+      "Be patient and consistent",
+      "Show genuine interest in their needs",
+      "Provide clear, step-by-step explanations",
+      "Emphasize stability and security"
+    ],
+    C: [
+      "Provide detailed information",
+      "Be organized and logical",
+      "Focus on quality and accuracy",
+      "Give them time to analyze"
+    ]
+  };
+
+  return talkingPoints[discType as keyof typeof talkingPoints] || [];
 };
