@@ -13,7 +13,7 @@ const Navbar = () => {
               <span className="ml-2 text-xl font-semibold text-gray-900">LeadSummary</span>
             </Link>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
             <Link to="/about" className="text-gray-600 hover:text-gray-900 flex items-center">
               <Info className="h-4 w-4 mr-1" />
               <span>About</span>
