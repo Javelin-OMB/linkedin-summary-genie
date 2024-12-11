@@ -3,13 +3,13 @@ import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { fetchLinkedInProfile } from "@/services/linkedinService";
-import ProfileSummary from "./ProfileSummary";
+import { processWithRelevance } from "@/services/relevanceService";
+import { Card } from "@/components/ui/card";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [profileData, setProfileData] = useState(null);
+  const [relevanceOutput, setRelevanceOutput] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,8 +25,8 @@ const SearchBar = () => {
 
     setIsLoading(true);
     try {
-      const data = await fetchLinkedInProfile(url);
-      setProfileData(data);
+      const output = await processWithRelevance(url);
+      setRelevanceOutput(output);
       toast({
         title: "Success",
         description: "Profile analysis complete",
@@ -37,6 +37,7 @@ const SearchBar = () => {
         description: error instanceof Error ? error.message : "Failed to analyze profile",
         variant: "destructive",
       });
+      setRelevanceOutput(null);
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +69,16 @@ const SearchBar = () => {
         10 free searches remaining
       </div>
 
-      {profileData && <ProfileSummary data={profileData} />}
+      {relevanceOutput && (
+        <Card className="p-6 mt-8 bg-white shadow-sm border-l-4 border-[#0FA0CE]">
+          <div className="prose max-w-none">
+            <h3 className="text-xl font-semibold mb-4">Profile Analysis</h3>
+            <div className="whitespace-pre-wrap text-gray-700">
+              {relevanceOutput}
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
