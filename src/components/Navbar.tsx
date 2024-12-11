@@ -13,20 +13,20 @@ const Navbar = () => {
               <span className="ml-2 text-xl font-semibold text-gray-900">LeadSummary</span>
             </Link>
           </div>
-          <div className="flex items-center space-x-6">
-            <Link to="/about" className="text-gray-600 hover:text-gray-900 flex items-center">
-              <Info className="h-4 w-4 mr-1" />
+          <div className="flex items-center gap-8">
+            <Link to="/about" className="text-gray-600 hover:text-gray-900 flex items-center gap-2">
+              <Info className="h-5 w-5" />
               <span>About</span>
             </Link>
-            <Link to="/pricing" className="text-gray-600 hover:text-gray-900 flex items-center">
-              <DollarSign className="h-4 w-4 mr-1" />
+            <Link to="/pricing" className="text-gray-600 hover:text-gray-900 flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
               <span>Pricing</span>
             </Link>
             <Button 
               variant="outline" 
-              className="flex items-center border-[#0077B5] text-[#0077B5] hover:bg-[#0077B5] hover:text-white"
+              className="flex items-center gap-2 border-[#0077B5] text-[#0077B5] hover:bg-[#0077B5] hover:text-white"
             >
-              <User className="h-4 w-4 mr-2" />
+              <User className="h-5 w-5" />
               Login
             </Button>
           </div>

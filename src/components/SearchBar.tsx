@@ -96,13 +96,13 @@ const SearchBar = () => {
             placeholder="Paste LinkedIn profile URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 h-14 text-lg pl-4 rounded-lg border border-gray-200"
+            className="flex-1 h-14 text-lg pl-6 rounded-xl border border-gray-200 shadow-sm"
             disabled={isLoading}
           />
           <Button 
             type="submit"
             size="lg"
-            className="bg-[#0077B5] hover:bg-[#006399] text-white h-14 px-8 rounded-lg"
+            className="bg-[#0077B5] hover:bg-[#006399] text-white h-14 px-8 rounded-xl shadow-sm"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />

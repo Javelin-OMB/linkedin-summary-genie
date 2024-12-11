@@ -5,9 +5,9 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4">
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] px-4 pt-16">
         <div className="w-full max-w-4xl mx-auto text-center space-y-8">
-          <h1 className="text-[40px] sm:text-[56px] font-bold text-[#1A1F2C] leading-tight">
+          <h1 className="text-4xl md:text-6xl font-bold text-[#1A1F2C] leading-tight tracking-tight">
             Get Instant Lead Insights
           </h1>
           <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto">
