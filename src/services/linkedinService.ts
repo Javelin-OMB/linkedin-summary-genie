@@ -39,7 +39,6 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     const data = await response.json();
     const summary = data.output || 'No summary available';
 
-    // Create a profile object with the Relevance API response
     return {
       name: "Profile", // This will be extracted from the summary later
       headline: "Professional", // This will be extracted from the summary later
