@@ -73,12 +73,12 @@ const SearchBar = () => {
               placeholder="Enter your Relevance API key..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              className="flex-1 h-12 text-base border-gray-200 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 h-12 text-base border-gray-200 rounded-lg shadow-sm"
             />
             <Button 
               type="submit"
               variant="outline"
-              className="h-12 px-6 font-medium whitespace-nowrap border-gray-200 hover:bg-gray-50"
+              className="h-12 px-6 font-medium border-gray-200 hover:bg-gray-50"
             >
               Save API Key
             </Button>
@@ -96,13 +96,13 @@ const SearchBar = () => {
             placeholder="Paste LinkedIn profile URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 h-14 text-lg pl-6 rounded-xl border-gray-200 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="flex-1 h-14 text-lg pl-6 border-gray-200 rounded-xl shadow-sm focus:ring-2 focus:ring-[#0077B5] focus:border-transparent"
             disabled={isLoading}
           />
           <Button 
             type="submit"
             size="lg"
-            className="h-14 px-8 rounded-xl shadow-sm bg-[#0077B5] hover:bg-[#006399] text-white font-medium transition-colors"
+            className="h-14 w-14 rounded-xl shadow-sm bg-[#0077B5] hover:bg-[#006399] text-white"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
