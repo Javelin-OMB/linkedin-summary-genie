@@ -9,6 +9,34 @@ const PROXY_URL = import.meta.env.PROD
 
 const RELEVANCE_API_URL = 'https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited';
 
+const fetchRelevanceSummary = async (linkedinUrl: string): Promise<string> => {
+  try {
+    const response = await fetch(RELEVANCE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'YOUR_API_KEY' // Note: You should store this securely
+      },
+      body: JSON.stringify({
+        params: {
+          linkedin_url: linkedinUrl
+        },
+        project: "d607c466-f207-4c47-907f-d928278273e2"
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch summary from Relevance API');
+    }
+
+    const data = await response.json();
+    return data.output || 'No summary available';
+  } catch (error) {
+    console.error('Error fetching from Relevance:', error);
+    throw new Error('Failed to generate profile summary');
+  }
+};
+
 const isTokenValid = () => {
   const authDataStr = localStorage.getItem("linkedin_auth_data");
   if (!authDataStr) return false;
@@ -64,44 +92,6 @@ const fetchRecentPosts = async (profileId: string, authCode: string): Promise<st
   }
 };
 
-const getSummaryFromRelevance = async (profileData: any): Promise<string> => {
-  try {
-    console.log('Sending profile data to Relevance:', profileData);
-    
-    const response = await fetch(RELEVANCE_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        input_variables: {
-          profile: {
-            name: `${profileData.firstName} ${profileData.lastName}`,
-            headline: profileData.headline || '',
-            summary: profileData.summary || '',
-            experience: profileData.experience || [],
-            skills: profileData.skills || [],
-            education: profileData.education || []
-          }
-        }
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Relevance API error:', response.status);
-      throw new Error('Failed to generate summary');
-    }
-
-    const data = await response.json();
-    console.log('Relevance API response:', data);
-    
-    return data.output || 'No summary available';
-  } catch (error) {
-    console.error('Error getting summary from Relevance:', error);
-    throw new Error('Failed to generate profile summary');
-  }
-};
-
 export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile> => {
   if (import.meta.env.DEV) {
     console.log("Development mode: Returning mock profile data");
@@ -127,6 +117,7 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     const authData: TokenData = JSON.parse(authDataStr);
     const profileId = extractProfileId(url);
 
+    // First, get the LinkedIn profile data
     const response = await fetch(`${PROXY_URL}/profile`, {
       method: 'POST',
       headers: {
@@ -159,13 +150,13 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     const profileData = await response.json();
     const recentPosts = await fetchRecentPosts(profileId, authData.code);
     
-    // Get summary from Relevance API
-    const summary = await getSummaryFromRelevance(profileData);
+    // Get the AI-generated summary from Relevance
+    const summary = await fetchRelevanceSummary(url);
 
     return {
       name: `${profileData.firstName} ${profileData.lastName}`,
       headline: profileData.headline || '',
-      summary: summary,
+      summary: summary, // Using the Relevance-generated summary
       discProfile: analyzeProfileForDisc(profileData),
       recentPosts
     };
