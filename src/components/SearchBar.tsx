@@ -45,25 +45,21 @@ const SearchBar = () => {
   return (
     <div className="w-full max-w-3xl mx-auto space-y-4">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              type="url"
-              placeholder="Paste LinkedIn profile URL here..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="w-full pl-4 pr-4 py-6 text-lg rounded-lg border border-gray-200 focus:border-[#0FA0CE] focus:ring-[#0FA0CE] bg-white"
-              disabled={isLoading}
-            />
-          </div>
+        <div className="flex gap-4">
+          <Input
+            type="url"
+            placeholder="Paste LinkedIn profile URL here..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="flex-1 pl-4 pr-4 py-6 text-lg rounded-lg border border-gray-200 focus:border-[#0FA0CE] focus:ring-[#0FA0CE] focus:ring-1 bg-white shadow-sm"
+            disabled={isLoading}
+          />
           <Button 
             type="submit"
-            size="lg"
-            className="bg-[#0FA0CE] hover:bg-[#0FA0CE]/90 text-white px-8 py-6 rounded-lg"
+            className="bg-[#0FA0CE] hover:bg-[#0FA0CE]/90 text-white px-8 py-6 rounded-lg shadow-sm"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
-            <span className="sr-only">Search</span>
           </Button>
         </div>
       </form>
