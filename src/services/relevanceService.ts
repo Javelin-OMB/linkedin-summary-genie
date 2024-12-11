@@ -3,10 +3,15 @@ export const processWithRelevance = async (linkedinUrl: string): Promise<string>
   const endpoint = localStorage.getItem("relevance_endpoint");
   
   if (!apiKey || !endpoint) {
-    throw new Error("Configureer eerst je Relevance API gegevens");
+    throw new Error("Please configure your Relevance API credentials first");
   }
 
   try {
+    console.log('Making request to Relevance API:', {
+      endpoint,
+      linkedinUrl
+    });
+
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -21,13 +26,15 @@ export const processWithRelevance = async (linkedinUrl: string): Promise<string>
     });
 
     if (!response.ok) {
-      throw new Error('Fout bij verwerken met Relevance');
+      throw new Error('Failed to process with Relevance API');
     }
 
     const data = await response.json();
-    return data.output || 'Geen output beschikbaar';
+    console.log('Relevance API response:', data);
+    
+    return data.output || 'No output available';
   } catch (error) {
     console.error('Relevance API Error:', error);
-    throw new Error('Fout bij het verwerken van LinkedIn profiel met Relevance');
+    throw new Error('Error processing LinkedIn profile with Relevance');
   }
 };
