@@ -3,7 +3,6 @@ import { mockProfileData } from './mockData';
 import { analyzeProfileForDisc } from './discAnalyzer';
 import { toast } from "@/components/ui/use-toast";
 
-// Use a proxy URL for LinkedIn API calls with the correct environment
 const PROXY_URL = import.meta.env.PROD 
   ? 'https://api.lovable.app/proxy/linkedin'
   : 'http://localhost:3000/proxy/linkedin';
@@ -112,16 +111,16 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
 
   if (!isTokenValid()) {
     toast({
-      title: "Authenticatie vereist",
-      description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
+      title: "Authentication required",
+      description: "Your LinkedIn session has expired. Please log in again.",
       variant: "destructive",
     });
-    throw new Error("LinkedIn authenticatie verlopen. Verbind je account opnieuw.");
+    throw new Error("LinkedIn authentication expired. Please reconnect your account.");
   }
 
   const authDataStr = localStorage.getItem("linkedin_auth_data");
   if (!authDataStr) {
-    throw new Error("LinkedIn authenticatie vereist. Verbind je account.");
+    throw new Error("LinkedIn authentication required. Please connect your account.");
   }
 
   try {
@@ -148,13 +147,13 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
       if (response.status === 401) {
         localStorage.removeItem("linkedin_auth_data");
         toast({
-          title: "Sessie Verlopen",
-          description: "Je LinkedIn-sessie is verlopen. Log opnieuw in.",
+          title: "Session Expired",
+          description: "Your LinkedIn session has expired. Please log in again.",
           variant: "destructive",
         });
-        throw new Error("LinkedIn sessie verlopen. Verbind opnieuw.");
+        throw new Error("LinkedIn session expired. Please reconnect.");
       }
-      throw new Error(`LinkedIn API fout: ${response.statusText}`);
+      throw new Error(`LinkedIn API error: ${response.statusText}`);
     }
 
     const profileData = await response.json();
@@ -173,8 +172,8 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
   } catch (error) {
     console.error("LinkedIn API Error:", error);
     toast({
-      title: "Fout bij ophalen profiel",
-      description: error instanceof Error ? error.message : "Er ging iets mis bij het ophalen van het LinkedIn profiel",
+      title: "Error fetching profile",
+      description: error instanceof Error ? error.message : "Something went wrong while fetching the LinkedIn profile",
       variant: "destructive",
     });
     throw error;
