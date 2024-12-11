@@ -1,5 +1,4 @@
 import Navbar from "@/components/Navbar";
-import { LinkedInConfig } from "@/components/LinkedInConfig";
 
 const About = () => {
   return (
@@ -12,7 +11,6 @@ const About = () => {
             LeadSummary helps sales professionals prepare for meetings by providing instant insights from LinkedIn profiles. 
             Get personalized conversation starters and DISC-based communication tips to make meaningful connections.
           </p>
-          <LinkedInConfig />
         </div>
       </main>
     </div>
