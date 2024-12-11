@@ -1,16 +1,18 @@
 export const processWithRelevance = async (linkedinUrl: string): Promise<string> => {
   const apiKey = localStorage.getItem("relevance_api_key");
+  const region = localStorage.getItem("relevance_region");
+  const authToken = localStorage.getItem("relevance_auth_token");
   
-  if (!apiKey) {
-    throw new Error("Please configure your Relevance API key first");
+  if (!apiKey || !region || !authToken) {
+    throw new Error("Please configure your Relevance API credentials first");
   }
 
   try {
-    const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
+    const response = await fetch(`https://api-${region}.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${authToken}`,
       },
       body: JSON.stringify({
         input_variables: {
