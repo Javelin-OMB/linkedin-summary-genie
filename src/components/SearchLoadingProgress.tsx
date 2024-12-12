@@ -7,43 +7,43 @@ interface SearchLoadingProgressProps {
 
 const SearchLoadingProgress = ({ isLoading }: SearchLoadingProgressProps) => {
   const [progress, setProgress] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (isLoading) {
-      // Reset progress when loading starts
       setProgress(0);
+      setIsVisible(true);
       
-      // Slower start with variable speed
       const interval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 95) {
             clearInterval(interval);
             return 95;
           }
-          // Variable step size based on current progress
           if (prev < 30) {
-            return prev + 1; // Slower at the start
+            return prev + 1;
           } else if (prev < 60) {
-            return prev + 2; // Medium speed in the middle
+            return prev + 2;
           } else {
-            return prev + 3; // Faster towards the end
+            return prev + 3;
           }
         });
-      }, 200); // Longer interval for smoother animation
+      }, 200);
 
       return () => {
         clearInterval(interval);
-        setProgress(0);
       };
-    } else {
-      // Complete the progress bar when loading is done
+    } else if (isVisible) {
       setProgress(100);
-      const timeout = setTimeout(() => setProgress(0), 500);
+      const timeout = setTimeout(() => {
+        setIsVisible(false);
+        setProgress(0);
+      }, 500);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);
 
-  if (!isLoading && progress === 0) return null;
+  if (!isVisible) return null;
 
   return (
     <div className="w-full mt-4">

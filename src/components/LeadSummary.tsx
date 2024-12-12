@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import LeadInfo from "./LeadInfo";
+import LeadContent from "./LeadContent";
 import SearchLoadingProgress from "./SearchLoadingProgress";
 
 const LeadSummary = () => {
@@ -10,12 +10,16 @@ const LeadSummary = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [remainingSearches] = useState(10);
 
-  const handleAnalyze = async () => {
-    setLoading(true);
+  const resetState = () => {
+    setLoading(false);
     setError('');
     setResult(null);
+  };
+
+  const handleAnalyze = async () => {
+    resetState();
+    setLoading(true);
 
     try {
       const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
@@ -33,7 +37,7 @@ const LeadSummary = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Fout bij het ophalen van de gegevens');
+        throw new Error('Er ging iets mis bij het ophalen van de gegevens');
       }
 
       const data = await response.json();
@@ -41,7 +45,6 @@ const LeadSummary = () => {
     } catch (err) {
       setError(err.message);
     } finally {
-      // Add a small delay before setting loading to false to ensure smooth progress bar completion
       setTimeout(() => {
         setLoading(false);
       }, 500);
@@ -53,7 +56,7 @@ const LeadSummary = () => {
       <div className="text-center space-y-4 mb-12">
         <h1 className="text-4xl font-bold">Get Instant Lead Insights</h1>
         <p className="text-lg text-gray-600">
-          Enter a LinkedIn profile URL to receive a comprehensive summary and personalized conversation starters
+          Enter a LinkedIn profile URL to receive a comprehensive summary
         </p>
       </div>
 
@@ -75,22 +78,17 @@ const LeadSummary = () => {
           </Button>
         </div>
 
-        {/* Loading Progress Bar */}
         <SearchLoadingProgress isLoading={loading} />
 
-        <div className="text-center mt-4 text-sm text-gray-500">
-          {remainingSearches} free searches remaining
-        </div>
-
         {error && (
-          <div className="mt-4 p-4 bg-red-50 text-red-700 rounded-lg">
+          <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-lg">
             {error}
           </div>
         )}
 
         {result && (
           <div className="mt-8">
-            <LeadInfo data={result} />
+            <LeadContent data={result} />
           </div>
         )}
       </div>
