@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import LeadInfo from "./LeadInfo";
+import SearchLoadingProgress from "./SearchLoadingProgress";
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
@@ -40,7 +41,10 @@ const LeadSummary = () => {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      // Add a small delay before setting loading to false to ensure smooth progress bar completion
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     }
   };
 
@@ -70,6 +74,9 @@ const LeadSummary = () => {
             {loading ? 'Analyzing...' : <Search className="w-5 h-5" />}
           </Button>
         </div>
+
+        {/* Loading Progress Bar */}
+        <SearchLoadingProgress isLoading={loading} />
 
         <div className="text-center mt-4 text-sm text-gray-500">
           {remainingSearches} free searches remaining
