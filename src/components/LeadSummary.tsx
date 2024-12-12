@@ -17,24 +17,31 @@ const LeadSummary = () => {
     setResult(null);
 
     try {
-      console.log('Sending request for URL:', url);
-      const response = await fetch('/api/linkedin-analyze', {
+      console.log('Analyzing URL:', url);
+      
+      // Direct call to Relevance API
+      const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-OTQ1ODVjYTQtOGZhYS00MDUwLWIxYWYtOTE0NDIyYTA1YjY2'
         },
-        body: JSON.stringify({ linkedin_url: url })
+        body: JSON.stringify({
+          params: {
+            linkedin_url: url
+          },
+          project: "d607c466-f207-4c47-907f-d928278273e2"
+        })
       });
 
-      const responseText = await response.text();
-      console.log('Raw response:', responseText);
-
       if (!response.ok) {
-        throw new Error(responseText || 'Er ging iets mis bij het analyseren');
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`API error: ${response.status}`);
       }
 
-      const data = JSON.parse(responseText);
-      console.log('Parsed data:', data);
+      const data = await response.json();
+      console.log('API Response:', data);
       setResult(data);
     } catch (err) {
       console.error('Error details:', err);
@@ -46,8 +53,6 @@ const LeadSummary = () => {
 
   const renderContent = () => {
     if (!result) return null;
-
-    console.log('Rendering data:', result);
 
     return (
       <div className="space-y-6 mt-8">
@@ -91,7 +96,7 @@ const LeadSummary = () => {
             disabled={loading || !url}
             className="absolute right-0 top-0 h-12 px-6 bg-blue-600 hover:bg-blue-700"
           >
-            {loading ? "Analyzing..." : <Search className="w-5 h-5" />}
+            {loading ? 'Analyzing...' : <Search className="w-5 h-5" />}
           </Button>
         </div>
 
