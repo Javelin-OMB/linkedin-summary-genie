@@ -13,16 +13,23 @@ const SearchLoadingProgress = ({ isLoading }: SearchLoadingProgressProps) => {
       // Reset progress when loading starts
       setProgress(0);
       
-      // Simulate progress
+      // Slower start with variable speed
       const interval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 95) {
             clearInterval(interval);
-            return 95; // Stop at 95% until actual completion
+            return 95;
           }
-          return prev + 5;
+          // Variable step size based on current progress
+          if (prev < 30) {
+            return prev + 1; // Slower at the start
+          } else if (prev < 60) {
+            return prev + 2; // Medium speed in the middle
+          } else {
+            return prev + 3; // Faster towards the end
+          }
         });
-      }, 150);
+      }, 200); // Longer interval for smoother animation
 
       return () => {
         clearInterval(interval);
