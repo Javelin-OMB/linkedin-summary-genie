@@ -5,7 +5,7 @@ interface SearchLoadingProgressProps {
   isLoading: boolean;
 }
 
-const SearchLoadingProgress = ({ isLoading }: SearchLoadingProgressProps) => {
+const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading }) => {
   const [progress, setProgress] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
 
