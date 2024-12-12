@@ -8,7 +8,9 @@ export const analyzeProfile = async (linkedinUrl: string) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': API_KEY
+        'Authorization': API_KEY,
+        'Origin': 'https://leadsummary.nl',
+        'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
         params: {
@@ -19,7 +21,7 @@ export const analyzeProfile = async (linkedinUrl: string) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to analyze profile');
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     return await response.json();
