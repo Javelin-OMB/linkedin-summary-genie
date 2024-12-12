@@ -27,10 +27,11 @@ export const fetchLinkedInProfile = async (url: string): Promise<LinkedInProfile
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch LinkedIn profile: ${response.status}`);
+      throw new Error(`API error: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('Received data from Relevance:', data); // Debug log
     
     // Transform the API response to match our interface
     return {
