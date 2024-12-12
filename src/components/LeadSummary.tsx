@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Search } from "lucide-react";
+import LeadInfo from "./LeadInfo";
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
@@ -44,52 +44,6 @@ const LeadSummary = () => {
     }
   };
 
-  const renderFormattedContent = (data) => {
-    if (!data?.output?.profile_data) return null;
-
-    // Parse the profile_data string into sections
-    const sections = data.output.profile_data.split('\n\n');
-    
-    return (
-      <div className="space-y-8">
-        {sections.map((section, index) => {
-          const [title, ...content] = section.split('\n');
-          return (
-            <Card key={index} className="w-full">
-              <CardHeader>
-                <CardTitle className="text-xl font-bold">{title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {content.map((line, lineIndex) => {
-                  if (line.startsWith('-')) {
-                    // Render bullet points
-                    return (
-                      <div key={lineIndex} className="ml-4 mb-2">
-                        <span className="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                        {line.substring(2)}
-                      </div>
-                    );
-                  } else if (line.match(/^\d+\./)) {
-                    // Render numbered points
-                    return (
-                      <div key={lineIndex} className="mb-2">
-                        <strong>{line.split(':')[0]}:</strong>
-                        {line.split(':')[1]}
-                      </div>
-                    );
-                  } else {
-                    // Regular text
-                    return <p key={lineIndex} className="mb-2">{line}</p>;
-                  }
-                })}
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    );
-  };
-
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-12">
       <div className="text-center space-y-4 mb-12">
@@ -129,7 +83,7 @@ const LeadSummary = () => {
 
         {result && (
           <div className="mt-8">
-            {renderFormattedContent(result)}
+            <LeadInfo data={result} />
           </div>
         )}
       </div>
