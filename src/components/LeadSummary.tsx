@@ -47,7 +47,7 @@ const LeadSummary = () => {
   return (
     <div className="w-full">
       <Navigation />
-      <div className="max-w-4xl mx-auto p-4 mt-16">
+      <div className="max-w-4xl mx-auto p-4 mt-24">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-[#0177B5]">
             Get instant insights and conversation starters from any LinkedIn profile
