@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Home } from "lucide-react";
+import { Menu, Home, LayoutDashboard } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -26,6 +26,10 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
           <div className="hidden md:flex items-center space-x-8">
             <a href="/about" className="text-gray-600 hover:text-[#0177B5]">About</a>
             <a href="/pricing" className="text-gray-600 hover:text-[#0177B5]">Pricing</a>
+            <a href="/dashboard" className="flex items-center text-gray-600 hover:text-[#0177B5]">
+              <LayoutDashboard className="w-4 h-4 mr-1" />
+              Dashboard
+            </a>
             <Button 
               variant="outline" 
               onClick={onLoginClick}
@@ -54,6 +58,10 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                 <nav className="flex flex-col space-y-4 mt-8">
                   <a href="/about" className="text-lg hover:text-[#0177B5]">About</a>
                   <a href="/pricing" className="text-lg hover:text-[#0177B5]">Pricing</a>
+                  <a href="/dashboard" className="flex items-center text-lg hover:text-[#0177B5]">
+                    <LayoutDashboard className="w-5 h-5 mr-2" />
+                    Dashboard
+                  </a>
                   <div className="h-px bg-gray-200 my-2"></div>
                   <a href="/features" className="text-lg hover:text-[#0177B5]">Features</a>
                   <a href="/contact" className="text-lg hover:text-[#0177B5]">Contact</a>
