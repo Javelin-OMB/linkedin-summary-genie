@@ -1,8 +1,12 @@
 import { Home, User, Info, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import LoginDialog from "./LoginDialog";
 
 const Navbar = () => {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,15 +30,26 @@ const Navbar = () => {
                 Pricing
               </Button>
             </Link>
-            <Link to="/login">
-              <Button variant="outline" className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white">
-                <User className="h-5 w-5 mr-1" />
-                Login
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+              onClick={() => setIsLoginOpen(true)}
+            >
+              <User className="h-5 w-5 mr-1" />
+              Login
+            </Button>
           </div>
         </div>
       </div>
+
+      <LoginDialog 
+        isOpen={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSubmit={(email, password) => {
+          console.log('Login attempt:', email);
+          setIsLoginOpen(false);
+        }}
+      />
     </nav>
   );
 };
