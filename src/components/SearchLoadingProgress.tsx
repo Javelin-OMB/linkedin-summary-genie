@@ -7,43 +7,35 @@ interface SearchLoadingProgressProps {
 
 const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading }) => {
   const [progress, setProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     if (isLoading) {
       setProgress(0);
-      setIsVisible(true);
-      
       const interval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 95) {
             clearInterval(interval);
             return 95;
           }
-          if (prev < 30) {
-            return prev + 1;
-          } else if (prev < 60) {
+          // Faster until 65%
+          if (prev < 65) {
             return prev + 2;
-          } else {
-            return prev + 3;
           }
+          // Then very slow
+          return prev + 0.5;
         });
-      }, 200);
+      }, 250); // Longer interval for smoother animation
 
-      return () => {
-        clearInterval(interval);
-      };
-    } else if (isVisible) {
+      return () => clearInterval(interval);
+    } else if (progress > 0) {
+      // Jump to 100% when loading is complete
       setProgress(100);
-      const timeout = setTimeout(() => {
-        setIsVisible(false);
-        setProgress(0);
-      }, 500);
+      const timeout = setTimeout(() => setProgress(0), 500);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);
 
-  if (!isVisible) return null;
+  if (!isLoading && progress === 0) return null;
 
   return (
     <div className="w-full mt-4">
