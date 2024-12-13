@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navigation from './Navigation';
+import SearchLoadingProgress from './SearchLoadingProgress';
+import LoginDialog from './LoginDialog';
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
 
   const handleAnalyze = async () => {
     setLoading(true);
@@ -44,9 +47,14 @@ const LeadSummary = () => {
     }
   };
 
+  const handleLogin = (email: string, password: string) => {
+    console.log('Login attempt:', email);
+    setIsLoginOpen(false);
+  };
+
   return (
     <div className="w-full">
-      <Navigation />
+      <Navigation onLoginClick={() => setIsLoginOpen(true)} />
       
       <main className="pt-20 min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto p-4">
@@ -73,6 +81,7 @@ const LeadSummary = () => {
                 {loading ? 'Analyzing...' : 'Search'}
               </Button>
             </div>
+            <SearchLoadingProgress isLoading={loading} />
           </div>
 
           {error && (
@@ -90,6 +99,12 @@ const LeadSummary = () => {
           )}
         </div>
       </main>
+
+      <LoginDialog 
+        isOpen={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
+        onSubmit={handleLogin}
+      />
     </div>
   );
 };

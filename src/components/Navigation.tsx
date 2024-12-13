@@ -7,7 +7,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-const Navigation = () => {
+interface NavigationProps {
+  onLoginClick: () => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   return (
     <header className="fixed top-0 left-0 right-0 border-b bg-white z-50">
       <div className="max-w-6xl mx-auto px-4">
@@ -24,6 +28,7 @@ const Navigation = () => {
             <a href="/pricing" className="text-gray-600 hover:text-[#0177B5]">Pricing</a>
             <Button 
               variant="outline" 
+              onClick={onLoginClick}
               className="text-[#0177B5] border-[#0177B5] hover:bg-[#0177B5] hover:text-white"
             >
               Login
@@ -34,6 +39,7 @@ const Navigation = () => {
           <div className="md:hidden flex items-center space-x-2">
             <Button 
               variant="outline" 
+              onClick={onLoginClick}
               className="text-[#0177B5] border-[#0177B5] hover:bg-[#0177B5] hover:text-white"
             >
               Login
