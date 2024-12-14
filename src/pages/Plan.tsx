@@ -7,14 +7,19 @@ const Plan = () => {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    toast.info("Pro plan coming soon! Stay tuned for updates.", {
-      duration: 5000,
+    // Show toast message immediately when component mounts
+    toast("Pro plan coming soon!", {
+      description: "Stay tuned for updates about our Pro features.",
+      duration: 3000,
     });
     
     // Redirect back to dashboard after showing message
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       navigate('/dashboard');
-    }, 2000);
+    }, 3000);
+
+    // Cleanup timer if component unmounts
+    return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
