@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -6,19 +6,45 @@ import { Check } from "lucide-react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import Navigation from "@/components/Navigation";
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
-  const [usageCount] = useState(3);
+  const [credits, setCredits] = useState<number | null>(null);
+  const session = useSession();
+  const supabase = useSupabaseClient();
+  const navigate = useNavigate();
   const maxFreeSearches = 10;
-  const remainingSearches = maxFreeSearches - usageCount;
-  const usagePercentage = (usageCount / maxFreeSearches) * 100;
+
+  useEffect(() => {
+    const fetchCredits = async () => {
+      if (!session?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching credits:', error);
+        return;
+      }
+
+      setCredits(data?.credits ?? 0);
+    };
+
+    fetchCredits();
+  }, [session, supabase]);
+
+  const usagePercentage = credits !== null ? ((maxFreeSearches - credits) / maxFreeSearches) * 100 : 0;
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <DashboardSidebar />
         <div className="flex-1">
-          <Navigation onLoginClick={() => console.log('Login clicked')} />
+          <Navigation onLoginClick={() => navigate('/login')} />
           <main className="bg-gray-50 p-4 pt-20">
             <div className="max-w-6xl mx-auto">
               <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
@@ -35,14 +61,14 @@ const Dashboard = () => {
                     <div>
                       <div className="flex justify-between text-sm text-gray-600 mb-2">
                         <span>LinkedIn Profile Analyses</span>
-                        <span>{usageCount} / {maxFreeSearches}</span>
+                        <span>{credits ?? '...'} / {maxFreeSearches}</span>
                       </div>
                       <Progress value={usagePercentage} className="h-2" />
                     </div>
 
                     <div className="bg-blue-50 p-4 rounded-lg">
                       <p className="text-[#0177B5] font-medium">
-                        {remainingSearches} free analyses remaining
+                        {credits !== null ? `${credits} analyses remaining` : 'Loading...'}
                       </p>
                     </div>
 
@@ -94,7 +120,7 @@ const Dashboard = () => {
 
                   <Button 
                     className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
-                    onClick={() => console.log('Upgrade clicked')}
+                    onClick={() => navigate('/plan')}
                   >
                     Upgrade Now
                   </Button>
