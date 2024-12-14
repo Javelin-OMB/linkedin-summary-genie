@@ -45,11 +45,16 @@ const SearchBar = () => {
 
     setIsLoading(true);
     try {
-      const { data: userData } = await supabase
+      // First, get user data including trial start and credits
+      const { data: userData, error: userError } = await supabase
         .from('users')
-        .select('credits')
+        .select('credits, trial_start')
         .eq('id', session.user.id)
         .single();
+
+      if (userError) {
+        throw new Error('Failed to fetch user data');
+      }
 
       if (!userData || userData.credits <= 0) {
         toast({
@@ -97,7 +102,7 @@ const SearchBar = () => {
 
       toast({
         title: "Success",
-        description: "Profile analysis complete",
+        description: `Profile analysis complete. You have ${userData.credits - 1} credits remaining.`,
       });
     } catch (error) {
       console.error('Error in handleSubmit:', error);
