@@ -9,10 +9,12 @@ const Index = () => {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
 
   const handleAnalyze = async () => {
     setLoading(true);
     setResult(null);
+    setError('');
     
     try {
       const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
@@ -30,13 +32,15 @@ const Index = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Error fetching data');
+        throw new Error('Er ging iets mis bij het ophalen van de gegevens');
       }
 
       const data = await response.json();
+      console.log('Received data:', data); // Debug log
       setResult(data);
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err) {
+      console.error('Error:', err);
+      setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -78,6 +82,12 @@ const Index = () => {
             </div>
 
             <SearchLoadingProgress isLoading={loading} />
+
+            {error && (
+              <div className="mb-8 p-4 bg-red-50 text-red-700 rounded">
+                {error}
+              </div>
+            )}
 
             {result && (
               <div className="mt-8">
