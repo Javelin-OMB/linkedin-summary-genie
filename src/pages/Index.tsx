@@ -7,8 +7,8 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
-        <SearchBar />
         <LeadSummary />
+        <SearchBar />
       </div>
     </div>
   );
