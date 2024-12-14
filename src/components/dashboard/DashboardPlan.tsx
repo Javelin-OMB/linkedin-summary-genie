@@ -9,7 +9,7 @@ const DashboardPlan = () => {
         <img 
           src="/Leadsummary.png" 
           alt="LeadSummary Plan" 
-          className="w-full max-w-2xl mx-auto"
+          className="w-full max-w-2xl mx-auto rounded-lg shadow-sm"
         />
       </Card>
     </div>
