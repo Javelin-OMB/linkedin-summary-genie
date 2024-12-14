@@ -45,6 +45,36 @@ const Navbar = () => {
     navigate('/');
   };
 
+  const handleLoginSubmit = async (email: string, password: string) => {
+    try {
+      console.log('Attempting login with:', { email }); // Log email for debugging
+      
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
+      });
+      
+      if (error) throw error;
+      
+      setIsLoginOpen(false);
+      toast({
+        title: "Logged in successfully",
+        description: "Welcome back!",
+      });
+    } catch (error) {
+      console.error('Login error:', error); // Log full error for debugging
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to login",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -124,28 +154,7 @@ const Navbar = () => {
       <LoginDialog 
         isOpen={isLoginOpen}
         onOpenChange={setIsLoginOpen}
-        onSubmit={async (email, password) => {
-          try {
-            const { error } = await supabase.auth.signInWithPassword({
-              email,
-              password
-            });
-            
-            if (error) throw error;
-            
-            setIsLoginOpen(false);
-            toast({
-              title: "Logged in successfully",
-              description: "Welcome back!",
-            });
-          } catch (error) {
-            toast({
-              title: "Error",
-              description: error instanceof Error ? error.message : "Failed to login",
-              variant: "destructive",
-            });
-          }
-        }}
+        onSubmit={handleLoginSubmit}
       />
     </nav>
   );

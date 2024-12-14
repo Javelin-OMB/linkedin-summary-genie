@@ -20,9 +20,15 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, onSubmi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(email, password);
-    setEmail('');
-    setPassword('');
+    
+    // Basic validation
+    if (!email || !password) {
+      console.error('Email and password are required');
+      return;
+    }
+    
+    onSubmit(email.trim(), password);
+    // Don't clear the form on error
   };
 
   return (
