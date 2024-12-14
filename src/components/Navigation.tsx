@@ -109,7 +109,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                   Login
                 </Button>
                 <Button 
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login?mode=signup')}
                   className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />
@@ -151,7 +151,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                   <LogIn className="w-4 h-4" />
                 </Button>
                 <Button 
-                  onClick={() => navigate('/login')}
+                  onClick={() => navigate('/login?mode=signup')}
                   className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
                 >
                   <UserPlus className="w-4 h-4" />
