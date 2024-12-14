@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/accordion";
 import { Linkedin, Copy, CheckCheck } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
 
 const formatSection = (title: string, content: string) => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line);
@@ -49,7 +50,7 @@ interface LeadInfoProps {
 }
 
 const LeadInfo = ({ data }: LeadInfoProps) => {
-  const [copyingSection, setCopyingSection] = useState<string | null>(null);
+  const [copying, setCopying] = useState(false);
   const { toast } = useToast();
 
   if (!data?.output?.profile_data) return null;
@@ -66,16 +67,19 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
   const function_title = profileLines[1]?.replace('- ', '') || 'Functie niet beschikbaar';
   const company = profileLines[2]?.replace('- ', '') || 'Bedrijf niet beschikbaar';
 
-  const handleCopySection = async (title: string, content: string) => {
+  const handleCopyAll = async () => {
     try {
-      await navigator.clipboard.writeText(title + '\n' + content);
-      setCopyingSection(title);
+      const fullContent = Object.entries(sections)
+        .map(([title, content]) => `${title}\n${content}`)
+        .join('\n\n');
+      await navigator.clipboard.writeText(fullContent);
+      setCopying(true);
       toast({
         title: "Gekopieerd",
-        description: `${title} is gekopieerd naar het klembord.`,
+        description: "De volledige samenvatting is gekopieerd naar het klembord.",
       });
       setTimeout(() => {
-        setCopyingSection(null);
+        setCopying(false);
       }, 2000);
     } catch (err) {
       toast({
@@ -116,25 +120,30 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
             <div className="mt-4 space-y-6">
               {Object.entries(sections).map(([title, content]) => (
                 <div key={title} className="border-t pt-4 first:border-t-0 first:pt-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-lg">{title}</h3>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleCopySection(title, content);
-                      }}
-                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                    >
-                      {copyingSection === title ? (
-                        <CheckCheck className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <Copy className="h-5 w-5 text-gray-500 hover:text-gray-700" />
-                      )}
-                    </button>
-                  </div>
+                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
                   {formatSection(title, content)}
                 </div>
               ))}
+              <div className="flex justify-center mt-6">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyAll}
+                  className="flex items-center gap-2"
+                >
+                  {copying ? (
+                    <>
+                      <CheckCheck className="h-4 w-4" />
+                      Gekopieerd
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4" />
+                      Kopieer volledige samenvatting
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>
