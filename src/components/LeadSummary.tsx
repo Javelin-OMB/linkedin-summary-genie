@@ -59,7 +59,7 @@ const LeadSummary = () => {
       <main className="pt-20 min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto p-4">
           <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-[#0177B5]">
+            <h1 className="text-4xl font-bold text-linkedin-primary">
               Get instant insights and conversation starters from any LinkedIn profile
             </h1>
           </div>
@@ -71,12 +71,12 @@ const LeadSummary = () => {
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 placeholder="Paste LinkedIn URL here..."
-                className="w-full pr-24 h-12 text-lg border-[#0177B5] focus:ring-[#0177B5]"
+                className="w-full pr-24 h-12 text-lg border-linkedin-primary focus:ring-linkedin-primary"
               />
               <Button 
                 onClick={handleAnalyze}
-                disabled={loading}
-                className="absolute right-0 top-0 h-full px-6 bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+                disabled={loading || !url}
+                className="absolute right-0 top-0 h-full px-6 bg-linkedin-primary hover:bg-linkedin-hover text-white"
               >
                 {loading ? 'Analyzing...' : 'Search'}
               </Button>
@@ -103,7 +103,10 @@ const LeadSummary = () => {
       <LoginDialog 
         isOpen={isLoginOpen}
         onOpenChange={setIsLoginOpen}
-        onSubmit={handleLogin}
+        onSubmit={(email, password) => {
+          console.log('Login attempt:', email);
+          setIsLoginOpen(false);
+        }}
       />
     </div>
   );
