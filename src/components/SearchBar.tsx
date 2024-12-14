@@ -8,6 +8,7 @@ import LeadInfo from "./LeadInfo";
 import SearchLoadingProgress from "./SearchLoadingProgress";
 import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ const SearchBar = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast } = useToast();
   const session = useSession();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +38,8 @@ const SearchBar = () => {
     }
 
     if (!session) {
-      setShowAuthDialog(true);
+      console.log('No session found, redirecting to login');
+      navigate('/login');
       return;
     }
 
@@ -119,45 +122,6 @@ const SearchBar = () => {
       <SearchLoadingProgress isLoading={isLoading} />
       
       {profileData && <LeadInfo data={profileData} />}
-
-      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Authentication Required</DialogTitle>
-            <DialogDescription>
-              To analyze LinkedIn profiles, you need to be logged in.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 mt-4">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">Already a customer?</h3>
-              <Button 
-                onClick={() => {
-                  setShowAuthDialog(false);
-                  // Trigger your login dialog here
-                  document.querySelector<HTMLButtonElement>('[data-login-trigger]')?.click();
-                }}
-                className="w-full bg-linkedin-primary hover:bg-linkedin-hover"
-              >
-                Login
-              </Button>
-            </div>
-            <div className="text-center">
-              <h3 className="text-lg font-semibold mb-2">New to LeadSummary?</h3>
-              <Button 
-                variant="outline"
-                onClick={() => {
-                  setShowAuthDialog(false);
-                  window.location.href = "/pricing";
-                }}
-                className="w-full border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              >
-                Sign Up
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
