@@ -36,7 +36,7 @@ const DashboardAnalyses = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#0177B5]">Recent Analyses</h2>
+      <h2 className="text-2xl font-bold text-[#0177B5]">Recent Leadsummaries</h2>
       {analyses.map((analysis) => (
         <Card key={analysis.id} className="p-6">
           <LeadContent data={analysis.analysis} />

@@ -26,7 +26,7 @@ const menuItems = [
     section: "plan"
   },
   {
-    title: "Recent Analyses",
+    title: "Recent Leadsummaries",
     icon: History,
     section: "analyses"
   },
