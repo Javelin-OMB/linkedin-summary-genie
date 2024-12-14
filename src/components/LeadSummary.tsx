@@ -5,6 +5,7 @@ import Navigation from './Navigation';
 import SearchLoadingProgress from './SearchLoadingProgress';
 import LoginDialog from './LoginDialog';
 import LeadInfo from './LeadInfo';
+import { useToast } from "@/components/ui/use-toast";
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
@@ -12,11 +13,21 @@ const LeadSummary = () => {
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleAnalyze = async () => {
     setLoading(true);
     setError('');
     setResult(null);
+
+    console.log('Starting API request to Relevance...');
+    console.log('Request URL:', 'https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited');
+    console.log('Request body:', {
+      params: {
+        linkedin_url: url
+      },
+      project: "d607c466-f207-4c47-907f-d928278273e2"
+    });
 
     try {
       const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
@@ -33,16 +44,30 @@ const LeadSummary = () => {
         })
       });
 
+      console.log('Response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Er ging iets mis bij het ophalen van de gegevens');
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
+        throw new Error(`API error: ${response.status} - ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('API Response:', data); // Debug log
+      console.log('API Response data:', data);
+      
       setResult(data);
+      toast({
+        title: "Success",
+        description: "Profile successfully analyzed",
+      });
     } catch (err) {
-      setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
       console.error('API Error:', err);
+      setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      });
     } finally {
       setTimeout(() => {
         setLoading(false);
