@@ -46,8 +46,8 @@ const Admin = () => {
           console.log('User is not admin, redirecting to home');
           navigate('/');
           toast({
-            title: "Access Denied",
-            description: "You don't have permission to access this page.",
+            title: "Toegang geweigerd",
+            description: "Je hebt geen toegang tot deze pagina.",
             variant: "destructive",
           });
           return;
@@ -70,8 +70,8 @@ const Admin = () => {
       } catch (error) {
         console.error('Error in admin page:', error);
         toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "An error occurred",
+          title: "Fout",
+          description: error instanceof Error ? error.message : "Er is een fout opgetreden",
           variant: "destructive",
         });
       } finally {
@@ -101,14 +101,14 @@ const Admin = () => {
       ));
 
       toast({
-        title: "Success",
-        description: `Credits updated for ${userToUpdate.email}`,
+        title: "Succes",
+        description: `Credits bijgewerkt voor ${userToUpdate.email}`,
       });
     } catch (error) {
       console.error('Error updating credits:', error);
       toast({
-        title: "Error",
-        description: "Failed to update credits",
+        title: "Fout",
+        description: "Kon credits niet bijwerken",
         variant: "destructive",
       });
     }
@@ -131,38 +131,91 @@ const Admin = () => {
       ));
 
       toast({
-        title: "Success",
-        description: `Admin status updated for ${userToUpdate.email}`,
+        title: "Succes",
+        description: `Admin status bijgewerkt voor ${userToUpdate.email}`,
       });
     } catch (error) {
       console.error('Error toggling admin status:', error);
       toast({
-        title: "Error",
-        description: "Failed to update admin status",
+        title: "Fout",
+        description: "Kon admin status niet bijwerken",
         variant: "destructive",
       });
     }
   };
 
+  const handleAddUser = async (email: string, initialCredits: number) => {
+    try {
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: email,
+        email_confirm: true,
+        password: Math.random().toString(36).slice(-8), // Generate a random password
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) throw new Error("No user created");
+
+      // Then create the user record
+      const { error: userError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: authData.user.id,
+            email: email,
+            credits: initialCredits,
+            is_admin: false
+          }
+        ]);
+
+      if (userError) throw userError;
+
+      // Refresh the users list
+      const { data: newUsers, error: fetchError } = await supabase
+        .from('users')
+        .select('*')
+        .order('email');
+
+      if (fetchError) throw fetchError;
+
+      setUsers(newUsers);
+
+      toast({
+        title: "Succes",
+        description: `Nieuwe gebruiker ${email} toegevoegd`,
+      });
+    } catch (error) {
+      console.error('Error adding user:', error);
+      toast({
+        title: "Fout",
+        description: "Kon gebruiker niet toevoegen",
+        variant: "destructive",
+      });
+      throw error; // Re-throw to handle in the component
+    }
+  };
+
   if (isCheckingAdmin) {
-    return <LoadingSpinner message="Checking permissions..." />;
+    return <LoadingSpinner message="Controleren van rechten..." />;
   }
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading users..." />;
+    return <LoadingSpinner message="Gebruikers laden..." />;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
         <Users className="h-6 w-6 text-linkedin-primary" />
-        <h1 className="text-2xl font-bold text-linkedin-primary">User Management</h1>
+        <h1 className="text-2xl font-bold text-linkedin-primary">Gebruikers Beheer</h1>
       </div>
 
       <AdminUserTable 
         users={users}
         onUpdateCredits={handleUpdateCredits}
         onToggleAdmin={handleToggleAdmin}
+        onAddUser={handleAddUser}
       />
     </div>
   );
