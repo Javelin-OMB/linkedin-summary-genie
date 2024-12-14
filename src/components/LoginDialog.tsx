@@ -10,16 +10,19 @@ import LoginForm from './LoginForm';
 interface LoginDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
+  mode?: 'login' | 'signup';
 }
 
-const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
+const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 'login' }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">Welcome Back</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">
+            {mode === 'login' ? "Welcome Back" : "Create Account"}
+          </DialogTitle>
         </DialogHeader>
-        <LoginForm onSuccess={() => onOpenChange(false)} />
+        <LoginForm onSuccess={() => onOpenChange(false)} mode={mode} />
       </DialogContent>
     </Dialog>
   );

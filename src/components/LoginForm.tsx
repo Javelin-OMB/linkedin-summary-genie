@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   onSuccess?: () => void;
+  mode?: 'login' | 'signup';
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -47,19 +48,29 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     try {
       setIsLoading(true);
       const trimmedEmail = email.trim();
-      console.log('Starting login attempt for:', trimmedEmail);
+      console.log(`Starting ${mode} attempt for:`, trimmedEmail);
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password: password,
-      });
+      let authResponse;
+      if (mode === 'signup') {
+        authResponse = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: password,
+        });
+      } else {
+        authResponse = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: password,
+        });
+      }
+
+      const { data, error } = authResponse;
 
       if (error) {
-        console.error('Supabase login error:', error.message);
+        console.error(`Supabase ${mode} error:`, error.message);
         throw error;
       }
 
-      console.log('Login successful for user:', data.user?.email);
+      console.log(`${mode} successful for user:`, data.user?.email);
       
       if (data.user) {
         const { data: userData, error: userError } = await supabase
@@ -68,28 +79,42 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           .eq('id', data.user.id)
           .single();
 
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-        }
+        if (userError && mode === 'signup') {
+          console.log('Creating new user record');
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: data.user.id,
+                email: data.user.email,
+                trial_start: new Date().toISOString(),
+                credits: 10
+              }
+            ]);
 
-        console.log('User data after login:', userData);
+          if (insertError) {
+            console.error('Error creating user record:', insertError);
+            throw new Error('Failed to create user record');
+          }
+        }
 
         toast({
           title: "Success",
-          description: "Login successful! Redirecting...",
+          description: mode === 'login' 
+            ? "Login successful! Redirecting..." 
+            : "Account created successfully! Redirecting...",
         });
         
         onSuccess?.();
         
-        // Always redirect to homepage after successful login
-        console.log('Redirecting to homepage after successful login');
+        console.log('Redirecting to homepage after successful login/signup');
         navigate('/');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error(`${mode} error:`, error);
       toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : "Failed to login. Please check your credentials and try again.",
+        title: `${mode === 'login' ? 'Login' : 'Sign Up'} Failed`,
+        description: error instanceof Error ? error.message : `Failed to ${mode}. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -126,15 +151,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
         disabled={isLoading}
       >
-        {isLoading ? "Signing in..." : "Sign in"}
+        {isLoading ? (mode === 'login' ? "Signing in..." : "Creating account...") : (mode === 'login' ? "Sign in" : "Create Account")}
       </Button>
       <div className="space-y-2 text-center">
-        <a href="#" className="text-sm text-[#0177B5] hover:underline block">
-          Forgot your password?
-        </a>
-        <a href="/pricing" className="text-sm text-[#0177B5] hover:underline block">
-          Don't have an account? Sign up
-        </a>
+        {mode === 'login' ? (
+          <>
+            <a href="#" className="text-sm text-[#0177B5] hover:underline block">
+              Forgot your password?
+            </a>
+            <a href="/pricing" className="text-sm text-[#0177B5] hover:underline block">
+              Don't have an account? Sign up
+            </a>
+          </>
+        ) : (
+          <a href="#" className="text-sm text-[#0177B5] hover:underline block" onClick={() => navigate('/login')}>
+            Already have an account? Sign in
+          </a>
+        )}
       </div>
     </form>
   );
