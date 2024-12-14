@@ -60,33 +60,6 @@ export type Database = {
         }
         Relationships: []
       }
-      voice_recordings: {
-        Row: {
-          created_at: string
-          file_path: string
-          id: string
-          title: string | null
-          transcription: Json | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          file_path: string
-          id?: string
-          title?: string | null
-          transcription?: Json | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          file_path?: string
-          id?: string
-          title?: string | null
-          transcription?: Json | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never

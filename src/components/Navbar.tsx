@@ -23,12 +23,19 @@ const Navbar = () => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (session?.user?.id) {
-        const { data } = await supabase
+        console.log('Checking admin status for user:', session.user.email);
+        const { data, error } = await supabase
           .from('users')
           .select('is_admin')
           .eq('id', session.user.id)
           .single();
         
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return;
+        }
+        
+        console.log('Admin status:', data?.is_admin);
         setIsAdmin(!!data?.is_admin);
       }
     };
