@@ -36,16 +36,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
     try {
       if (mode === 'signup') {
+        // Check if user already exists
         const { data: existingUser, error: checkError } = await supabase
           .from('users')
           .select('id')
           .eq('email', trimmedEmail)
           .single();
-
-        if (checkError && !checkError.message.includes('No rows found')) {
-          console.error('Error checking existing user:', checkError);
-          throw checkError;
-        }
 
         if (existingUser) {
           toast({
@@ -57,12 +53,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           return;
         }
 
+        // Create new user
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          throw signUpError;
+        }
 
         if (data?.user) {
           await ensureUserRecord(data.user.id, trimmedEmail);
@@ -82,14 +81,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           navigate('/dashboard');
         }
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+        // Login
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
         });
 
         if (signInError) {
-          console.error('Login error:', signInError);
-          
           if (signInError.message?.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
@@ -99,25 +97,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             setIsLoading(false);
             return;
           }
-          
           throw signInError;
         }
 
-        toast({
-          title: "Succesvol ingelogd",
-          description: "Je wordt doorgestuurd naar het dashboard...",
-        });
-        onSuccess?.();
-        navigate('/dashboard');
+        if (data.user) {
+          toast({
+            title: "Succesvol ingelogd",
+            description: "Je wordt doorgestuurd naar het dashboard...",
+          });
+          onSuccess?.();
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
-      console.error(`${mode} error:`, error);
-      
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.";
-      } else if (error.message?.includes('rate limit')) {
+      if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
       } else if (error.message?.includes('Email not confirmed')) {
         errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
