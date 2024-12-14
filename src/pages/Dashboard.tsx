@@ -10,67 +10,65 @@ import DashboardSettings from '@/components/dashboard/DashboardSettings';
 import DashboardPlan from '@/components/dashboard/DashboardPlan';
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Dashboard = () => {
   const [credits, setCredits] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<string>('overview');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
+    const fetchUserData = async () => {
       if (!session?.user?.id) return;
 
       try {
+        console.log('Fetching user data for:', session.user.email);
         const { data, error } = await supabase
           .from('users')
-          .select('is_admin')
+          .select('is_admin, credits')
           .eq('id', session.user.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching user data:', error);
+          toast({
+            title: "Error",
+            description: "Could not load user data",
+            variant: "destructive",
+          });
+          return;
+        }
 
+        console.log('User data fetched:', data);
         setIsAdmin(!!data?.is_admin);
+        setCredits(data?.credits ?? 0);
+        
         if (data?.is_admin) {
-          console.log('User is admin:', session.user.email);
           toast({
             title: "Admin Access",
             description: "Je bent ingelogd als administrator",
           });
         }
       } catch (error) {
-        console.error('Error checking admin status:', error);
+        console.error('Error in fetchUserData:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    const fetchCredits = async () => {
-      if (!session?.user?.id) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('credits')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) throw error;
-
-        console.log('Fetched credits:', data?.credits);
-        setCredits(data?.credits ?? 0);
-      } catch (error) {
-        console.error('Error fetching credits:', error);
-      }
-    };
-
-    // Run both checks
-    checkAdminStatus();
-    fetchCredits();
+    fetchUserData();
   }, [session, supabase, toast]);
 
   const renderSection = () => {
+    if (isLoading) {
+      return <LoadingSpinner message="Loading user data..." />;
+    }
+
     switch (activeSection) {
       case 'overview':
         return (
@@ -103,19 +101,14 @@ const Dashboard = () => {
       case 'settings':
         return <DashboardSettings />;
       default:
-        return (
-          <>
-            <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
-            <DashboardOverview credits={credits} />
-          </>
-        );
+        return null;
     }
   };
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <DashboardSidebar onSectionChange={setActiveSection} />
+        <DashboardSidebar onSectionChange={setActiveSection} isAdmin={isAdmin} />
         <div className="flex-1">
           <Navigation onLoginClick={() => navigate('/login')} />
           <main className="bg-gray-50 p-4 pt-20">
