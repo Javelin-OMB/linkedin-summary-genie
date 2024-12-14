@@ -57,7 +57,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           email: trimmedEmail,
           password: password,
           options: {
-            emailRedirectTo: window.location.origin
+            emailRedirectTo: window.location.origin,
+            data: {
+              email: trimmedEmail,
+            }
           }
         });
       } else {
@@ -84,25 +87,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           .eq('id', data.user.id)
           .single();
 
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-          if (mode === 'signup') {
-            console.log('Creating new user record');
-            const { error: insertError } = await supabase
-              .from('users')
-              .insert([
-                {
-                  id: data.user.id,
-                  email: data.user.email,
-                  trial_start: new Date().toISOString(),
-                  credits: 10
-                }
-              ]);
+        if (userError && mode === 'signup') {
+          console.log('Creating new user record');
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: data.user.id,
+                email: data.user.email,
+                trial_start: new Date().toISOString(),
+                credits: 10
+              }
+            ]);
 
-            if (insertError) {
-              console.error('Error creating user record:', insertError);
-              throw new Error('Failed to create user record');
-            }
+          if (insertError) {
+            console.error('Error creating user record:', insertError);
+            throw new Error('Failed to create user record');
           }
         }
 
@@ -114,9 +114,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         });
         
         onSuccess?.();
-        
-        console.log('Redirecting to homepage after successful login/signup');
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error(`${mode} error:`, error);

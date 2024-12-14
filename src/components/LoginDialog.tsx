@@ -15,17 +15,20 @@ interface LoginDialogProps {
 }
 
 const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 'login' }) => {
+  const title = mode === 'login' ? "Welkom terug" : "Account aanmaken";
+  const description = mode === 'login' 
+    ? "Log in met je email en wachtwoord" 
+    : "Maak een nieuw account aan";
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            {mode === 'login' ? "Welkom terug" : "Account aanmaken"}
+            {title}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-500">
-            {mode === 'login' 
-              ? "Log in met je email en wachtwoord" 
-              : "Maak een nieuw account aan"}
+            {description}
           </DialogDescription>
         </DialogHeader>
         <LoginForm onSuccess={() => onOpenChange(false)} mode={mode} />
