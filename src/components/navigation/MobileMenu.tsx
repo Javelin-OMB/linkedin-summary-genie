@@ -8,7 +8,9 @@ import {
   LayoutDashboard,
   CreditCard,
   History,
-  Settings 
+  Settings,
+  Users,
+  LogOut
 } from "lucide-react";
 import {
   Sheet,
@@ -79,8 +81,12 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             {isAuthenticated && (
               <>
                 <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
+                <Link to="/settings" className="text-lg hover:text-linkedin-primary">Settings</Link>
                 {isAdmin && (
-                  <Link to="/admin" className="text-lg hover:text-linkedin-primary">Admin</Link>
+                  <Link to="/admin" className="text-lg hover:text-linkedin-primary flex items-center">
+                    <Users className="w-5 h-5 mr-2" />
+                    Admin Panel
+                  </Link>
                 )}
                 {isDashboardRoute && (
                   <div className="pt-4 border-t">
@@ -97,20 +103,37 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     ))}
                   </div>
                 )}
+                <Button 
+                  variant="ghost" 
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    navigate('/');
+                  }}
+                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Uitloggen
+                </Button>
               </>
             )}
             {!isAuthenticated && (
               <div className="flex flex-col space-y-2">
                 <Button 
                   variant="outline" 
-                  onClick={onLoginClick}
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    onLoginClick();
+                  }}
                   className="w-full justify-center"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
                   Login
                 </Button>
                 <Button 
-                  onClick={() => navigate('/login?mode=signup')}
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    navigate('/login?mode=signup');
+                  }}
                   className="w-full justify-center"
                 >
                   <UserPlus className="w-4 h-4 mr-2" />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, User, LogOut } from "lucide-react";
+import { Home, User, LogOut, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +26,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
   const location = useLocation();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
   
   const isDashboardRoute = location.pathname === '/dashboard';
 
@@ -33,16 +34,28 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
     const checkAdminStatus = async () => {
       if (session?.user?.id) {
         try {
+          console.log('Checking admin status for user:', session.user.email);
           const { data, error } = await supabase
             .from('users')
-            .select('is_admin')
+            .select('is_admin, credits')
             .eq('id', session.user.id)
             .single();
           
-          if (error) throw error;
+          if (error) {
+            console.error('Error checking admin status:', error);
+            return;
+          }
           
           setIsAdmin(!!data?.is_admin);
-          console.log('Navigation: Admin status checked:', !!data?.is_admin);
+          setCredits(data?.credits ?? 0);
+          console.log('Admin status:', !!data?.is_admin, 'Credits:', data?.credits);
+          
+          if (data?.is_admin) {
+            toast({
+              title: "Admin Access",
+              description: "Je bent ingelogd als administrator",
+            });
+          }
         } catch (error) {
           console.error('Error checking admin status:', error);
         }
@@ -50,7 +63,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
     };
 
     checkAdminStatus();
-  }, [session]);
+  }, [session, toast]);
 
   const handleLogout = async () => {
     try {
@@ -96,7 +109,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
                     className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
                   >
                     <User className="h-5 w-5 mr-1" />
-                    Account
+                    Account {credits !== null && `(${credits} credits)`}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -108,7 +121,8 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
                   </DropdownMenuItem>
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
-                      Admin
+                      <Users className="h-4 w-4 mr-2" />
+                      Admin Panel
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem 
