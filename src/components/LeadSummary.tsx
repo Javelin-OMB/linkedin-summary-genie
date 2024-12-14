@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Navigation from './Navigation';
-import SearchLoadingProgress from './SearchLoadingProgress';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
+import Navigation from './Navigation';
+import LinkedInSearchForm from './LinkedInSearchForm';
+import AnalysisResults from './AnalysisResults';
+import { analyzeLinkedInProfile } from '@/services/linkedinAnalysisService';
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
@@ -60,56 +60,9 @@ const LeadSummary = () => {
     setResult(null);
 
     try {
-      console.log('Making API request with URL:', url);
-      const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-MGYzZGM0YzQtNGJhNC00NDlkLWJlZjAtYzA4NjBlMGU0NGFl'
-        },
-        body: JSON.stringify({
-          params: {
-            linkedin_url: url
-          },
-          project: "d607c466-f207-4c47-907f-d928278273e2"
-        })
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', response.status, errorText);
-        throw new Error(`API error: ${response.status} ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log('API Response:', data);
+      const data = await analyzeLinkedInProfile(url, session.user.id, credits);
       setResult(data);
-
-      // Store analysis in Supabase
-      const { error: analysisError } = await supabase
-        .from('linkedin_analyses')
-        .insert({
-          linkedin_url: url,
-          analysis: data,
-          user_id: session.user.id
-        });
-
-      if (analysisError) {
-        console.error('Error storing analysis:', analysisError);
-      }
-
-      // Decrease credits
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ credits: credits - 1 })
-        .eq('id', session.user.id);
-
-      if (updateError) {
-        console.error('Error updating credits:', updateError);
-      } else {
-        setCredits(prev => prev !== null ? prev - 1 : null);
-      }
-
+      setCredits(prev => prev !== null ? prev - 1 : null);
     } catch (err) {
       console.error('Error analyzing profile:', err);
       setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
@@ -137,39 +90,17 @@ const LeadSummary = () => {
             )}
           </div>
 
-          <div className="mb-8">
-            <div className="relative">
-              <Input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="Paste LinkedIn URL here..."
-                className="w-full pr-24 h-12 text-lg border-[#0177B5] focus:ring-[#0177B5]"
-              />
-              <Button 
-                onClick={handleAnalyze}
-                disabled={loading || (session && credits === 0)}
-                className="absolute right-0 top-0 h-full px-6 bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
-              >
-                {loading ? 'Analyzing...' : session && credits === 0 ? 'No Credits' : 'Search'}
-              </Button>
-            </div>
-            <SearchLoadingProgress isLoading={loading} />
-          </div>
+          <LinkedInSearchForm
+            url={url}
+            onUrlChange={setUrl}
+            onAnalyze={handleAnalyze}
+            loading={loading}
+            disabled={session && credits === 0}
+            credits={credits}
+            isLoggedIn={!!session}
+          />
 
-          {error && (
-            <div className="mb-8 p-4 bg-red-50 text-red-700 rounded">
-              {error}
-            </div>
-          )}
-
-          {result && (
-            <div className="mt-8">
-              <pre className="whitespace-pre-wrap bg-white p-4 rounded shadow">
-                {JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
-          )}
+          <AnalysisResults error={error} result={result} />
         </div>
       </main>
     </div>
