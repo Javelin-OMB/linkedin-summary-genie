@@ -23,8 +23,6 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    let isSubscribed = true;
-
     const fetchUserData = async () => {
       if (!session?.user?.id) {
         setIsLoading(false);
@@ -36,7 +34,7 @@ const Dashboard = () => {
         
         const { data, error } = await supabase
           .from('users')
-          .select('*')
+          .select('credits, is_admin')
           .eq('id', session.user.id)
           .single();
 
@@ -50,7 +48,7 @@ const Dashboard = () => {
           return;
         }
 
-        if (isSubscribed && data) {
+        if (data) {
           console.log('User data loaded:', data);
           setIsAdmin(data.is_admin || false);
           setCredits(data.credits || 0);
@@ -63,17 +61,11 @@ const Dashboard = () => {
           variant: "destructive",
         });
       } finally {
-        if (isSubscribed) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     fetchUserData();
-
-    return () => {
-      isSubscribed = false;
-    };
   }, [session, supabase, toast]);
 
   const renderSection = () => {
