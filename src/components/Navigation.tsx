@@ -18,12 +18,10 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-2">
-              <Home className="h-6 w-6 text-linkedin-primary" />
-              <span className="text-xl font-semibold text-linkedin-primary">LeadSummary</span>
-            </Link>
-          </div>
+          <Link to="/" className="flex items-center space-x-2">
+            <Home className="h-6 w-6 text-linkedin-primary" />
+            <span className="text-xl font-semibold text-linkedin-primary">LeadSummary</span>
+          </Link>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
@@ -49,6 +47,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
               </SheetTrigger>
               <SheetContent>
                 <nav className="flex flex-col space-y-4 mt-8">
+                  <Link to="/" className="text-lg hover:text-linkedin-primary">Home</Link>
                   <Link to="/about" className="text-lg hover:text-linkedin-primary">About</Link>
                   <Link to="/pricing" className="text-lg hover:text-linkedin-primary">Pricing</Link>
                   <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
