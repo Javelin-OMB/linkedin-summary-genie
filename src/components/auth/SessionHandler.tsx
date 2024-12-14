@@ -11,32 +11,38 @@ export const SessionHandler = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('SessionHandler - Current session:', session?.user?.email);
-    
-    const checkSession = async () => {
-      const { data: { session: currentSession } } = await supabase.auth.getSession();
-      console.log('Initial session check:', currentSession?.user?.email);
+    const initializeAuth = async () => {
+      console.log('Initializing auth state...');
+      const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
+
+      console.log('Current session state:', currentSession?.user?.email);
       
       if (currentSession?.user) {
-        console.log('Valid session found, initializing...');
+        console.log('Valid session found, proceeding with initialization');
         setIsInitialized(false);
       } else {
-        console.log('No valid session found');
-        if (window.location.pathname !== '/login') {
+        console.log('No active session found');
+        if (window.location.pathname !== '/login' && 
+            window.location.pathname !== '/signup' && 
+            window.location.pathname !== '/') {
           navigate('/login');
         }
       }
     };
 
-    checkSession();
+    initializeAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
       
       if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.email);
+        console.log('User signed in successfully:', session?.user?.email);
         setIsInitialized(false);
-        navigate('/');
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
@@ -45,12 +51,13 @@ export const SessionHandler = () => {
     });
 
     return () => {
+      console.log('Cleaning up auth subscriptions');
       subscription.unsubscribe();
     };
-  }, [navigate, session]);
+  }, [navigate]);
 
   if (!isInitialized && session?.user?.id) {
-    console.log('Initializing session for user:', session.user.email);
+    console.log('Starting session initialization for user:', session.user.email);
     return <SessionInitializer 
       userId={session.user.id}
       setIsInitialized={setIsInitialized}

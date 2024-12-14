@@ -20,7 +20,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center">
-            {mode === 'login' ? "Welcome Back" : "Create Account"}
+            {mode === 'login' ? "Welkom terug" : "Account aanmaken"}
           </DialogTitle>
           <DialogDescription className="text-center text-gray-500">
             {mode === 'login' 
