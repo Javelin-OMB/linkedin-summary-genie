@@ -24,20 +24,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             variant: "destructive",
           });
           navigate('/login');
-        } else {
-          console.log('Session found in ProtectedRoute');
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single();
-
-          if (userError) {
-            console.error('Error fetching user data:', userError);
-            return;
-          }
-
-          console.log('User data in ProtectedRoute:', userData);
         }
       } catch (error) {
         console.error('Error checking session:', error);

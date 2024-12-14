@@ -55,6 +55,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         authResponse = await supabase.auth.signUp({
           email: trimmedEmail,
           password: password,
+          options: {
+            emailRedirectTo: window.location.origin
+          }
         });
       } else {
         authResponse = await supabase.auth.signInWithPassword({
