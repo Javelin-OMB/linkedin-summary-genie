@@ -152,6 +152,7 @@ const AdminUserTable = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onUpdateCredits(user.id, 1)}
+                      title="Credit toevoegen"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -159,6 +160,7 @@ const AdminUserTable = ({
                       variant="outline"
                       size="sm"
                       onClick={() => onUpdateCredits(user.id, -1)}
+                      title="Credit verwijderen"
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -167,6 +169,7 @@ const AdminUserTable = ({
                       size="sm"
                       onClick={() => onToggleAdmin(user.id)}
                       className={user.is_admin ? "border-red-500 hover:border-red-600" : "border-green-500 hover:border-green-600"}
+                      title={user.is_admin ? "Admin rechten verwijderen" : "Admin rechten toekennen"}
                     >
                       {user.is_admin ? (
                         <X className="h-4 w-4 text-red-500" />
