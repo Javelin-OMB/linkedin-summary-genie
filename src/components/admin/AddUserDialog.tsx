@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddUserDialogProps {
   onAddUser: (email: string, initialCredits: number) => Promise<void>;
@@ -18,12 +19,35 @@ const AddUserDialog = ({ onAddUser }: AddUserDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [initialCredits, setInitialCredits] = useState("10");
+  const { toast } = useToast();
 
   const handleAddUser = async () => {
-    await onAddUser(newUserEmail, parseInt(initialCredits));
-    setNewUserEmail("");
-    setInitialCredits("10");
-    setIsOpen(false);
+    if (!newUserEmail) {
+      toast({
+        title: "Fout",
+        description: "Vul een e-mailadres in",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await onAddUser(newUserEmail, parseInt(initialCredits));
+      setNewUserEmail("");
+      setInitialCredits("10");
+      setIsOpen(false);
+      toast({
+        title: "Succes",
+        description: `Nieuwe gebruiker ${newUserEmail} toegevoegd`,
+      });
+    } catch (error) {
+      console.error('Error adding user:', error);
+      toast({
+        title: "Fout",
+        description: "Kon gebruiker niet toevoegen",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
