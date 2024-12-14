@@ -21,6 +21,11 @@ export const analyzeLinkedInProfile = async (url: string, userId: string, curren
       throw new Error(`Edge Function error: ${functionError.message}`);
     }
 
+    if (!functionData || functionData.error) {
+      console.error('Analysis failed:', functionData?.error || 'Unknown error');
+      throw new Error(functionData?.error || 'Failed to analyze LinkedIn profile');
+    }
+
     console.log('API Response data:', functionData);
 
     // Store analysis in Supabase

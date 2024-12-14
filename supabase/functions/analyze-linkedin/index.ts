@@ -24,7 +24,8 @@ serve(async (req) => {
       throw new Error('Invalid LinkedIn URL provided');
     }
 
-    console.log('Making request to Relevance API...');
+    console.log('Making request to Relevance API with URL:', url);
+    console.log('Using endpoint:', RELEVANCE_ENDPOINT);
     
     const response = await fetch(RELEVANCE_ENDPOINT, {
       method: 'POST',
@@ -43,11 +44,35 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Relevance API error:', response.status, errorText);
-      throw new Error(`Relevance API error: ${response.status}`);
+      
+      return new Response(
+        JSON.stringify({
+          error: 'Failed to analyze LinkedIn profile',
+          details: errorText
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
     }
 
     const data = await response.json();
-    console.log('Relevance API response received successfully');
+    console.log('Relevance API response:', JSON.stringify(data, null, 2));
+
+    if (data.status === 'failed' || !data.output?.profile_data) {
+      console.error('Analysis failed:', data.errors || 'Unknown error');
+      return new Response(
+        JSON.stringify({
+          error: 'Analysis failed',
+          details: data.errors || 'No profile data returned'
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
 
     return new Response(
       JSON.stringify(data),
@@ -59,7 +84,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in analyze-linkedin function:', error);
     
-    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
