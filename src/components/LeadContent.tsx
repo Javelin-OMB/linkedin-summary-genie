@@ -8,33 +8,12 @@ interface LeadContentProps {
 }
 
 const LeadContent = ({ data }: LeadContentProps) => {
-  const [copying, setCopying] = useState<{ [key: number]: boolean }>({});
   const [copyingAll, setCopyingAll] = useState(false);
   const { toast } = useToast();
   
   if (!data?.output?.profile_data) return null;
 
   const sections = data.output.profile_data.split('\n\n');
-  
-  const handleCopy = async (content: string, index: number) => {
-    try {
-      await navigator.clipboard.writeText(content);
-      setCopying(prev => ({ ...prev, [index]: true }));
-      toast({
-        title: "Copied to clipboard",
-        description: "The lead summary has been copied to your clipboard.",
-      });
-      setTimeout(() => {
-        setCopying(prev => ({ ...prev, [index]: false }));
-      }, 2000);
-    } catch (err) {
-      toast({
-        title: "Failed to copy",
-        description: "There was an error copying to clipboard.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleCopyAll = async () => {
     try {
@@ -84,26 +63,6 @@ const LeadContent = ({ data }: LeadContentProps) => {
                   return <p key={lineIndex}>{line}</p>;
                 }
               })}
-            </div>
-            <div className="mt-4 flex justify-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleCopy(section, index)}
-                className="gap-2"
-              >
-                {copying[index] ? (
-                  <>
-                    <CheckCheck className="h-4 w-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         );
