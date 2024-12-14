@@ -22,7 +22,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     if (!trimmedEmail) {
       toast({
         title: "Error",
-        description: "Email is required",
+        description: "Email is vereist",
         variant: "destructive",
       });
       return false;
@@ -30,7 +30,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     if (!password) {
       toast({
         title: "Error",
-        description: "Password is required",
+        description: "Wachtwoord is vereist",
         variant: "destructive",
       });
       return false;
@@ -52,6 +52,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       
       let authResponse;
       if (mode === 'signup') {
+        console.log('Attempting signup...');
         authResponse = await supabase.auth.signUp({
           email: trimmedEmail,
           password: password,
@@ -60,6 +61,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           }
         });
       } else {
+        console.log('Attempting login...');
         authResponse = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password: password,
@@ -82,30 +84,33 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           .eq('id', data.user.id)
           .single();
 
-        if (userError && mode === 'signup') {
-          console.log('Creating new user record');
-          const { error: insertError } = await supabase
-            .from('users')
-            .insert([
-              {
-                id: data.user.id,
-                email: data.user.email,
-                trial_start: new Date().toISOString(),
-                credits: 10
-              }
-            ]);
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          if (mode === 'signup') {
+            console.log('Creating new user record');
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert([
+                {
+                  id: data.user.id,
+                  email: data.user.email,
+                  trial_start: new Date().toISOString(),
+                  credits: 10
+                }
+              ]);
 
-          if (insertError) {
-            console.error('Error creating user record:', insertError);
-            throw new Error('Failed to create user record');
+            if (insertError) {
+              console.error('Error creating user record:', insertError);
+              throw new Error('Failed to create user record');
+            }
           }
         }
 
         toast({
           title: "Success",
           description: mode === 'login' 
-            ? "Login successful! Redirecting..." 
-            : "Account created successfully! Redirecting...",
+            ? "Login succesvol! Je wordt doorgestuurd..." 
+            : "Account aangemaakt! Je wordt doorgestuurd...",
         });
         
         onSuccess?.();
@@ -115,9 +120,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
     } catch (error) {
       console.error(`${mode} error:`, error);
+      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = "Ongeldige inloggegevens. Controleer je email en wachtwoord.";
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = "Email nog niet bevestigd. Check je inbox voor de bevestigingslink.";
+        }
+      }
+      
       toast({
-        title: `${mode === 'login' ? 'Login' : 'Sign Up'} Failed`,
-        description: error instanceof Error ? error.message : `Failed to ${mode}. Please try again.`,
+        title: `${mode === 'login' ? 'Login' : 'Registratie'} mislukt`,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -128,23 +143,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Email address</label>
+        <label className="text-sm font-medium">Email adres</label>
         <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email address"
+          placeholder="Jouw email adres"
           required
           disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium">Your Password</label>
+        <label className="text-sm font-medium">Wachtwoord</label>
         <Input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
+          placeholder="Jouw wachtwoord"
           required
           disabled={isLoading}
         />
@@ -154,21 +169,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
         disabled={isLoading}
       >
-        {isLoading ? (mode === 'login' ? "Signing in..." : "Creating account...") : (mode === 'login' ? "Sign in" : "Create Account")}
+        {isLoading ? (mode === 'login' ? "Bezig met inloggen..." : "Account aanmaken...") : (mode === 'login' ? "Inloggen" : "Account aanmaken")}
       </Button>
       <div className="space-y-2 text-center">
         {mode === 'login' ? (
           <>
             <a href="#" className="text-sm text-[#0177B5] hover:underline block">
-              Forgot your password?
+              Wachtwoord vergeten?
             </a>
             <a href="/pricing" className="text-sm text-[#0177B5] hover:underline block">
-              Don't have an account? Sign up
+              Nog geen account? Registreer je hier
             </a>
           </>
         ) : (
           <a href="#" className="text-sm text-[#0177B5] hover:underline block" onClick={() => navigate('/login')}>
-            Already have an account? Sign in
+            Al een account? Log hier in
           </a>
         )}
       </div>
