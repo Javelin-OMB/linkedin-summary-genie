@@ -27,7 +27,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   useEffect(() => {
     if (!session) {
+      console.log('No session found, redirecting to login');
       navigate('/login');
+    } else {
+      console.log('Session found:', session.user.email);
     }
   }, [session, navigate]);
 
@@ -45,9 +48,14 @@ const SessionHandler = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Current session state:', session?.user?.email);
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+      console.log('Auth state changed:', event, currentSession?.user?.email);
+      
       if (event === 'SIGNED_IN') {
+        console.log('User signed in:', currentSession?.user?.email);
         toast({
           title: "Login successful",
           description: "Welcome back!",
@@ -62,21 +70,46 @@ const SessionHandler = () => {
 
         if (!userData?.trial_start) {
           // New user - redirect to pricing
+          console.log('New user - redirecting to pricing');
           navigate('/pricing');
         } else {
           // Existing user - redirect to dashboard
+          console.log('Existing user - redirecting to dashboard');
           navigate('/dashboard');
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
         navigate('/login');
       }
     });
+
+    // If there's already a session, redirect appropriately
+    if (session?.user?.id) {
+      console.log('Existing session found, checking user data');
+      const checkUserAndRedirect = async () => {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('trial_start')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!userData?.trial_start) {
+          console.log('New user with session - redirecting to pricing');
+          navigate('/pricing');
+        } else {
+          console.log('Existing user with session - redirecting to dashboard');
+          navigate('/dashboard');
+        }
+      };
+
+      checkUserAndRedirect();
+    }
 
     // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, session]);
 
   return null;
 };
