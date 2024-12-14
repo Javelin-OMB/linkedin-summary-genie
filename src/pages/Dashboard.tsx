@@ -36,7 +36,7 @@ const Dashboard = () => {
         
         const { data, error } = await supabase
           .from('users')
-          .select('is_admin, credits')
+          .select('*')
           .eq('id', session.user.id)
           .single();
 
@@ -50,10 +50,10 @@ const Dashboard = () => {
           return;
         }
 
-        if (isSubscribed) {
-          setIsAdmin(!!data?.is_admin);
-          setCredits(data?.credits ?? 0);
-          console.log('User data loaded:', { isAdmin: data?.is_admin, credits: data?.credits });
+        if (isSubscribed && data) {
+          console.log('User data loaded:', data);
+          setIsAdmin(data.is_admin || false);
+          setCredits(data.credits || 0);
         }
       } catch (error) {
         console.error('Error in fetchUserData:', error);

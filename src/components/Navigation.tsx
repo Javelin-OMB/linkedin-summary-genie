@@ -40,7 +40,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
         console.log('Checking admin status for user:', session.user.email);
         const { data, error } = await supabase
           .from('users')
-          .select('is_admin, credits')
+          .select('*')
           .eq('id', session.user.id)
           .single();
         
@@ -55,6 +55,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
         setCredits(data?.credits ?? 0);
         
         if (data?.is_admin) {
+          console.log('Admin status confirmed for user:', session.user.email);
           toast({
             title: "Admin Access",
             description: "Je bent ingelogd als administrator",
