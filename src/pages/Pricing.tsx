@@ -12,27 +12,68 @@ const Pricing = () => {
 
   const handleFreePlan = async () => {
     if (!session) {
+      console.log('No session found, redirecting to login');
       navigate('/login');
       return;
     }
 
     try {
-      const { error } = await supabase
+      console.log('Activating free plan for user:', session.user.id);
+      
+      // First check if user already exists
+      const { data: existingUser, error: fetchError } = await supabase
         .from('users')
-        .update({ 
-          trial_start: new Date().toISOString(),
-          credits: 10
-        })
-        .eq('id', session.user.id);
+        .select('trial_start')
+        .eq('id', session.user.id)
+        .single();
 
-      if (error) throw error;
+      if (fetchError) {
+        console.error('Error fetching user data:', fetchError);
+        // If user doesn't exist, create new user record
+        if (fetchError.code === 'PGRST116') {
+          console.log('User record not found, creating new user');
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: session.user.id,
+                email: session.user.email,
+                trial_start: new Date().toISOString(),
+                credits: 10
+              }
+            ]);
+
+          if (insertError) {
+            console.error('Error creating user record:', insertError);
+            throw new Error('Failed to create user record');
+          }
+        } else {
+          throw fetchError;
+        }
+      } else if (existingUser?.trial_start) {
+        // Update existing user
+        console.log('Updating existing user');
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            trial_start: new Date().toISOString(),
+            credits: 10
+          })
+          .eq('id', session.user.id);
+
+        if (updateError) {
+          console.error('Error updating user:', updateError);
+          throw updateError;
+        }
+      }
 
       toast({
         title: "Success!",
         description: "You've been enrolled in the free plan with 10 analyses.",
       });
 
-      navigate('/');
+      console.log('Free plan activated successfully, redirecting to dashboard');
+      navigate('/dashboard');
     } catch (error) {
       console.error('Error activating free plan:', error);
       toast({
