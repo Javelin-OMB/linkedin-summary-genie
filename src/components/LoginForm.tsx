@@ -58,34 +58,49 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         }
 
         // Proceed with signup
-        const signUpResult = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { email: trimmedEmail }
-          }
         });
 
-        if (signUpResult.error) throw signUpResult.error;
+        if (error) {
+          throw error;
+        }
 
-        if (signUpResult.data.user) {
-          await ensureUserRecord(signUpResult.data.user.id, signUpResult.data.user.email || trimmedEmail);
+        if (data.user) {
+          await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
           toast({
             title: "Account aangemaakt",
-            description: "Je account is succesvol aangemaakt! Controleer je email voor de bevestigingslink.",
+            description: "Je account is succesvol aangemaakt! Je kunt nu inloggen.",
           });
-          navigate('/login');
+          // Direct login since email confirmation is disabled
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: trimmedEmail,
+            password,
+          });
+
+          if (signInError) {
+            throw signInError;
+          }
+
+          if (signInData.user) {
+            toast({
+              title: "Succesvol ingelogd",
+              description: "Je wordt doorgestuurd naar het dashboard...",
+            });
+            onSuccess?.();
+            navigate('/dashboard');
+          }
         }
       } else {
         // Handle login
-        const signInResult = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
         });
 
-        if (signInResult.error) {
-          if (signInResult.error.message.includes('Invalid login credentials')) {
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
               description: "Controleer je e-mailadres en wachtwoord of maak eerst een account aan.",
@@ -94,10 +109,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             setIsLoading(false);
             return;
           }
-          throw signInResult.error;
+          throw error;
         }
 
-        if (signInResult.data.user) {
+        if (data.user) {
           toast({
             title: "Succesvol ingelogd",
             description: "Je wordt doorgestuurd naar het dashboard...",
@@ -108,15 +123,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
     } catch (error: any) {
       console.error(`${mode} error:`, error);
-      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
-      
-      if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "E-mail nog niet bevestigd. Controleer je inbox voor de bevestigingslink.";
-      }
-      
       toast({
         title: `${mode === 'login' ? 'Inloggen' : 'Registratie'} mislukt`,
-        description: errorMessage,
+        description: "Er is iets misgegaan. Probeer het opnieuw.",
         variant: "destructive",
       });
     } finally {
