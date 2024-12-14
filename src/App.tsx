@@ -36,10 +36,22 @@ const SessionHandler = () => {
 
   useEffect(() => {
     // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (event === 'SIGNED_IN') {
-        // Redirect to dashboard on sign in
-        navigate('/dashboard');
+        // Check if user exists in our users table
+        const { data: userData } = await supabase
+          .from('users')
+          .select('trial_start')
+          .eq('id', currentSession?.user?.id)
+          .single();
+
+        if (!userData?.trial_start) {
+          // New user - redirect to pricing
+          navigate('/pricing');
+        } else {
+          // Existing user - redirect to homepage
+          navigate('/');
+        }
       } else if (event === 'SIGNED_OUT') {
         // Redirect to home on sign out
         navigate('/');
