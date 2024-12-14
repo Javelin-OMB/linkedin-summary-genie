@@ -79,13 +79,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         
         onSuccess?.();
         
-        if (!userData?.trial_start) {
-          console.log('New user - redirecting to pricing');
-          navigate('/pricing');
-        } else {
-          console.log('Existing user - redirecting to dashboard');
-          navigate('/dashboard');
-        }
+        // Always redirect to dashboard after successful login
+        console.log('Redirecting to dashboard after successful login');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Login error:', error);

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Home, LogIn, LogOut, UserPlus } from "lucide-react";
+import { Menu, Home, LogIn, LogOut, UserPlus, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface NavigationProps {
   onLoginClick: () => void;
@@ -22,9 +23,32 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const session = useSession();
-  const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (session?.user?.id) {
+        console.log('Checking admin status for user:', session.user.email);
+        const { data, error } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return;
+        }
+        
+        console.log('Admin status:', data?.is_admin);
+        setIsAdmin(!!data?.is_admin);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -61,6 +85,12 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Users className="w-4 h-4 mr-2" />
+                        Admin
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuItem onClick={handleLogout}>
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
@@ -99,6 +129,12 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Users className="w-4 h-4 mr-2" />
+                      Admin
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="w-4 h-4 mr-2" />
                     Logout
@@ -133,7 +169,12 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                   <Link to="/about" className="text-lg hover:text-linkedin-primary">About</Link>
                   <Link to="/pricing" className="text-lg hover:text-linkedin-primary">Pricing</Link>
                   {session && (
-                    <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
+                    <>
+                      <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
+                      {isAdmin && (
+                        <Link to="/admin" className="text-lg hover:text-linkedin-primary">Admin</Link>
+                      )}
+                    </>
                   )}
                 </nav>
               </SheetContent>
