@@ -12,36 +12,22 @@ const Login = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') {
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        navigate('/dashboard');
-      } else if (event === 'SIGNED_OUT') {
-        navigate('/login');
-      } else if (event === 'USER_UPDATED') {
-        console.log('User updated:', session);
-      } else if (event === 'PASSWORD_RECOVERY') {
-        toast({
-          title: "Password recovery email sent",
-          description: "Please check your email for the recovery link.",
-        });
-      }
-    });
-
-    // Cleanup subscription on unmount
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [navigate, toast]);
-
-  useEffect(() => {
     if (session) {
       navigate('/dashboard');
     }
   }, [session, navigate]);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        navigate('/dashboard');
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

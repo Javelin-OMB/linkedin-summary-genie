@@ -16,15 +16,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { useSession } from '@supabase/auth-helpers-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/components/ui/use-toast";
 
 const queryClient = new QueryClient();
 
 // Protected Route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
+  const navigate = useNavigate();
   
+  useEffect(() => {
+    if (!session) {
+      navigate('/login');
+    }
+  }, [session, navigate]);
+
   if (!session) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
   return <>{children}</>;
@@ -34,11 +42,17 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const SessionHandler = () => {
   const session = useSession();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (event === 'SIGNED_IN') {
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
+        
         // Check if user exists in our users table
         const { data: userData } = await supabase
           .from('users')
@@ -50,12 +64,11 @@ const SessionHandler = () => {
           // New user - redirect to pricing
           navigate('/pricing');
         } else {
-          // Existing user - redirect to homepage
-          navigate('/');
+          // Existing user - redirect to dashboard
+          navigate('/dashboard');
         }
       } else if (event === 'SIGNED_OUT') {
-        // Redirect to home on sign out
-        navigate('/');
+        navigate('/login');
       }
     });
 
@@ -63,7 +76,7 @@ const SessionHandler = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return null;
 };
