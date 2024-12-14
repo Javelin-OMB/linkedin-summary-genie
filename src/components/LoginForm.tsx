@@ -50,7 +50,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
         
         if (error.message?.includes('Invalid login credentials')) {
-          errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan.";
+          errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan via de link hieronder.";
         } else if (error.message?.includes('Email not confirmed')) {
           errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
         }
@@ -96,7 +96,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
       if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan.";
+        errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan via de link hieronder.";
       } else if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
       } else if (error.message?.includes('Email not confirmed')) {
