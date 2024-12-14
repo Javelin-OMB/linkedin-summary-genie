@@ -4,7 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
 import LoginFormFields from './LoginFormFields';
 import LoginLinks from './LoginLinks';
-import { handleSignup } from '@/utils/authUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SignupFormProps {
   onSuccess?: () => void;
@@ -32,28 +32,65 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
-      await handleSignup(email, password);
+      console.log('Attempting signup with email:', email.trim());
       
-      toast({
-        title: "Account aangemaakt",
-        description: "Je account is succesvol aangemaakt en je bent nu ingelogd!",
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password: password.trim(),
       });
-      onSuccess?.();
-      navigate('/dashboard');
-    } catch (error: any) {
-      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
-      
-      if (error.message === 'ACCOUNT_EXISTS') {
-        errorMessage = "Log in met je bestaande account of gebruik een ander e-mailadres.";
-      } else if (error.message?.includes('rate limit')) {
-        errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
+
+      if (error) {
+        console.error('Signup error:', error);
+        let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
+        
+        if (error.message?.includes('user_already_exists')) {
+          errorMessage = "Dit e-mailadres is al geregistreerd. Probeer in te loggen met je bestaande account.";
+          navigate('/login');
+        } else if (error.message?.includes('rate limit')) {
+          errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
+        }
+        
+        toast({
+          title: "Registratie mislukt",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
       }
-      
+
+      if (data?.user) {
+        console.log('Signup successful for user:', data.user.email);
+        
+        // Create user record in our users table
+        const { error: userError } = await supabase
+          .from('users')
+          .insert([
+            {
+              id: data.user.id,
+              email: data.user.email,
+              trial_start: new Date().toISOString(),
+              credits: 10
+            }
+          ]);
+
+        if (userError) {
+          console.error('Error creating user record:', userError);
+          // Continue anyway as auth was successful
+        }
+
+        toast({
+          title: "Account aangemaakt",
+          description: "Je account is succesvol aangemaakt. Je kunt nu inloggen!",
+        });
+        
+        onSuccess?.();
+        navigate('/dashboard');
+      }
+    } catch (error: any) {
+      console.error('Unexpected error during signup:', error);
       toast({
         title: "Registratie mislukt",
-        description: errorMessage,
+        description: "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.",
         variant: "destructive",
       });
     } finally {
