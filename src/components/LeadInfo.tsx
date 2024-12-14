@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import {
   Accordion,
@@ -6,7 +6,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Linkedin } from "lucide-react";
+import { Linkedin, Copy, CheckCheck } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const formatSection = (title: string, content: string) => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line);
@@ -48,6 +49,9 @@ interface LeadInfoProps {
 }
 
 const LeadInfo = ({ data }: LeadInfoProps) => {
+  const [copyingSection, setCopyingSection] = useState<string | null>(null);
+  const { toast } = useToast();
+
   if (!data?.output?.profile_data) return null;
 
   const sections = data.output.profile_data.split('\n\n').reduce<Record<string, string>>((acc, section) => {
@@ -61,6 +65,26 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
   const name = profileLines[0]?.replace('- ', '') || 'Naam niet beschikbaar';
   const function_title = profileLines[1]?.replace('- ', '') || 'Functie niet beschikbaar';
   const company = profileLines[2]?.replace('- ', '') || 'Bedrijf niet beschikbaar';
+
+  const handleCopySection = async (title: string, content: string) => {
+    try {
+      await navigator.clipboard.writeText(title + '\n' + content);
+      setCopyingSection(title);
+      toast({
+        title: "Gekopieerd",
+        description: `${title} is gekopieerd naar het klembord.`,
+      });
+      setTimeout(() => {
+        setCopyingSection(null);
+      }, 2000);
+    } catch (err) {
+      toast({
+        title: "Fout bij kopiëren",
+        description: "Er is een fout opgetreden bij het kopiëren naar het klembord.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="p-6 bg-white shadow-lg">
@@ -92,7 +116,22 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
             <div className="mt-4 space-y-6">
               {Object.entries(sections).map(([title, content]) => (
                 <div key={title} className="border-t pt-4 first:border-t-0 first:pt-0">
-                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-lg">{title}</h3>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopySection(title, content);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      {copyingSection === title ? (
+                        <CheckCheck className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <Copy className="h-5 w-5 text-gray-500 hover:text-gray-700" />
+                      )}
+                    </button>
+                  </div>
                   {formatSection(title, content)}
                 </div>
               ))}
