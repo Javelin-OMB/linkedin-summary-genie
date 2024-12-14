@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { SessionInitializer } from './SessionInitializer';
 import { SessionEventHandler } from './SessionEventHandler';
@@ -10,6 +10,7 @@ export const SessionHandler = () => {
   const session = useSession();
   const [isInitialized, setIsInitialized] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -26,10 +27,15 @@ export const SessionHandler = () => {
         if (currentSession?.user) {
           console.log('Valid session found for user:', currentSession.user.email);
           setIsInitialized(true);
+          
+          // Only redirect if we're on the login page
+          if (location.pathname === '/login') {
+            navigate('/');
+          }
         } else {
           console.log('No active session found');
-          const currentPath = window.location.pathname;
-          if (!['/', '/login', '/signup', '/pricing', '/about'].includes(currentPath)) {
+          const publicRoutes = ['/', '/login', '/signup', '/pricing', '/about'];
+          if (!publicRoutes.includes(location.pathname)) {
             toast({
               title: "Sessie verlopen",
               description: "Log opnieuw in om door te gaan.",
@@ -52,6 +58,7 @@ export const SessionHandler = () => {
       if (event === 'SIGNED_IN') {
         console.log('User signed in successfully:', session?.user?.email);
         setIsInitialized(true);
+        navigate('/');
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
@@ -63,7 +70,7 @@ export const SessionHandler = () => {
       console.log('Cleaning up auth subscriptions');
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, location.pathname]);
 
   if (!isInitialized && session?.user?.id) {
     return <SessionInitializer 
