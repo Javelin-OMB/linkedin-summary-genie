@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import LoginFormFields from './auth/LoginFormFields';
 import LoginLinks from './auth/LoginLinks';
 import SignupForm from './auth/SignupForm';
-import { handleLogin } from '@/utils/authUtils';
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -38,18 +38,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     setIsLoading(true);
 
     try {
-      await handleLogin(email, password);
-      
-      toast({
-        title: "Succesvol ingelogd",
-        description: "Je wordt doorgestuurd naar het dashboard...",
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
-      onSuccess?.();
-      navigate('/dashboard');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data?.user) {
+        toast({
+          title: "Succesvol ingelogd",
+          description: "Je wordt doorgestuurd naar het dashboard...",
+        });
+        onSuccess?.();
+        navigate('/dashboard');
+      }
     } catch (error: any) {
+      console.error('Login error:', error);
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
-      if (error.message === 'INVALID_CREDENTIALS') {
+      if (error.message?.includes('Invalid login credentials')) {
         errorMessage = "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.";
       } else if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
