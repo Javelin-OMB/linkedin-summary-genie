@@ -1,38 +1,41 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const formatSection = (title: string, content: string) => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line);
   
   return (
-    <div className="mb-8">
-      <h2 className="text-xl font-bold mb-4">{title}:</h2>
-      <div className="pl-4">
-        {lines.map((line, index) => {
-          if (line.startsWith('-')) {
-            // Bullet points
-            return (
-              <div key={index} className="mb-2 flex items-start">
-                <span className="mr-2">•</span>
-                <span>{line.substring(1).trim()}</span>
-              </div>
-            );
-          } else if (line.match(/^\d+[\.\:]?/)) {
-            // Numbered items
-            let [number, ...rest] = line.split(/[\.\:]\s*/);
-            const content = rest.join(': ').trim();
-            return (
-              <div key={index} className="mb-2">
-                <span className="font-semibold">{number}. </span>
-                <span>{content}</span>
-              </div>
-            );
-          } else {
-            // Regular text
-            return <p key={index} className="mb-2">{line}</p>;
-          }
-        })}
-      </div>
+    <div className="space-y-2">
+      {lines.map((line, index) => {
+        if (line.startsWith('-')) {
+          // Bullet points
+          return (
+            <div key={index} className="flex items-start">
+              <span className="mr-2">•</span>
+              <span>{line.substring(1).trim()}</span>
+            </div>
+          );
+        } else if (line.match(/^\d+[\.\:]?/)) {
+          // Numbered items
+          let [number, ...rest] = line.split(/[\.\:]\s*/);
+          const content = rest.join(': ').trim();
+          return (
+            <div key={index}>
+              <span className="font-semibold">{number}. </span>
+              <span>{content}</span>
+            </div>
+          );
+        } else {
+          // Regular text
+          return <p key={index}>{line}</p>;
+        }
+      })}
     </div>
   );
 };
@@ -57,29 +60,73 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
 
   return (
     <Card className="p-6 bg-white shadow-lg">
-      {/* Profielinformatie */}
-      {sections['Profielinformatie'] && 
-        formatSection('Profielinformatie', sections['Profielinformatie'])}
+      <Accordion type="single" collapsible>
+        <AccordionItem value="profielinformatie" className="border-none">
+          <AccordionTrigger className="hover:no-underline">
+            <h2 className="text-xl font-bold">Profielinformatie</h2>
+          </AccordionTrigger>
+          <AccordionContent>
+            {sections['Profielinformatie'] && 
+              formatSection('Profielinformatie', sections['Profielinformatie'])}
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Bedrijfsinformatie */}
-      {sections['Bedrijfsinformatie'] && 
-        formatSection('Bedrijfsinformatie', sections['Bedrijfsinformatie'])}
+        {/* Additional sections in accordion */}
+        {sections['Bedrijfsinformatie'] && (
+          <AccordionItem value="bedrijfsinformatie" className="border-none">
+            <AccordionTrigger className="hover:no-underline">
+              <h2 className="text-xl font-bold">Bedrijfsinformatie</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              {formatSection('Bedrijfsinformatie', sections['Bedrijfsinformatie'])}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      {/* LinkedIn Activiteit */}
-      {sections['LinkedIn Activiteit'] && 
-        formatSection('LinkedIn Activiteit', sections['LinkedIn Activiteit'])}
+        {sections['LinkedIn Activiteit'] && (
+          <AccordionItem value="linkedin-activiteit" className="border-none">
+            <AccordionTrigger className="hover:no-underline">
+              <h2 className="text-xl font-bold">LinkedIn Activiteit</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              {formatSection('LinkedIn Activiteit', sections['LinkedIn Activiteit'])}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      {/* Website Samenvatting */}
-      {sections['Website Samenvatting'] && 
-        formatSection('Website Samenvatting', sections['Website Samenvatting'])}
+        {sections['Website Samenvatting'] && (
+          <AccordionItem value="website-samenvatting" className="border-none">
+            <AccordionTrigger className="hover:no-underline">
+              <h2 className="text-xl font-bold">Website Samenvatting</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              {formatSection('Website Samenvatting', sections['Website Samenvatting'])}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      {/* Vergadertips */}
-      {sections['Vergadertips'] && 
-        formatSection('Vergadertips', sections['Vergadertips'])}
+        {sections['Vergadertips'] && (
+          <AccordionItem value="vergadertips" className="border-none">
+            <AccordionTrigger className="hover:no-underline">
+              <h2 className="text-xl font-bold">Vergadertips</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              {formatSection('Vergadertips', sections['Vergadertips'])}
+            </AccordionContent>
+          </AccordionItem>
+        )}
 
-      {/* Spin Selling */}
-      {sections['Spin Selling'] && 
-        formatSection('Spin Selling', sections['Spin Selling'])}
+        {sections['Spin Selling'] && (
+          <AccordionItem value="spin-selling" className="border-none">
+            <AccordionTrigger className="hover:no-underline">
+              <h2 className="text-xl font-bold">Spin Selling</h2>
+            </AccordionTrigger>
+            <AccordionContent>
+              {formatSection('Spin Selling', sections['Spin Selling'])}
+            </AccordionContent>
+          </AccordionItem>
+        )}
+      </Accordion>
     </Card>
   );
 };
