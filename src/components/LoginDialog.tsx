@@ -1,34 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
 
 interface LoginDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (email: string, password: string) => void;
 }
 
-const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, onSubmit }) => {
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
+const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!email || !password) {
-      console.error('Email and password are required');
+      toast({
+        title: "Error",
+        description: "Email and password are required",
+        variant: "destructive",
+      });
       return;
     }
-    
-    onSubmit(email.trim(), password);
-    // Don't clear the form on error
+
+    try {
+      setIsLoading(true);
+      console.log('Attempting login with:', email);
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+
+      if (data.user) {
+        console.log('Login successful:', data.user.email);
+        toast({
+          title: "Success",
+          description: "Login successful! Redirecting...",
+        });
+        onOpenChange(false);
+        navigate('/dashboard');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to login. Please check your credentials.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,6 +85,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, onSubmi
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
+              disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
@@ -55,13 +95,18 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, onSubmi
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
-          <Button type="submit" className="w-full">
-            Login
+          <Button 
+            type="submit" 
+            className="w-full bg-linkedin-primary hover:bg-linkedin-hover"
+            disabled={isLoading}
+          >
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
           <div className="text-center text-sm text-gray-500">
-            Don't have an account? <span className="text-blue-600 hover:underline cursor-pointer">Sign up</span>
+            Don't have an account? <a href="/pricing" className="text-linkedin-primary hover:underline cursor-pointer">Sign up</a>
           </div>
         </form>
       </DialogContent>
