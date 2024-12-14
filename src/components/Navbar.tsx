@@ -1,11 +1,32 @@
-import { Home, User, Info, DollarSign } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Home, User, Info, DollarSign, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import LoginDialog from "./LoginDialog";
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useToast } from "@/components/ui/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const session = useSession();
+  const supabase = useSupabaseClient();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    navigate('/');
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white shadow-sm z-50">
@@ -30,14 +51,49 @@ const Navbar = () => {
                 Pricing
               </Button>
             </Link>
-            <Button 
-              variant="outline" 
-              className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              onClick={() => setIsLoginOpen(true)}
-            >
-              <User className="h-5 w-5 mr-1" />
-              Login
-            </Button>
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                  >
+                    <User className="h-5 w-5 mr-1" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                  onClick={() => setIsLoginOpen(true)}
+                >
+                  <User className="h-5 w-5 mr-1" />
+                  Login
+                </Button>
+                <Link to="/pricing">
+                  <Button 
+                    className="flex items-center bg-linkedin-primary text-white hover:bg-linkedin-hover"
+                  >
+                    Sign Up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -45,9 +101,27 @@ const Navbar = () => {
       <LoginDialog 
         isOpen={isLoginOpen}
         onOpenChange={setIsLoginOpen}
-        onSubmit={(email, password) => {
-          console.log('Login attempt:', email);
-          setIsLoginOpen(false);
+        onSubmit={async (email, password) => {
+          try {
+            const { error } = await supabase.auth.signInWithPassword({
+              email,
+              password
+            });
+            
+            if (error) throw error;
+            
+            setIsLoginOpen(false);
+            toast({
+              title: "Logged in successfully",
+              description: "Welcome back!",
+            });
+          } catch (error) {
+            toast({
+              title: "Error",
+              description: error instanceof Error ? error.message : "Failed to login",
+              variant: "destructive",
+            });
+          }
         }}
       />
     </nav>

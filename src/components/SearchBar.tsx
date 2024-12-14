@@ -6,6 +6,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { fetchLinkedInProfile } from "@/services/linkedinService";
 import LeadInfo from "./LeadInfo";
 import SearchLoadingProgress from "./SearchLoadingProgress";
+import { useSession } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -20,9 +22,7 @@ const SearchBar = () => {
   const [profileData, setProfileData] = useState(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast } = useToast();
-
-  // Simulated auth state - replace with your actual auth logic
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const session = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,15 +35,47 @@ const SearchBar = () => {
       return;
     }
 
-    if (!isLoggedIn) {
+    if (!session) {
       setShowAuthDialog(true);
       return;
     }
 
     setIsLoading(true);
     try {
+      const { data: userData } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!userData || userData.credits <= 0) {
+        toast({
+          title: "No credits remaining",
+          description: "Please purchase more credits to continue using the service.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const data = await fetchLinkedInProfile(url);
       setProfileData(data);
+
+      // Store analysis in database
+      await supabase
+        .from('linkedin_analyses')
+        .insert({
+          linkedin_url: url,
+          analysis: data,
+          user_id: session.user.id
+        });
+
+      // Decrease credits
+      await supabase
+        .from('users')
+        .update({ credits: userData.credits - 1 })
+        .eq('id', session.user.id);
+
       toast({
         title: "Success",
         description: "Profile analysis complete",
@@ -58,14 +90,6 @@ const SearchBar = () => {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleLogin = (email: string, password: string) => {
-    // Implement your login logic here
-    localStorage.setItem("isLoggedIn", "true");
-    setShowAuthDialog(false);
-    // Automatically submit the form after successful login
-    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
   return (
@@ -124,7 +148,6 @@ const SearchBar = () => {
                 variant="outline"
                 onClick={() => {
                   setShowAuthDialog(false);
-                  // Navigate to signup page or trigger signup dialog
                   window.location.href = "/pricing";
                 }}
                 className="w-full border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
