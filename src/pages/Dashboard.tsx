@@ -8,6 +8,7 @@ import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import DashboardAnalyses from '@/components/dashboard/DashboardAnalyses';
 import DashboardSettings from '@/components/dashboard/DashboardSettings';
 import DashboardPlan from '@/components/dashboard/DashboardPlan';
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const [credits, setCredits] = useState<number | null>(null);
@@ -15,12 +16,14 @@ const Dashboard = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCredits = async () => {
       if (!session?.user?.id) return;
 
       try {
+        console.log('Fetching credits for user:', session.user.id);
         const { data, error } = await supabase
           .from('users')
           .select('credits')
@@ -29,9 +32,15 @@ const Dashboard = () => {
 
         if (error) {
           console.error('Error fetching credits:', error);
+          toast({
+            title: "Error",
+            description: "Could not load credits information",
+            variant: "destructive",
+          });
           return;
         }
 
+        console.log('Fetched credits:', data);
         setCredits(data?.credits ?? 0);
       } catch (error) {
         console.error('Error in fetchCredits:', error);
@@ -39,7 +48,7 @@ const Dashboard = () => {
     };
 
     fetchCredits();
-  }, [session, supabase]);
+  }, [session, supabase, toast]);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -71,18 +80,10 @@ const Dashboard = () => {
       <div className="flex min-h-screen w-full">
         <DashboardSidebar onSectionChange={setActiveSection} />
         <div className="flex-1">
-          <Navigation 
-            onLoginClick={() => navigate('/login')} 
-            onSectionChange={setActiveSection}
-          />
+          <Navigation onLoginClick={() => navigate('/login')} />
           <main className="bg-gray-50 p-4 pt-20">
             <div className="max-w-6xl mx-auto">
               {renderSection()}
-              {credits !== null && (
-                <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
-                  <p className="text-gray-600">Available Credits: <span className="font-semibold">{credits}</span></p>
-                </div>
-              )}
             </div>
           </main>
         </div>
