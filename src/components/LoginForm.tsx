@@ -64,15 +64,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         });
 
         if (error) {
+          console.error('Signup error:', error);
           throw error;
         }
 
         if (data.user) {
           await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
-          toast({
-            title: "Account aangemaakt",
-            description: "Je account is succesvol aangemaakt! Je kunt nu inloggen.",
-          });
+          
           // Direct login since email confirmation is disabled
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email: trimmedEmail,
@@ -80,13 +78,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           });
 
           if (signInError) {
+            console.error('Auto-login error:', signInError);
             throw signInError;
           }
 
           if (signInData.user) {
             toast({
-              title: "Succesvol ingelogd",
-              description: "Je wordt doorgestuurd naar het dashboard...",
+              title: "Account aangemaakt",
+              description: "Je account is succesvol aangemaakt en je bent nu ingelogd!",
             });
             onSuccess?.();
             navigate('/dashboard');
@@ -100,7 +99,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         });
 
         if (error) {
-          if (error.message.includes('Invalid login credentials')) {
+          console.error('Login error:', error);
+          
+          // Handle specific error cases
+          if (error.message?.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
               description: "Controleer je e-mailadres en wachtwoord of maak eerst een account aan.",
@@ -109,6 +111,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             setIsLoading(false);
             return;
           }
+          
           throw error;
         }
 
@@ -123,9 +126,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
     } catch (error: any) {
       console.error(`${mode} error:`, error);
+      
+      // Provide more specific error messages based on the error type
+      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Controleer je e-mailadres en wachtwoord.";
+      } else if (error.message?.includes('rate limit')) {
+        errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
+      }
+      
       toast({
         title: `${mode === 'login' ? 'Inloggen' : 'Registratie'} mislukt`,
-        description: "Er is iets misgegaan. Probeer het opnieuw.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
