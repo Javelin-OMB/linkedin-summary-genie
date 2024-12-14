@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
   const [credits, setCredits] = useState<number | null>(null);
+  const [analyses, setAnalyses] = useState<any[]>([]);
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
@@ -38,7 +39,30 @@ const Dashboard = () => {
       }
     };
 
+    const fetchAnalyses = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('linkedin_analyses')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+
+        if (error) {
+          console.error('Error fetching analyses:', error);
+          return;
+        }
+
+        setAnalyses(data || []);
+      } catch (error) {
+        console.error('Error in fetchAnalyses:', error);
+      }
+    };
+
     fetchCredits();
+    fetchAnalyses();
   }, [session, supabase]);
 
   const usagePercentage = credits !== null ? ((maxFreeSearches - credits) / maxFreeSearches) * 100 : 0;
@@ -74,6 +98,27 @@ const Dashboard = () => {
                       <p className="text-[#0177B5] font-medium">
                         {credits !== null ? `${credits} analyses remaining` : 'Loading...'}
                       </p>
+                    </div>
+
+                    {/* Recent Analyses */}
+                    <div className="mt-6">
+                      <h3 className="text-lg font-semibold mb-3">Recent Analyses</h3>
+                      {analyses.length > 0 ? (
+                        <div className="space-y-3">
+                          {analyses.map((analysis) => (
+                            <div key={analysis.id} className="border-b pb-2">
+                              <p className="text-sm text-gray-600 truncate">
+                                {analysis.linkedin_url}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(analysis.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">No analyses yet</p>
+                      )}
                     </div>
 
                     <ul className="space-y-2">
