@@ -1,7 +1,7 @@
-import { Home, User, Info, DollarSign, LogOut } from "lucide-react";
+import { Home, User, Info, DollarSign, LogOut, Users } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoginDialog from "./LoginDialog";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
@@ -14,10 +14,27 @@ import {
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (session?.user?.id) {
+        const { data } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        setIsAdmin(!!data?.is_admin);
+      }
+    };
+
+    checkAdminStatus();
+  }, [session, supabase]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -69,6 +86,12 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate('/settings')}>
                     Settings
                   </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <Users className="h-4 w-4 mr-2" />
+                      Admin
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Logout

@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import Plan from "./pages/Plan";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from '@supabase/auth-helpers-react';
 import { useEffect } from 'react';
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
+            <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
