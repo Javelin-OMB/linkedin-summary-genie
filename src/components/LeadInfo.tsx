@@ -6,6 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Linkedin } from "lucide-react";
 
 const formatSection = (title: string, content: string) => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line);
@@ -14,7 +15,6 @@ const formatSection = (title: string, content: string) => {
     <div className="space-y-2">
       {lines.map((line, index) => {
         if (line.startsWith('-')) {
-          // Bullet points
           return (
             <div key={index} className="flex items-start">
               <span className="mr-2">•</span>
@@ -22,7 +22,6 @@ const formatSection = (title: string, content: string) => {
             </div>
           );
         } else if (line.match(/^\d+[\.\:]?/)) {
-          // Numbered items
           let [number, ...rest] = line.split(/[\.\:]\s*/);
           const content = rest.join(': ').trim();
           return (
@@ -32,7 +31,6 @@ const formatSection = (title: string, content: string) => {
             </div>
           );
         } else {
-          // Regular text
           return <p key={index}>{line}</p>;
         }
       })}
@@ -44,6 +42,7 @@ interface LeadInfoProps {
   data: {
     output?: {
       profile_data?: string;
+      linkedin_url?: string;
     };
   };
 }
@@ -51,81 +50,55 @@ interface LeadInfoProps {
 const LeadInfo = ({ data }: LeadInfoProps) => {
   if (!data?.output?.profile_data) return null;
 
-  // Split the profile data into sections
   const sections = data.output.profile_data.split('\n\n').reduce<Record<string, string>>((acc, section) => {
     const [title, ...content] = section.split('\n');
     acc[title.trim()] = content.join('\n');
     return acc;
   }, {});
 
+  // Extract profile information
+  const profileLines = sections['Profielinformatie']?.split('\n') || [];
+  const name = profileLines[0]?.replace('- ', '') || 'Naam niet beschikbaar';
+  const function_title = profileLines[1]?.replace('- ', '') || 'Functie niet beschikbaar';
+  const company = profileLines[2]?.replace('- ', '') || 'Bedrijf niet beschikbaar';
+
   return (
     <Card className="p-6 bg-white shadow-lg">
-      <Accordion type="single" collapsible>
-        <AccordionItem value="profielinformatie" className="border-none">
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="summary" className="border-none">
           <AccordionTrigger className="hover:no-underline">
-            <h2 className="text-xl font-bold">Profielinformatie</h2>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center space-x-4">
+                <span className="font-semibold">{name}</span>
+                <span className="text-gray-600">|</span>
+                <span>{function_title}</span>
+                <span className="text-gray-600">|</span>
+                <span>{company}</span>
+              </div>
+              {data.output.linkedin_url && (
+                <a 
+                  href={data.output.linkedin_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="ml-4 text-linkedin-primary hover:text-linkedin-hover"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Linkedin className="h-5 w-5" />
+                </a>
+              )}
+            </div>
           </AccordionTrigger>
           <AccordionContent>
-            {sections['Profielinformatie'] && 
-              formatSection('Profielinformatie', sections['Profielinformatie'])}
+            <div className="mt-4 space-y-6">
+              {Object.entries(sections).map(([title, content]) => (
+                <div key={title} className="border-t pt-4 first:border-t-0 first:pt-0">
+                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
+                  {formatSection(title, content)}
+                </div>
+              ))}
+            </div>
           </AccordionContent>
         </AccordionItem>
-
-        {/* Additional sections in accordion */}
-        {sections['Bedrijfsinformatie'] && (
-          <AccordionItem value="bedrijfsinformatie" className="border-none">
-            <AccordionTrigger className="hover:no-underline">
-              <h2 className="text-xl font-bold">Bedrijfsinformatie</h2>
-            </AccordionTrigger>
-            <AccordionContent>
-              {formatSection('Bedrijfsinformatie', sections['Bedrijfsinformatie'])}
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {sections['LinkedIn Activiteit'] && (
-          <AccordionItem value="linkedin-activiteit" className="border-none">
-            <AccordionTrigger className="hover:no-underline">
-              <h2 className="text-xl font-bold">LinkedIn Activiteit</h2>
-            </AccordionTrigger>
-            <AccordionContent>
-              {formatSection('LinkedIn Activiteit', sections['LinkedIn Activiteit'])}
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {sections['Website Samenvatting'] && (
-          <AccordionItem value="website-samenvatting" className="border-none">
-            <AccordionTrigger className="hover:no-underline">
-              <h2 className="text-xl font-bold">Website Samenvatting</h2>
-            </AccordionTrigger>
-            <AccordionContent>
-              {formatSection('Website Samenvatting', sections['Website Samenvatting'])}
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {sections['Vergadertips'] && (
-          <AccordionItem value="vergadertips" className="border-none">
-            <AccordionTrigger className="hover:no-underline">
-              <h2 className="text-xl font-bold">Vergadertips</h2>
-            </AccordionTrigger>
-            <AccordionContent>
-              {formatSection('Vergadertips', sections['Vergadertips'])}
-            </AccordionContent>
-          </AccordionItem>
-        )}
-
-        {sections['Spin Selling'] && (
-          <AccordionItem value="spin-selling" className="border-none">
-            <AccordionTrigger className="hover:no-underline">
-              <h2 className="text-xl font-bold">Spin Selling</h2>
-            </AccordionTrigger>
-            <AccordionContent>
-              {formatSection('Spin Selling', sections['Spin Selling'])}
-            </AccordionContent>
-          </AccordionItem>
-        )}
       </Accordion>
     </Card>
   );
