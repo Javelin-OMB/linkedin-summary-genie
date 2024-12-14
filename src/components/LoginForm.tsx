@@ -34,35 +34,39 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       return;
     }
 
+    setIsLoading(true);
+    const trimmedEmail = email.trim();
+    console.log(`Starting ${mode} attempt for:`, trimmedEmail);
+
     try {
-      setIsLoading(true);
-      const trimmedEmail = email.trim();
-      console.log(`Starting ${mode} attempt for:`, trimmedEmail);
+      let authResponse;
       
-      const authResponse = mode === 'signup'
-        ? await supabase.auth.signUp({
-            email: trimmedEmail,
-            password: password,
-            options: {
-              emailRedirectTo: window.location.origin,
-              data: { email: trimmedEmail }
-            }
-          })
-        : await supabase.auth.signInWithPassword({
-            email: trimmedEmail,
-            password: password,
-          });
+      if (mode === 'signup') {
+        authResponse = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { email: trimmedEmail }
+          }
+        });
+      } else {
+        authResponse = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password: password,
+        });
+      }
 
-      const { data, error } = authResponse;
+      if (authResponse.error) {
+        throw authResponse.error;
+      }
 
-      if (error) throw error;
-
-      console.log(`${mode} successful for user:`, data.user?.email);
+      const user = authResponse.data.user;
+      console.log(`${mode} successful for user:`, user?.email);
       
-      if (data.user) {
-        // For new signups, ensure user record exists
+      if (user) {
         if (mode === 'signup') {
-          await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
+          await ensureUserRecord(user.id, user.email || trimmedEmail);
         }
         
         toast({
@@ -75,16 +79,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         onSuccess?.();
         navigate('/dashboard');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(`${mode} error:`, error);
       let errorMessage = "Something went wrong. Please try again.";
       
-      if (error instanceof Error) {
-        if (error.message.includes('Invalid login credentials')) {
-          errorMessage = "Invalid login credentials. Please check your email and password.";
-        } else if (error.message.includes('Email not confirmed')) {
-          errorMessage = "Email not confirmed. Please check your inbox for the confirmation link.";
-        }
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Invalid login credentials. Please check your email and password.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Email not confirmed. Please check your inbox for the confirmation link.";
       }
       
       toast({
