@@ -34,8 +34,8 @@ const DashboardSidebar = ({ onSectionChange, isAdmin }: DashboardSidebarProps) =
   ];
 
   return (
-    <div className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bottom-0 bg-white border-r pt-16">
-      <div className="flex-1 overflow-y-auto py-4 px-3">
+    <div className="hidden md:flex h-screen w-64 flex-col fixed left-0 top-0 bottom-0 bg-white border-r z-40">
+      <div className="flex-1 overflow-y-auto py-4 px-3 pt-20">
         <nav className="space-y-1">
           {menuItems.map((item) => (
             <Button

@@ -47,13 +47,6 @@ const Dashboard = () => {
         console.log('User data fetched:', data);
         setIsAdmin(!!data?.is_admin);
         setCredits(data?.credits ?? 0);
-        
-        if (data?.is_admin) {
-          toast({
-            title: "Admin Access",
-            description: "Je bent ingelogd als administrator",
-          });
-        }
       } catch (error) {
         console.error('Error in fetchUserData:', error);
       } finally {
@@ -72,8 +65,8 @@ const Dashboard = () => {
     switch (activeSection) {
       case 'overview':
         return (
-          <>
-            <div className="flex items-center gap-4 mb-6">
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
               <h1 className="text-2xl font-bold text-[#0177B5]">Your Dashboard</h1>
               {isAdmin && (
                 <Badge variant="secondary" className="bg-[#0177B5] text-white">
@@ -82,17 +75,17 @@ const Dashboard = () => {
               )}
             </div>
             {session?.user?.email && (
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2">
                 <p className="text-gray-600">
-                  Ingelogd als: {session.user.email}
+                  Logged in as: {session.user.email}
                 </p>
                 <p className="text-gray-600 font-medium">
-                  Beschikbare credits: {credits !== null ? credits : '...'}
+                  Available credits: {credits !== null ? credits : '...'}
                 </p>
               </div>
             )}
             <DashboardOverview credits={credits} />
-          </>
+          </div>
         );
       case 'plan':
         return <DashboardPlan />;
@@ -109,9 +102,9 @@ const Dashboard = () => {
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
         <DashboardSidebar onSectionChange={setActiveSection} isAdmin={isAdmin} />
-        <div className="flex-1">
+        <div className="flex-1 md:ml-64">
           <Navigation onLoginClick={() => navigate('/login')} />
-          <main className="bg-gray-50 p-4 pt-20">
+          <main className="bg-gray-50 min-h-screen p-4 pt-20">
             <div className="max-w-6xl mx-auto">
               {renderSection()}
             </div>
