@@ -25,6 +25,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
   
   useEffect(() => {
     const checkSession = async () => {
@@ -34,7 +35,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         
         if (!currentSession) {
           console.log('No session found in ProtectedRoute, redirecting to login');
+          toast({
+            title: "Authentication required",
+            description: "Please log in to access this page",
+            variant: "destructive",
+          });
           navigate('/login');
+        } else {
+          console.log('Session found in ProtectedRoute');
+          const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', currentSession.user.id)
+            .single();
+
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            return;
+          }
+
+          console.log('User data in ProtectedRoute:', userData);
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -45,7 +65,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     };
 
     checkSession();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -73,11 +93,16 @@ const SessionHandler = () => {
         
         if (currentSession?.user?.id) {
           console.log('Session found, checking user data');
-          const { data: userData } = await supabase
+          const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', currentSession.user.id)
             .single();
+
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            return;
+          }
 
           console.log('User data:', userData);
           
@@ -109,11 +134,16 @@ const SessionHandler = () => {
         });
         
         if (currentSession?.user?.id) {
-          const { data: userData } = await supabase
+          const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
             .eq('id', currentSession.user.id)
             .single();
+
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            return;
+          }
 
           console.log('User data after sign in:', userData);
           
@@ -127,6 +157,10 @@ const SessionHandler = () => {
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
+        toast({
+          title: "Signed out",
+          description: "You have been logged out successfully",
+        });
         navigate('/login');
       }
     });
