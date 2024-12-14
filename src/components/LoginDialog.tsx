@@ -49,14 +49,36 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
         throw error;
       }
 
+      console.log('Login response:', data);
+
       if (data.user) {
         console.log('Login successful:', data.user.email);
+        
+        // Check if user exists in our users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('trial_start')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+        }
+
         toast({
           title: "Success",
           description: "Login successful! Redirecting...",
         });
+        
         onOpenChange(false);
-        navigate('/dashboard');
+        
+        if (!userData?.trial_start) {
+          console.log('New user - redirecting to pricing');
+          navigate('/pricing');
+        } else {
+          console.log('Existing user - redirecting to dashboard');
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       console.error('Login error:', error);
