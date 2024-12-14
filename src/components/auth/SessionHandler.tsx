@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export const SessionHandler = () => {
   const session = useSession();
@@ -26,14 +27,15 @@ export const SessionHandler = () => {
 
           if (userError) {
             console.error('Error fetching user data:', userError);
+            setIsInitialized(true);
             return;
           }
 
           console.log('User data:', userData);
           
           if (userData) {
-            console.log('Existing user - redirecting to dashboard');
-            navigate('/dashboard');
+            console.log('Existing user - redirecting to homepage');
+            navigate('/');
           } else {
             console.log('No user data found - redirecting to pricing');
             navigate('/pricing');
@@ -53,10 +55,6 @@ export const SessionHandler = () => {
       
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', currentSession?.user?.email);
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
         
         if (currentSession?.user?.id) {
           const { data: userData, error: userError } = await supabase
@@ -73,8 +71,12 @@ export const SessionHandler = () => {
           console.log('User data after sign in:', userData);
           
           if (userData) {
-            console.log('Existing user - redirecting to dashboard');
-            navigate('/dashboard');
+            console.log('Existing user - redirecting to homepage');
+            toast({
+              title: "Welcome back!",
+              description: "You have successfully logged in.",
+            });
+            navigate('/');
           } else {
             console.log('New user - redirecting to pricing');
             navigate('/pricing');
@@ -86,7 +88,7 @@ export const SessionHandler = () => {
           title: "Signed out",
           description: "You have been logged out successfully",
         });
-        navigate('/login');
+        navigate('/');
       }
     });
 
@@ -96,7 +98,7 @@ export const SessionHandler = () => {
   }, [navigate, toast]);
 
   if (!isInitialized) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner message="Initializing session..." />;
   }
 
   return null;
