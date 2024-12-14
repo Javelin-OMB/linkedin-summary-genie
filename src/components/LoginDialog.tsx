@@ -23,27 +23,44 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const validateInputs = () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      toast({
+        title: "Error",
+        description: "Email is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!password) {
+      toast({
+        title: "Error",
+        description: "Password is required",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Email and password are required",
-        variant: "destructive",
-      });
+    if (!validateInputs()) {
       return;
     }
 
     try {
       setIsLoading(true);
-      console.log('Starting login attempt for:', email);
+      const trimmedEmail = email.trim();
+      console.log('Starting login attempt for:', trimmedEmail);
       
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       console.log('Current session before login:', sessionData?.session?.user?.email);
 
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: trimmedEmail,
         password: password,
       });
 
