@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus } from "lucide-react";
 
@@ -16,6 +16,8 @@ const DesktopMenuItems: React.FC<DesktopMenuItemsProps> = ({
   isAdmin,
   handleLogout
 }) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="hidden md:flex items-center space-x-8">
       <Link to="/about" className="text-gray-600 hover:text-linkedin-primary">About</Link>

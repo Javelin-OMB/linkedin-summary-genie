@@ -1,7 +1,15 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, LogIn, UserPlus } from "lucide-react";
+import { 
+  Menu, 
+  LogIn, 
+  UserPlus,
+  LayoutDashboard,
+  CreditCard,
+  History,
+  Settings 
+} from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +32,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   isDashboardRoute
 }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleSectionClick = (section: string) => {
     if (onSectionChange) {
