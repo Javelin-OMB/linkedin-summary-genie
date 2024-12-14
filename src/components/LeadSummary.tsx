@@ -21,32 +21,29 @@ const LeadSummary = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!session) {
-      navigate('/login');
-      return;
+    if (session) {
+      const fetchCredits = async () => {
+        const { data, error } = await supabase
+          .from('users')
+          .select('credits')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching credits:', error);
+          return;
+        }
+
+        setCredits(data?.credits ?? 0);
+      };
+
+      fetchCredits();
     }
-
-    const fetchCredits = async () => {
-      const { data, error } = await supabase
-        .from('users')
-        .select('credits')
-        .eq('id', session.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching credits:', error);
-        return;
-      }
-
-      setCredits(data?.credits ?? 0);
-    };
-
-    fetchCredits();
-  }, [session, supabase, navigate]);
+  }, [session, supabase]);
 
   const handleAnalyze = async () => {
     if (!session) {
-      navigate('/login');
+      setIsLoginOpen(true);
       return;
     }
 
@@ -123,10 +120,6 @@ const LeadSummary = () => {
     navigate('/login');
   };
 
-  if (!session) {
-    return null;
-  }
-
   return (
     <div className="w-full">
       <Navigation onLoginClick={() => navigate('/login')} />
@@ -137,9 +130,11 @@ const LeadSummary = () => {
             <h1 className="text-4xl font-bold text-[#0177B5]">
               Get instant insights and conversation starters from any LinkedIn profile
             </h1>
-            <p className="mt-4 text-gray-600">
-              Credits remaining: {credits ?? '...'}
-            </p>
+            {session && (
+              <p className="mt-4 text-gray-600">
+                Credits remaining: {credits ?? '...'}
+              </p>
+            )}
           </div>
 
           <div className="mb-8">
@@ -153,10 +148,10 @@ const LeadSummary = () => {
               />
               <Button 
                 onClick={handleAnalyze}
-                disabled={loading || credits === 0}
+                disabled={loading || (session && credits === 0)}
                 className="absolute right-0 top-0 h-full px-6 bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
               >
-                {loading ? 'Analyzing...' : credits === 0 ? 'No Credits' : 'Search'}
+                {loading ? 'Analyzing...' : session && credits === 0 ? 'No Credits' : 'Search'}
               </Button>
             </div>
             <SearchLoadingProgress isLoading={loading} />
