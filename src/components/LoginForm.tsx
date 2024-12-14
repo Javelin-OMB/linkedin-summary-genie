@@ -64,13 +64,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
       if (data.user) {
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('trial_start')
+          .select('*')
           .eq('id', data.user.id)
           .single();
 
         if (userError) {
           console.error('Error fetching user data:', userError);
         }
+
+        console.log('User data after login:', userData);
 
         toast({
           title: "Success",
