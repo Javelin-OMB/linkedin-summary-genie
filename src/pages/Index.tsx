@@ -3,13 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navigation from '@/components/Navigation';
 import SearchLoadingProgress from '@/components/SearchLoadingProgress';
+import LeadInfo from '@/components/LeadInfo';
 
 const Index = () => {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
 
   const handleAnalyze = async () => {
     setLoading(true);
+    setResult(null);
     
     try {
       const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
@@ -31,7 +34,7 @@ const Index = () => {
       }
 
       const data = await response.json();
-      // Handle the response data here
+      setResult(data);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -75,6 +78,12 @@ const Index = () => {
             </div>
 
             <SearchLoadingProgress isLoading={loading} />
+
+            {result && (
+              <div className="mt-8">
+                <LeadInfo data={result} />
+              </div>
+            )}
           </div>
         </div>
       </main>
