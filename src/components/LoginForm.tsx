@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import { ensureUserRecord, validateLoginInputs } from '@/utils/authUtils';
+import { ensureUserRecord } from '@/utils/authUtils';
 import LoginLinks from './auth/LoginLinks';
 
 interface LoginFormProps {
@@ -22,7 +22,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Additional validation before submission
     if (!email.trim() || !password.trim()) {
       toast({
         title: "Validatie fout",
@@ -34,16 +33,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
     setIsLoading(true);
     const trimmedEmail = email.trim().toLowerCase();
-    console.log(`Attempting ${mode} for email:`, trimmedEmail);
 
     try {
       if (mode === 'signup') {
-        console.log('Starting signup process...');
-        const { data: existingUser } = await supabase
+        const { data: existingUser, error: checkError } = await supabase
           .from('users')
           .select('id')
           .eq('email', trimmedEmail)
           .single();
+
+        if (checkError && !checkError.message.includes('No rows found')) {
+          console.error('Error checking existing user:', checkError);
+          throw checkError;
+        }
 
         if (existingUser) {
           toast({
@@ -60,24 +62,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           password,
         });
 
-        if (signUpError) {
-          console.error('Signup error:', signUpError);
-          throw signUpError;
-        }
+        if (signUpError) throw signUpError;
 
         if (data?.user) {
           await ensureUserRecord(data.user.id, trimmedEmail);
-          console.log('User record created, attempting auto-login...');
           
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: trimmedEmail,
             password,
           });
 
-          if (signInError) {
-            console.error('Auto-login after signup failed:', signInError);
-            throw signInError;
-          }
+          if (signInError) throw signInError;
 
           toast({
             title: "Account aangemaakt",
@@ -87,7 +82,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           navigate('/dashboard');
         }
       } else {
-        console.log('Starting login process...');
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
@@ -109,7 +103,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           throw signInError;
         }
 
-        console.log('Login successful, redirecting...');
         toast({
           title: "Succesvol ingelogd",
           description: "Je wordt doorgestuurd naar het dashboard...",
