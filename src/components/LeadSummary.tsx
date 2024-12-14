@@ -60,11 +60,12 @@ const LeadSummary = () => {
     setResult(null);
 
     try {
+      console.log('Making API request with URL:', url);
       const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-OTQ1ODVjYTQtOGZhYS00MDUwLWIxYWYtOTE0NDIyYTA1YjY2'
+          'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-MGYzZGM0YzQtNGJhNC00NDlkLWJlZjAtYzA4NjBlMGU0NGFl'
         },
         body: JSON.stringify({
           params: {
@@ -75,10 +76,13 @@ const LeadSummary = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Er ging iets mis bij het ophalen van de gegevens');
+        const errorText = await response.text();
+        console.error('API Error:', response.status, errorText);
+        throw new Error(`API error: ${response.status} ${errorText}`);
       }
 
       const data = await response.json();
+      console.log('API Response:', data);
       setResult(data);
 
       // Store analysis in Supabase
@@ -107,6 +111,7 @@ const LeadSummary = () => {
       }
 
     } catch (err) {
+      console.error('Error analyzing profile:', err);
       setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
     } finally {
       setTimeout(() => {
