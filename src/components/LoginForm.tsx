@@ -35,7 +35,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     }
 
     setIsLoading(true);
-    const trimmedEmail = email.trim();
+    const trimmedEmail = email.trim().toLowerCase(); // Normalize email
     console.log(`Starting ${mode} attempt for:`, trimmedEmail);
 
     try {
@@ -58,21 +58,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         }
 
         // Proceed with signup
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
+          options: {
+            emailRedirectTo: window.location.origin,
+          }
         });
 
-        if (error) {
-          console.error('Signup error:', error);
-          throw error;
+        if (signUpError) {
+          console.error('Signup error:', signUpError);
+          throw signUpError;
         }
 
-        if (data.user) {
+        if (data?.user) {
           await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
           
           // Direct login since email confirmation is disabled
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          const { error: signInError } = await supabase.auth.signInWithPassword({
             email: trimmedEmail,
             password,
           });
@@ -82,58 +85,54 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             throw signInError;
           }
 
-          if (signInData.user) {
-            toast({
-              title: "Account aangemaakt",
-              description: "Je account is succesvol aangemaakt en je bent nu ingelogd!",
-            });
-            onSuccess?.();
-            navigate('/dashboard');
-          }
+          toast({
+            title: "Account aangemaakt",
+            description: "Je account is succesvol aangemaakt en je bent nu ingelogd!",
+          });
+          onSuccess?.();
+          navigate('/dashboard');
         }
       } else {
         // Handle login
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
         });
 
-        if (error) {
-          console.error('Login error:', error);
+        if (signInError) {
+          console.error('Login error:', signInError);
           
-          // Handle specific error cases
-          if (error.message?.includes('Invalid login credentials')) {
+          if (signInError.message?.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
-              description: "Controleer je e-mailadres en wachtwoord of maak eerst een account aan.",
+              description: "Controleer je e-mailadres en wachtwoord.",
               variant: "destructive",
             });
             setIsLoading(false);
             return;
           }
           
-          throw error;
+          throw signInError;
         }
 
-        if (data.user) {
-          toast({
-            title: "Succesvol ingelogd",
-            description: "Je wordt doorgestuurd naar het dashboard...",
-          });
-          onSuccess?.();
-          navigate('/dashboard');
-        }
+        toast({
+          title: "Succesvol ingelogd",
+          description: "Je wordt doorgestuurd naar het dashboard...",
+        });
+        onSuccess?.();
+        navigate('/dashboard');
       }
     } catch (error: any) {
       console.error(`${mode} error:`, error);
       
-      // Provide more specific error messages based on the error type
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
       if (error.message?.includes('Invalid login credentials')) {
         errorMessage = "Controleer je e-mailadres en wachtwoord.";
       } else if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
       }
       
       toast({
@@ -157,6 +156,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           placeholder="Vul je e-mailadres in"
           required
           disabled={isLoading}
+          className="w-full"
         />
       </div>
       <div className="space-y-2">
@@ -168,6 +168,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           placeholder="Vul je wachtwoord in"
           required
           disabled={isLoading}
+          className="w-full"
         />
       </div>
       <Button 
