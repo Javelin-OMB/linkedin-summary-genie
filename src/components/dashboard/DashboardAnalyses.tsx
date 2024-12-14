@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import LeadContent from '../LeadContent';
+import LeadInfo from '../LeadInfo';
 
 const DashboardAnalyses = () => {
   const [analyses, setAnalyses] = useState<any[]>([]);
@@ -37,11 +37,11 @@ const DashboardAnalyses = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#0177B5]">Recent Leadsummaries</h2>
-      {analyses.map((analysis) => (
-        <Card key={analysis.id} className="p-6">
-          <LeadContent data={analysis.analysis} />
-        </Card>
-      ))}
+      <div className="space-y-4">
+        {analyses.map((analysis) => (
+          <LeadInfo key={analysis.id} data={analysis.analysis} />
+        ))}
+      </div>
     </div>
   );
 };
