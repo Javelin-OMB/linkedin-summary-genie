@@ -12,12 +12,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useUserCredits } from '@/hooks/useUserCredits';
 
 interface DashboardOverviewProps {
-  credits: number | null;
+  credits?: number | null;
 }
 
-const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits }) => {
+const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits: propCredits }) => {
+  const { credits: hookCredits, isLoading } = useUserCredits();
+  const credits = propCredits ?? hookCredits;
   const maxFreeSearches = 10;
   const usagePercentage = credits !== null ? ((maxFreeSearches - credits) / maxFreeSearches) * 100 : 0;
   const showNoCreditsDialog = credits === 0;
@@ -39,14 +42,14 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits }) => {
             <div>
               <div className="flex justify-between text-sm text-gray-600 mb-2">
                 <span>LinkedIn Profile Analyses</span>
-                <span>{credits ?? '...'} / {maxFreeSearches}</span>
+                <span>{isLoading ? "Loading..." : `${credits} / ${maxFreeSearches}`}</span>
               </div>
               <Progress value={usagePercentage} className="h-2" />
             </div>
 
             <div className="bg-blue-50 p-4 rounded-lg">
               <p className="text-[#0177B5] font-medium">
-                {credits !== null ? `${credits} analyses remaining` : 'Loading...'}
+                {isLoading ? "Loading..." : `${credits} analyses remaining`}
               </p>
             </div>
 

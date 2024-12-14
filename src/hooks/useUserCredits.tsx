@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useSession } from '@supabase/auth-helpers-react';
-import { supabase } from "@/integrations/supabase/client";
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 
 export const useUserCredits = () => {
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const session = useSession();
+  const supabase = useSupabaseClient();
 
   useEffect(() => {
     const fetchCredits = async () => {
@@ -15,24 +15,30 @@ export const useUserCredits = () => {
       }
 
       try {
+        console.log('Fetching credits for user:', session.user.email);
         const { data, error } = await supabase
           .from('users')
-          .select('credits, trial_start')
+          .select('credits')
           .eq('id', session.user.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching credits:', error);
+          throw error;
+        }
 
+        console.log('Credits fetched:', data?.credits);
         setCredits(data?.credits ?? 0);
       } catch (error) {
-        console.error('Error fetching user credits:', error);
+        console.error('Error in fetchCredits:', error);
+        setCredits(0);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchCredits();
-  }, [session]);
+  }, [session, supabase]);
 
   return { credits, isLoading };
 };
