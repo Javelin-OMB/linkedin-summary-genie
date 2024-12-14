@@ -8,6 +8,7 @@ import Settings from "@/pages/Settings";
 import Plan from "@/pages/Plan";
 import Login from "@/pages/Login";
 import Admin from "@/pages/Admin";
+import RecentAnalyses from "@/pages/RecentAnalyses";
 
 export const AppRoutes = () => (
   <Routes>
@@ -22,5 +23,6 @@ export const AppRoutes = () => (
     <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
     <Route path="/plan" element={<ProtectedRoute><Plan /></ProtectedRoute>} />
     <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+    <Route path="/analyses" element={<ProtectedRoute><RecentAnalyses /></ProtectedRoute>} />
   </Routes>
 );

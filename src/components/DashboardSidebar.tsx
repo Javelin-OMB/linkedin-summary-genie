@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, CreditCard } from "lucide-react";
+import { LayoutDashboard, Settings, CreditCard, History } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
@@ -19,6 +19,11 @@ const menuItems = [
     title: "Dashboard",
     icon: LayoutDashboard,
     path: "/dashboard"
+  },
+  {
+    title: "Recent Analyses",
+    icon: History,
+    path: "/analyses"
   },
   {
     title: "Settings",
@@ -74,7 +79,7 @@ const DashboardSidebar = () => {
     return (
       <div key={analysis.id} className="mb-4">
         <Link 
-          to={`/dashboard/analysis/${analysis.id}`} 
+          to={`/analyses`} 
           className="flex items-start p-2 hover:bg-gray-100 rounded-md group"
         >
           <div className="flex items-center space-x-3">
