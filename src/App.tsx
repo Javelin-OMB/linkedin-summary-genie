@@ -72,19 +72,21 @@ const SessionHandler = () => {
         console.log('Initial session state:', currentSession?.user?.email);
         
         if (currentSession?.user?.id) {
-          console.log('Existing session found, checking user data');
+          console.log('Session found, checking user data');
           const { data: userData } = await supabase
             .from('users')
-            .select('trial_start')
+            .select('*')
             .eq('id', currentSession.user.id)
             .single();
 
-          if (!userData?.trial_start) {
-            console.log('New user with session - redirecting to pricing');
-            navigate('/pricing');
-          } else {
-            console.log('Existing user with session - redirecting to dashboard');
+          console.log('User data:', userData);
+          
+          if (userData) {
+            console.log('Existing user - redirecting to dashboard');
             navigate('/dashboard');
+          } else {
+            console.log('No user data found - redirecting to pricing');
+            navigate('/pricing');
           }
         }
       } catch (error) {
@@ -109,16 +111,18 @@ const SessionHandler = () => {
         if (currentSession?.user?.id) {
           const { data: userData } = await supabase
             .from('users')
-            .select('trial_start')
+            .select('*')
             .eq('id', currentSession.user.id)
             .single();
 
-          if (!userData?.trial_start) {
-            console.log('New user - redirecting to pricing');
-            navigate('/pricing');
-          } else {
+          console.log('User data after sign in:', userData);
+          
+          if (userData) {
             console.log('Existing user - redirecting to dashboard');
             navigate('/dashboard');
+          } else {
+            console.log('New user - redirecting to pricing');
+            navigate('/pricing');
           }
         }
       } else if (event === 'SIGNED_OUT') {
