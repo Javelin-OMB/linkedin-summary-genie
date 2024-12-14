@@ -11,31 +11,17 @@ export const analyzeLinkedInProfile = async (url: string, userId: string, curren
   console.log('Current credits:', currentCredits);
   
   try {
-    console.log('Making API request to Relevance...');
-    const response = await fetch("https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-MGYzZGM0YzQtNGJhNC00NDlkLWJlZjAtYzA4NjBlMGU0NGFl'
-      },
-      body: JSON.stringify({
-        params: {
-          linkedin_url: url
-        },
-        project: "d607c466-f207-4c47-907f-d928278273e2"
-      })
+    console.log('Making API request via Edge Function...');
+    const { data: functionData, error: functionError } = await supabase.functions.invoke('analyze-linkedin', {
+      body: { url }
     });
 
-    console.log('API Response status:', response.status);
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error Response:', errorText);
-      throw new Error(`Relevance API error: ${response.status} - ${errorText}`);
+    if (functionError) {
+      console.error('Edge Function Error:', functionError);
+      throw new Error(`Edge Function error: ${functionError.message}`);
     }
 
-    const data = await response.json();
-    console.log('API Response data:', data);
+    console.log('API Response data:', functionData);
 
     // Store analysis in Supabase
     console.log('Storing analysis in Supabase...');
@@ -43,7 +29,7 @@ export const analyzeLinkedInProfile = async (url: string, userId: string, curren
       .from('linkedin_analyses')
       .insert({
         linkedin_url: url,
-        analysis: data,
+        analysis: functionData,
         user_id: userId
       });
 
@@ -68,7 +54,7 @@ export const analyzeLinkedInProfile = async (url: string, userId: string, curren
     }
 
     console.log('Analysis completed successfully');
-    return data;
+    return functionData;
   } catch (error) {
     console.error('LinkedIn Analysis Error:', error);
     console.error('Full error object:', JSON.stringify(error, null, 2));

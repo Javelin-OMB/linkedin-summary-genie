@@ -2,13 +2,12 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { corsHeaders } from '../_shared/cors.ts'
 
 serve(async (req) => {
-  // Handle CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { linkedin_url } = await req.json()
+    const { url } = await req.json()
     
     const RELEVANCE_API_KEY = Deno.env.get('RELEVANCE_API_KEY')
     const RELEVANCE_ENDPOINT = Deno.env.get('RELEVANCE_ENDPOINT')
@@ -17,6 +16,8 @@ serve(async (req) => {
       throw new Error('Missing required environment variables')
     }
 
+    console.log('Making request to Relevance API for URL:', url)
+    
     const response = await fetch(RELEVANCE_ENDPOINT, {
       method: 'POST',
       headers: {
@@ -25,7 +26,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         params: {
-          linkedin_url
+          linkedin_url: url
         },
         project: "d607c466-f207-4c47-907f-d928278273e2"
       })
@@ -41,11 +42,12 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error('Error in analyze-linkedin function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500
       }
     )
   }
