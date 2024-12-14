@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import Navigation from './Navigation';
 import SearchLoadingProgress from './SearchLoadingProgress';
 import LoginDialog from './LoginDialog';
+import LeadInfo from './LeadInfo';
 
 const LeadSummary = () => {
   const [url, setUrl] = useState('');
@@ -37,9 +38,11 @@ const LeadSummary = () => {
       }
 
       const data = await response.json();
+      console.log('API Response:', data); // Debug log
       setResult(data);
     } catch (err) {
       setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
+      console.error('API Error:', err);
     } finally {
       setTimeout(() => {
         setLoading(false);
@@ -91,11 +94,7 @@ const LeadSummary = () => {
           )}
 
           {result && (
-            <div className="mt-8">
-              <pre className="whitespace-pre-wrap bg-white p-4 rounded shadow">
-                {JSON.stringify(result, null, 2)}
-              </pre>
-            </div>
+            <LeadInfo data={result} />
           )}
         </div>
       </main>
