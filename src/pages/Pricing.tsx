@@ -3,17 +3,20 @@ import Navigation from "@/components/Navigation";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
+import { useState } from 'react';
+import LoginDialog from "@/components/LoginDialog";
 
 const Pricing = () => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
 
   const handleFreePlan = async () => {
     if (!session) {
-      console.log('No session found, redirecting to login');
-      navigate('/login');
+      console.log('No session found, opening signup dialog');
+      setIsSignupOpen(true);
       return;
     }
 
@@ -162,6 +165,12 @@ const Pricing = () => {
           </div>
         </div>
       </main>
+
+      <LoginDialog 
+        isOpen={isSignupOpen}
+        onOpenChange={setIsSignupOpen}
+        mode="signup"
+      />
     </div>
   );
 };
