@@ -14,7 +14,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from '@supabase/auth-helpers-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -24,15 +24,32 @@ const queryClient = new QueryClient();
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    if (!session) {
-      console.log('No session found, redirecting to login');
-      navigate('/login');
-    } else {
-      console.log('Session found:', session.user.email);
-    }
-  }, [session, navigate]);
+    const checkSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Protected Route - Current session:', currentSession?.user?.email);
+        
+        if (!currentSession) {
+          console.log('No session found in ProtectedRoute, redirecting to login');
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+        navigate('/login');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkSession();
+  }, [navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!session) {
     return null;
@@ -46,11 +63,39 @@ const SessionHandler = () => {
   const session = useSession();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    console.log('Current session state:', session?.user?.email);
+    const initializeSession = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Initial session state:', currentSession?.user?.email);
+        
+        if (currentSession?.user?.id) {
+          console.log('Existing session found, checking user data');
+          const { data: userData } = await supabase
+            .from('users')
+            .select('trial_start')
+            .eq('id', currentSession.user.id)
+            .single();
 
-    // Set up auth state listener
+          if (!userData?.trial_start) {
+            console.log('New user with session - redirecting to pricing');
+            navigate('/pricing');
+          } else {
+            console.log('Existing user with session - redirecting to dashboard');
+            navigate('/dashboard');
+          }
+        }
+      } catch (error) {
+        console.error('Error initializing session:', error);
+      } finally {
+        setIsInitialized(true);
+      }
+    };
+
+    initializeSession();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       console.log('Auth state changed:', event, currentSession?.user?.email);
       
@@ -61,21 +106,20 @@ const SessionHandler = () => {
           description: "Welcome back!",
         });
         
-        // Check if user exists in our users table
-        const { data: userData } = await supabase
-          .from('users')
-          .select('trial_start')
-          .eq('id', currentSession?.user?.id)
-          .single();
+        if (currentSession?.user?.id) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('trial_start')
+            .eq('id', currentSession.user.id)
+            .single();
 
-        if (!userData?.trial_start) {
-          // New user - redirect to pricing
-          console.log('New user - redirecting to pricing');
-          navigate('/pricing');
-        } else {
-          // Existing user - redirect to dashboard
-          console.log('Existing user - redirecting to dashboard');
-          navigate('/dashboard');
+          if (!userData?.trial_start) {
+            console.log('New user - redirecting to pricing');
+            navigate('/pricing');
+          } else {
+            console.log('Existing user - redirecting to dashboard');
+            navigate('/dashboard');
+          }
         }
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
@@ -83,33 +127,14 @@ const SessionHandler = () => {
       }
     });
 
-    // If there's already a session, redirect appropriately
-    if (session?.user?.id) {
-      console.log('Existing session found, checking user data');
-      const checkUserAndRedirect = async () => {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('trial_start')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!userData?.trial_start) {
-          console.log('New user with session - redirecting to pricing');
-          navigate('/pricing');
-        } else {
-          console.log('Existing user with session - redirecting to dashboard');
-          navigate('/dashboard');
-        }
-      };
-
-      checkUserAndRedirect();
-    }
-
-    // Cleanup subscription on unmount
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, toast, session]);
+  }, [navigate, toast]);
+
+  if (!isInitialized) {
+    return <div>Loading...</div>;
+  }
 
   return null;
 };

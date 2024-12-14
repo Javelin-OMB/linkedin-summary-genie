@@ -39,6 +39,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
       setIsLoading(true);
       console.log('Starting login attempt for:', email);
       
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      console.log('Current session before login:', sessionData?.session?.user?.email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password,
@@ -68,6 +71,10 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
         }
 
         console.log('User data from database:', userData);
+
+        // Verify the session was created
+        const { data: newSessionData } = await supabase.auth.getSession();
+        console.log('New session after login:', newSessionData?.session?.user?.email);
 
         toast({
           title: "Success",
