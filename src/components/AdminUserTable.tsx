@@ -17,8 +17,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserData {
   id: string;
@@ -43,7 +44,48 @@ const AdminUserTable = ({
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [newUserEmail, setNewUserEmail] = useState("");
   const [initialCredits, setInitialCredits] = useState("10");
+  const [localUsers, setLocalUsers] = useState<UserData[]>(users);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setLocalUsers(users);
+  }, [users]);
+
+  const handleUpdateCredits = async (userId: string, change: number) => {
+    try {
+      await onUpdateCredits(userId, change);
+      
+      // Fetch the updated user data
+      const { data: updatedUser, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Update the local state
+      setLocalUsers(prevUsers =>
+        prevUsers.map(user =>
+          user.id === userId ? { ...user, credits: updatedUser.credits } : user
+        )
+      );
+
+      toast({
+        title: "Credits bijgewerkt",
+        description: `Credits zijn succesvol bijgewerkt voor ${updatedUser.email}`,
+      });
+    } catch (error) {
+      console.error('Error updating credits:', error);
+      toast({
+        title: "Fout",
+        description: "Er ging iets mis bij het bijwerken van de credits",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleAddUser = async () => {
     if (!newUserEmail.trim()) {
@@ -129,7 +171,7 @@ const AdminUserTable = ({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {localUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="flex items-center gap-2">
                   <User className="h-4 w-4" />
@@ -151,7 +193,7 @@ const AdminUserTable = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onUpdateCredits(user.id, 1)}
+                      onClick={() => handleUpdateCredits(user.id, 1)}
                       title="Credit toevoegen"
                     >
                       <Plus className="h-4 w-4" />
@@ -159,7 +201,7 @@ const AdminUserTable = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onUpdateCredits(user.id, -1)}
+                      onClick={() => handleUpdateCredits(user.id, -1)}
                       title="Credit verwijderen"
                     >
                       <Minus className="h-4 w-4" />
