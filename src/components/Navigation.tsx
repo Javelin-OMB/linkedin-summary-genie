@@ -1,12 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home } from "lucide-react";
+import { Home, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import DesktopMenuItems from './navigation/DesktopMenuItems';
 import MobileMenu from './navigation/MobileMenu';
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
   onLoginClick: () => void;
@@ -67,12 +74,61 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
             </Link>
           </div>
 
-          <DesktopMenuItems 
-            onLoginClick={onLoginClick}
-            isAuthenticated={!!session}
-            isAdmin={isAdmin}
-            handleLogout={handleLogout}
-          />
+          <div className="hidden md:flex items-center space-x-8">
+            <Link to="/about" className="text-gray-600 hover:text-linkedin-primary">About</Link>
+            <Link to="/pricing" className="text-gray-600 hover:text-linkedin-primary">Pricing</Link>
+            
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                  >
+                    <User className="h-5 w-5 mr-1" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    Settings
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      Admin
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Uitloggen
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  onClick={onLoginClick}
+                  className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                >
+                  <User className="h-5 w-5 mr-1" />
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => navigate('/login?mode=signup')}
+                  className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+          </div>
 
           <MobileMenu 
             isAuthenticated={!!session}
