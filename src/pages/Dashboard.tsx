@@ -9,16 +9,46 @@ import DashboardAnalyses from '@/components/dashboard/DashboardAnalyses';
 import DashboardSettings from '@/components/dashboard/DashboardSettings';
 import DashboardPlan from '@/components/dashboard/DashboardPlan';
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const Dashboard = () => {
   const [credits, setCredits] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState<string>('overview');
+  const [isAdmin, setIsAdmin] = useState(false);
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        console.log('Checking admin status for user:', session.user.email);
+        const { data, error } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.error('Error checking admin status:', error);
+          return;
+        }
+
+        setIsAdmin(!!data?.is_admin);
+        if (data?.is_admin) {
+          toast({
+            title: "Admin Access",
+            description: "Je bent ingelogd als administrator",
+          });
+        }
+      } catch (error) {
+        console.error('Error in checkAdminStatus:', error);
+      }
+    };
+
     const fetchCredits = async () => {
       if (!session?.user?.id) return;
 
@@ -47,6 +77,7 @@ const Dashboard = () => {
       }
     };
 
+    checkAdminStatus();
     fetchCredits();
   }, [session, supabase, toast]);
 
@@ -55,7 +86,19 @@ const Dashboard = () => {
       case 'overview':
         return (
           <>
-            <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
+            <div className="flex items-center gap-4 mb-6">
+              <h1 className="text-2xl font-bold text-[#0177B5]">Your Dashboard</h1>
+              {isAdmin && (
+                <Badge variant="secondary" className="bg-[#0177B5] text-white">
+                  Administrator
+                </Badge>
+              )}
+            </div>
+            {session?.user?.email && (
+              <p className="text-gray-600 mb-6">
+                Ingelogd als: {session.user.email}
+              </p>
+            )}
             <DashboardOverview credits={credits} />
           </>
         );
