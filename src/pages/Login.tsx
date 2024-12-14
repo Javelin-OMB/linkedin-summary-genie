@@ -1,6 +1,6 @@
-import { Auth } from '@supabase/auth-ui-react';
-import { ThemeSupa } from '@supabase/auth-ui-shared';
-import { useNavigate } from 'react-router-dom';
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from '@supabase/auth-helpers-react';
@@ -18,23 +18,15 @@ const Login = () => {
           title: "Login successful",
           description: "Welcome back!",
         });
-        navigate('/');
+        navigate('/dashboard');
       } else if (event === 'SIGNED_OUT') {
         navigate('/login');
       } else if (event === 'USER_UPDATED') {
         console.log('User updated:', session);
-      } else if (event === 'USER_DELETED') {
-        navigate('/login');
       } else if (event === 'PASSWORD_RECOVERY') {
         toast({
           title: "Password recovery email sent",
           description: "Please check your email for the recovery link.",
-        });
-      } else if (event === 'AUTH_ERROR') {
-        toast({
-          title: "Authentication error",
-          description: "Please try again or contact support if the problem persists.",
-          variant: "destructive",
         });
       }
     });
@@ -47,15 +39,15 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
-      navigate('/');
+      navigate('/dashboard');
     }
   }, [session, navigate]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-        <h1 className="text-2xl font-bold text-center text-[#0177B5] mb-8">
-          Welcome to LeadSummary
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md bg-white p-8 rounded-lg shadow">
+        <h1 className="text-center text-3xl font-bold text-gray-900 mb-8">
+          Welcome Back
         </h1>
         <Auth
           supabaseClient={supabase}
