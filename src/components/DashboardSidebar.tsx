@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, CreditCard, History } from "lucide-react";
+import { LayoutDashboard, Settings, CreditCard, History, ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { User, Linkedin } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const menuItems = [
   {
@@ -39,6 +40,7 @@ const menuItems = [
 
 const DashboardSidebar = () => {
   const [analyses, setAnalyses] = useState<any[]>([]);
+  const [isExpanded, setIsExpanded] = useState(true);
   const session = useSession();
   const supabase = useSupabaseClient();
 
@@ -125,14 +127,21 @@ const DashboardSidebar = () => {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>Recent Analyses</SidebarGroupLabel>
-          <SidebarGroupContent className="space-y-2">
-            {analyses.length > 0 ? (
-              analyses.map((analysis) => renderProfileSummary(analysis))
-            ) : (
-              <p className="text-sm text-gray-500 px-2">No analyses yet</p>
-            )}
-          </SidebarGroupContent>
+          <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
+            <CollapsibleTrigger className="flex items-center w-full px-2 py-1 text-sm font-medium text-gray-600 hover:text-gray-900">
+              {isExpanded ? <ChevronDown className="w-4 h-4 mr-1" /> : <ChevronRight className="w-4 h-4 mr-1" />}
+              Recent Analyses
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent className="space-y-2">
+                {analyses.length > 0 ? (
+                  analyses.map((analysis) => renderProfileSummary(analysis))
+                ) : (
+                  <p className="text-sm text-gray-500 px-2">No analyses yet</p>
+                )}
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>

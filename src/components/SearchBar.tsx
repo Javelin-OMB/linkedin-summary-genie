@@ -64,7 +64,23 @@ const SearchBar = () => {
       const data = await fetchLinkedInProfile(url);
       setProfileData(data);
 
-      // Store analysis in database
+      // Store analysis in database and manage recent analyses
+      const { data: existingAnalyses } = await supabase
+        .from('linkedin_analyses')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: true });
+
+      // If we have more than 5 analyses, remove the oldest one
+      if (existingAnalyses && existingAnalyses.length >= 5) {
+        const oldestAnalysis = existingAnalyses[0];
+        await supabase
+          .from('linkedin_analyses')
+          .delete()
+          .eq('id', oldestAnalysis.id);
+      }
+
+      // Add new analysis
       await supabase
         .from('linkedin_analyses')
         .insert({
