@@ -44,7 +44,12 @@ const Dashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case 'overview':
-        return <DashboardOverview credits={credits} />;
+        return (
+          <>
+            <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
+            <DashboardOverview credits={credits} />
+          </>
+        );
       case 'plan':
         return <DashboardPlan />;
       case 'analyses':
@@ -52,7 +57,12 @@ const Dashboard = () => {
       case 'settings':
         return <DashboardSettings />;
       default:
-        return <DashboardOverview credits={credits} />;
+        return (
+          <>
+            <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
+            <DashboardOverview credits={credits} />
+          </>
+        );
     }
   };
 
@@ -64,7 +74,6 @@ const Dashboard = () => {
           <Navigation onLoginClick={() => navigate('/login')} />
           <main className="bg-gray-50 p-4 pt-20">
             <div className="max-w-6xl mx-auto">
-              <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
               {renderSection()}
               {credits !== null && (
                 <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
