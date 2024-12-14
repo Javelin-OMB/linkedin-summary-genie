@@ -14,6 +14,7 @@ import {
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isSignupOpen, setIsSignupOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const session = useSession();
   const supabase = useSupabaseClient();
@@ -115,13 +116,12 @@ const Navbar = () => {
                   <User className="h-5 w-5 mr-1" />
                   Login
                 </Button>
-                <Link to="/pricing">
-                  <Button 
-                    className="flex items-center bg-linkedin-primary text-white hover:bg-linkedin-hover"
-                  >
-                    Sign Up
-                  </Button>
-                </Link>
+                <Button 
+                  className="flex items-center bg-linkedin-primary text-white hover:bg-linkedin-hover"
+                  onClick={() => setIsSignupOpen(true)}
+                >
+                  Sign Up
+                </Button>
               </>
             )}
           </div>
@@ -131,6 +131,13 @@ const Navbar = () => {
       <LoginDialog 
         isOpen={isLoginOpen}
         onOpenChange={setIsLoginOpen}
+        mode="login"
+      />
+
+      <LoginDialog 
+        isOpen={isSignupOpen}
+        onOpenChange={setIsSignupOpen}
+        mode="signup"
       />
     </nav>
   );
