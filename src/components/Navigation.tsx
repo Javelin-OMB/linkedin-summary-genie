@@ -40,7 +40,14 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
           </div>
 
           {/* Mobile Menu */}
-          <div className="flex md:hidden items-center space-x-2">
+          <div className="md:hidden flex items-center space-x-2">
+            <Button 
+              variant="outline" 
+              onClick={onLoginClick}
+              className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+            >
+              Login
+            </Button>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-linkedin-primary">
@@ -52,14 +59,6 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                   <Link to="/about" className="text-lg hover:text-linkedin-primary">About</Link>
                   <Link to="/pricing" className="text-lg hover:text-linkedin-primary">Pricing</Link>
                   <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
-                  <div className="h-px bg-gray-200 my-2"></div>
-                  <Button 
-                    variant="outline" 
-                    onClick={onLoginClick}
-                    className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white w-full"
-                  >
-                    Login
-                  </Button>
                 </nav>
               </SheetContent>
             </Sheet>
