@@ -1,9 +1,9 @@
-import Navbar from "@/components/Navbar";
+import Navigation from "@/components/Navigation";
 
 const Pricing = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
+      <Navigation onLoginClick={() => console.log('Login clicked')} />
       <main className="pt-32 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Simple Pricing</h1>
