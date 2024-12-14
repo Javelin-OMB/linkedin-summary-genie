@@ -85,10 +85,10 @@ const DashboardPlan = () => {
           </ul>
 
           <Button 
-            onClick={() => navigate('/plan')}
-            className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+            className="w-full bg-gray-400 hover:bg-gray-500 text-white cursor-not-allowed"
+            disabled
           >
-            Upgrade Now
+            Soon Available
           </Button>
           
           <p className="text-sm text-gray-500 text-center mt-4">
