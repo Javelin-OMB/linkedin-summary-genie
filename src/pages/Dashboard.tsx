@@ -20,18 +20,22 @@ const Dashboard = () => {
     const fetchCredits = async () => {
       if (!session?.user?.id) return;
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('credits')
-        .eq('id', session.user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('credits')
+          .eq('id', session.user.id)
+          .single();
 
-      if (error) {
-        console.error('Error fetching credits:', error);
-        return;
+        if (error) {
+          console.error('Error fetching credits:', error);
+          return;
+        }
+
+        setCredits(data?.credits ?? 0);
+      } catch (error) {
+        console.error('Error in fetchCredits:', error);
       }
-
-      setCredits(data?.credits ?? 0);
     };
 
     fetchCredits();
