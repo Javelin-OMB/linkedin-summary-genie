@@ -9,6 +9,7 @@ interface LeadContentProps {
 
 const LeadContent = ({ data }: LeadContentProps) => {
   const [copying, setCopying] = useState<{ [key: number]: boolean }>({});
+  const [copyingAll, setCopyingAll] = useState(false);
   const { toast } = useToast();
   
   if (!data?.output?.profile_data) return null;
@@ -25,6 +26,27 @@ const LeadContent = ({ data }: LeadContentProps) => {
       });
       setTimeout(() => {
         setCopying(prev => ({ ...prev, [index]: false }));
+      }, 2000);
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "There was an error copying to clipboard.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCopyAll = async () => {
+    try {
+      const allContent = sections.join('\n\n');
+      await navigator.clipboard.writeText(allContent);
+      setCopyingAll(true);
+      toast({
+        title: "Copied to clipboard",
+        description: "The complete lead summary has been copied to your clipboard.",
+      });
+      setTimeout(() => {
+        setCopyingAll(false);
       }, 2000);
     } catch (err) {
       toast({
@@ -86,6 +108,26 @@ const LeadContent = ({ data }: LeadContentProps) => {
           </div>
         );
       })}
+      <div className="flex justify-center mt-8">
+        <Button
+          variant="default"
+          size="lg"
+          onClick={handleCopyAll}
+          className="gap-2"
+        >
+          {copyingAll ? (
+            <>
+              <CheckCheck className="h-5 w-5" />
+              Copied Complete Summary
+            </>
+          ) : (
+            <>
+              <Copy className="h-5 w-5" />
+              Copy Complete Summary
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
