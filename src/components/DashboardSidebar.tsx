@@ -21,6 +21,11 @@ const menuItems = [
     section: "overview"
   },
   {
+    title: "Plan",
+    icon: CreditCard,
+    section: "plan"
+  },
+  {
     title: "Recent Analyses",
     icon: History,
     section: "analyses"
@@ -29,11 +34,6 @@ const menuItems = [
     title: "Settings",
     icon: Settings,
     section: "settings"
-  },
-  {
-    title: "Plan",
-    icon: CreditCard,
-    section: "plan"
   }
 ];
 

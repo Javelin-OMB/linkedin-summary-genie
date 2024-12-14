@@ -45,12 +45,12 @@ const Dashboard = () => {
     switch (activeSection) {
       case 'overview':
         return <DashboardOverview credits={credits} />;
+      case 'plan':
+        return <DashboardPlan />;
       case 'analyses':
         return <DashboardAnalyses />;
       case 'settings':
         return <DashboardSettings />;
-      case 'plan':
-        return <DashboardPlan />;
       default:
         return <DashboardOverview credits={credits} />;
     }
@@ -64,7 +64,13 @@ const Dashboard = () => {
           <Navigation onLoginClick={() => navigate('/login')} />
           <main className="bg-gray-50 p-4 pt-20">
             <div className="max-w-6xl mx-auto">
+              <h1 className="text-2xl font-bold mb-6 text-[#0177B5]">Your Dashboard</h1>
               {renderSection()}
+              {credits !== null && (
+                <div className="mt-6 p-4 bg-white rounded-lg shadow-sm">
+                  <p className="text-gray-600">Available Credits: <span className="font-semibold">{credits}</span></p>
+                </div>
+              )}
             </div>
           </main>
         </div>
