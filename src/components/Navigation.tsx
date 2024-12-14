@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, User, LogOut, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import DesktopMenuItems from './navigation/DesktopMenuItems';
 import MobileMenu from './navigation/MobileMenu';
@@ -27,43 +26,43 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
+  const supabase = useSupabaseClient();
   
   const isDashboardRoute = location.pathname === '/dashboard';
 
   useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session?.user?.id) {
-        try {
-          console.log('Checking admin status for user:', session.user.email);
-          const { data, error } = await supabase
-            .from('users')
-            .select('is_admin, credits')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error) {
-            console.error('Error checking admin status:', error);
-            return;
-          }
-          
-          setIsAdmin(!!data?.is_admin);
-          setCredits(data?.credits ?? 0);
-          console.log('Admin status:', !!data?.is_admin, 'Credits:', data?.credits);
-          
-          if (data?.is_admin) {
-            toast({
-              title: "Admin Access",
-              description: "Je bent ingelogd als administrator",
-            });
-          }
-        } catch (error) {
+    const fetchUserData = async () => {
+      if (!session?.user?.id) return;
+
+      try {
+        console.log('Checking admin status for user:', session.user.email);
+        const { data, error } = await supabase
+          .from('users')
+          .select('is_admin, credits')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
           console.error('Error checking admin status:', error);
+          return;
         }
+        
+        setIsAdmin(!!data?.is_admin);
+        setCredits(data?.credits ?? 0);
+        
+        if (data?.is_admin) {
+          toast({
+            title: "Admin Access",
+            description: "Je bent ingelogd als administrator",
+          });
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
       }
     };
 
-    checkAdminStatus();
-  }, [session, toast]);
+    fetchUserData();
+  }, [session, toast, supabase]);
 
   const handleLogout = async () => {
     try {
@@ -126,7 +125,9 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
                     </DropdownMenuItem>
                   )}
                   <DropdownMenuItem 
-                    onClick={handleLogout}
+                    onClick={() => {
+                      supabase.auth.signOut();
+                    }}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4 mr-2" />

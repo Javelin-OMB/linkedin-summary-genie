@@ -18,10 +18,8 @@ export const SessionHandler = () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (currentSession) {
-          console.log('User signed in:', currentSession.user?.email);
-          
-          // Check if user exists in our users table
+        if (currentSession?.user?.id) {
+          // Get user data in a single query
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -44,13 +42,17 @@ export const SessionHandler = () => {
             });
           }
         } else {
-          console.log('No active session found');
+          console.log('No session found in SessionHandler');
           if (location.pathname !== '/login' && 
               location.pathname !== '/' && 
               location.pathname !== '/about' && 
               location.pathname !== '/pricing') {
-            console.log('No session, redirecting to login');
             navigate('/login');
+            toast({
+              title: "Authentication required",
+              description: "Please log in to access this page",
+              variant: "destructive",
+            });
           }
         }
       } catch (error) {
