@@ -69,7 +69,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         });
         
         onSuccess?.();
-        navigate('/');
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error(`${mode} error:`, error);

@@ -24,12 +24,8 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-center text-gray-500">
-            {description}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <LoginForm onSuccess={() => onOpenChange(false)} mode={mode} />
       </DialogContent>

@@ -30,7 +30,7 @@ export const SessionHandler = () => {
           
           // Only redirect if we're on the login page
           if (location.pathname === '/login') {
-            navigate('/');
+            navigate('/dashboard');
           }
         } else {
           console.log('No active session found');
@@ -58,7 +58,7 @@ export const SessionHandler = () => {
       if (event === 'SIGNED_IN') {
         console.log('User signed in successfully:', session?.user?.email);
         setIsInitialized(true);
-        navigate('/');
+        navigate('/dashboard');
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
