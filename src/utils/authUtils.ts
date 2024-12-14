@@ -1,5 +1,35 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ensureUserRecord } from "./authUtils";
+
+const ensureUserRecord = async (userId: string, email: string) => {
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('id', userId)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    console.error('Error checking existing user:', fetchError);
+    throw fetchError;
+  }
+
+  if (!existingUser) {
+    const { error: insertError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: userId,
+          email: email,
+          trial_start: new Date().toISOString(),
+          credits: 10,
+        }
+      ]);
+
+    if (insertError) {
+      console.error('Error creating user record:', insertError);
+      throw insertError;
+    }
+  }
+};
 
 export const handleSignup = async (email: string, password: string) => {
   const trimmedEmail = email.trim().toLowerCase();
