@@ -17,7 +17,11 @@ serve(async (req) => {
 
     if (!RELEVANCE_API_KEY || !RELEVANCE_ENDPOINT) {
       console.error('Missing required environment variables');
-      throw new Error('Missing required environment variables');
+      throw new Error('Configuration error: Missing API credentials');
+    }
+
+    if (!url || !url.includes('linkedin.com')) {
+      throw new Error('Invalid LinkedIn URL provided');
     }
 
     console.log('Making request to Relevance API...');
@@ -39,11 +43,11 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Relevance API error:', response.status, errorText);
-      throw new Error(`Relevance API error: ${response.status} - ${errorText}`);
+      throw new Error(`Relevance API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Relevance API response received:', data);
+    console.log('Relevance API response received successfully');
 
     return new Response(
       JSON.stringify(data),
@@ -54,6 +58,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in analyze-linkedin function:', error);
+    
+    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'An unexpected error occurred',
