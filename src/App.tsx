@@ -13,6 +13,8 @@ import Plan from "./pages/Plan";
 import Login from "./pages/Login";
 import { supabase } from "@/integrations/supabase/client";
 import { useSession } from '@supabase/auth-helpers-react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,32 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Session handler component
+const SessionHandler = () => {
+  const session = useSession();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      if (event === 'SIGNED_IN') {
+        // Redirect to dashboard on sign in
+        navigate('/dashboard');
+      } else if (event === 'SIGNED_OUT') {
+        // Redirect to home on sign out
+        navigate('/');
+      }
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <SessionContextProvider supabaseClient={supabase}>
@@ -34,6 +62,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <SessionHandler />
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<Index />} />
