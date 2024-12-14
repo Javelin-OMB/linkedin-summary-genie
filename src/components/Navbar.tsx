@@ -36,7 +36,8 @@ const Navbar = () => {
           return;
         }
         
-        console.log('Admin status:', data?.is_admin);
+        console.log('Admin status data:', data);
+        console.log('Is admin value:', data?.is_admin);
         setIsAdmin(!!data?.is_admin);
       }
     };
