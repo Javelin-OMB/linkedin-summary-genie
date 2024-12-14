@@ -38,20 +38,38 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     setIsLoading(true);
 
     try {
+      console.log('Attempting login with email:', email.trim());
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
       });
 
       if (error) {
+        console.error('Supabase auth error:', error);
         throw error;
       }
 
       if (data?.user) {
+        console.log('Login successful for user:', data.user.email);
+        
+        // Check if user exists in our users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          throw userError;
+        }
+
         toast({
           title: "Succesvol ingelogd",
           description: "Je wordt doorgestuurd naar het dashboard...",
         });
+        
         onSuccess?.();
         navigate('/dashboard');
       }
