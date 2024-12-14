@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchLinkedInProfile } from "@/services/linkedinService";
-import ProfileSummary from "./ProfileSummary";
+import LeadInfo from "./LeadInfo";
+import SearchLoadingProgress from "./SearchLoadingProgress";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
@@ -32,6 +33,7 @@ const SearchBar = () => {
         description: "Profile analysis complete",
       });
     } catch (error) {
+      console.error('Error in handleSubmit:', error);
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to analyze profile",
@@ -66,7 +68,9 @@ const SearchBar = () => {
         </div>
       </form>
 
-      {profileData && <ProfileSummary data={profileData} />}
+      <SearchLoadingProgress isLoading={isLoading} />
+      
+      {profileData && <LeadInfo data={profileData} />}
     </div>
   );
 };
