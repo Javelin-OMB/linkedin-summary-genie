@@ -71,7 +71,10 @@ const Dashboard = () => {
       <div className="flex min-h-screen w-full">
         <DashboardSidebar onSectionChange={setActiveSection} />
         <div className="flex-1">
-          <Navigation onLoginClick={() => navigate('/login')} />
+          <Navigation 
+            onLoginClick={() => navigate('/login')} 
+            onSectionChange={setActiveSection}
+          />
           <main className="bg-gray-50 p-4 pt-20">
             <div className="max-w-6xl mx-auto">
               {renderSection()}

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Home, LogIn, LogOut, UserPlus, Users } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
+import { Menu, Home, LogIn, LogOut, UserPlus, Users, LayoutDashboard, Settings, CreditCard, History } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useSession } from '@supabase/auth-helpers-react';
 import {
   Sheet,
   SheetContent,
@@ -19,18 +19,45 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface NavigationProps {
   onLoginClick: () => void;
+  onSectionChange?: (section: string) => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
+const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }) => {
   const session = useSession();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const isDashboardRoute = location.pathname === '/dashboard';
+
+  const dashboardSections = [
+    {
+      title: "Dashboard",
+      icon: LayoutDashboard,
+      section: "overview"
+    },
+    {
+      title: "Plan",
+      icon: CreditCard,
+      section: "plan"
+    },
+    {
+      title: "Recent Leadsummaries",
+      icon: History,
+      section: "analyses"
+    },
+    {
+      title: "Settings",
+      icon: Settings,
+      section: "settings"
+    }
+  ];
 
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (session?.user?.id) {
-        console.log('Checking admin status for user:', session.user.email);
         try {
           const { data, error } = await supabase
             .from('users')
@@ -60,6 +87,13 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
       description: "You have been logged out of your account.",
     });
     navigate('/');
+  };
+
+  const handleSectionClick = (section: string) => {
+    if (onSectionChange) {
+      onSectionChange(section);
+      setIsSheetOpen(false);
+    }
   };
 
   return (
@@ -161,7 +195,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                 </Button>
               </div>
             )}
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-linkedin-primary">
                   <Menu className="h-6 w-6" />
@@ -176,6 +210,21 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
                       <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
                       {isAdmin && (
                         <Link to="/admin" className="text-lg hover:text-linkedin-primary">Admin</Link>
+                      )}
+                      {isDashboardRoute && (
+                        <div className="pt-4 border-t">
+                          <h3 className="text-sm font-semibold text-gray-500 mb-4">Dashboard Sections</h3>
+                          {dashboardSections.map((item) => (
+                            <button
+                              key={item.section}
+                              onClick={() => handleSectionClick(item.section)}
+                              className="flex items-center space-x-2 w-full py-2 px-2 rounded-lg hover:bg-gray-100 text-gray-700"
+                            >
+                              <item.icon className="w-5 h-5" />
+                              <span>{item.title}</span>
+                            </button>
+                          ))}
+                        </div>
                       )}
                     </>
                   )}
