@@ -31,6 +31,8 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
   const isDashboardRoute = location.pathname === '/dashboard';
 
   useEffect(() => {
+    let isSubscribed = true;
+
     const fetchUserData = async () => {
       if (!session?.user?.id) return;
 
@@ -46,6 +48,8 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
           console.error('Error checking admin status:', error);
           return;
         }
+
+        if (!isSubscribed) return;
         
         setIsAdmin(!!data?.is_admin);
         setCredits(data?.credits ?? 0);
@@ -62,6 +66,10 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
     };
 
     fetchUserData();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [session, toast, supabase]);
 
   const handleLogout = async () => {

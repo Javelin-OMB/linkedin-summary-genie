@@ -13,40 +13,15 @@ export const SessionHandler = () => {
 
   useEffect(() => {
     console.log('Initializing auth state...');
+    let isSubscribed = true;
     
     const checkSession = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (currentSession?.user?.id) {
-          // Get user data in a single query
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', currentSession.user.id)
-            .single();
-
-          if (userError) {
-            console.error('Error fetching user data:', userError);
-            return;
-          }
-
-          setIsInitialized(true);
-          
-          // Only redirect if we're on the login page
-          if (location.pathname === '/login') {
-            navigate('/dashboard');
-            toast({
-              title: "Welcome back!",
-              description: "You've been successfully logged in.",
-            });
-          }
-        } else {
+        if (!currentSession?.user?.id) {
           console.log('No session found in SessionHandler');
-          if (location.pathname !== '/login' && 
-              location.pathname !== '/' && 
-              location.pathname !== '/about' && 
-              location.pathname !== '/pricing') {
+          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/login');
             toast({
               title: "Authentication required",
@@ -54,6 +29,31 @@ export const SessionHandler = () => {
               variant: "destructive",
             });
           }
+          return;
+        }
+
+        if (!isSubscribed) return;
+
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', currentSession.user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          return;
+        }
+
+        if (!isSubscribed) return;
+        setIsInitialized(true);
+
+        if (location.pathname === '/login') {
+          navigate('/dashboard');
+          toast({
+            title: "Welcome back!",
+            description: "You've been successfully logged in.",
+          });
         }
       } catch (error) {
         console.error('Error checking session:', error);
@@ -93,6 +93,7 @@ export const SessionHandler = () => {
 
     return () => {
       console.log('Cleaning up auth subscriptions');
+      isSubscribed = false;
       subscription.unsubscribe();
     };
   }, [supabase, navigate, location.pathname, toast]);
