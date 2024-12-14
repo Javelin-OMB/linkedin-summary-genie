@@ -40,6 +40,21 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
     try {
       if (mode === 'signup') {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('email', trimmedEmail)
+          .single();
+
+        if (existingUser) {
+          toast({
+            title: "Account bestaat al",
+            description: "Log in met je bestaande account of gebruik een ander e-mailadres.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
@@ -54,11 +69,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         if (data.user) {
           await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
           toast({
-            title: "Success",
-            description: "Account created! Please check your email for confirmation.",
+            title: "Account aangemaakt",
+            description: "Je account is succesvol aangemaakt! Je kunt nu inloggen.",
           });
-          onSuccess?.();
-          navigate('/dashboard');
+          // Redirect to login after successful registration
+          navigate('/login');
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -66,12 +81,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           password,
         });
 
-        if (error) throw error;
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "Inloggen mislukt",
+              description: "Controleer je e-mailadres en wachtwoord of maak eerst een account aan.",
+              variant: "destructive",
+            });
+            return;
+          }
+          throw error;
+        }
 
         if (data.user) {
           toast({
-            title: "Success",
-            description: "Login successful! Redirecting...",
+            title: "Succesvol ingelogd",
+            description: "Je wordt doorgestuurd naar het dashboard...",
           });
           onSuccess?.();
           navigate('/dashboard');
@@ -79,16 +104,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
     } catch (error: any) {
       console.error(`${mode} error:`, error);
-      let errorMessage = "Something went wrong. Please try again.";
+      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Invalid login credentials. Please check your email and password.";
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Email not confirmed. Please check your inbox for the confirmation link.";
+      if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "E-mail nog niet bevestigd. Controleer je inbox voor de bevestigingslink.";
       }
       
       toast({
-        title: `${mode === 'login' ? 'Login' : 'Registration'} failed`,
+        title: `${mode === 'login' ? 'Inloggen' : 'Registratie'} mislukt`,
         description: errorMessage,
         variant: "destructive",
       });
@@ -100,23 +123,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Email address</label>
+        <label className="text-sm font-medium">E-mailadres</label>
         <Input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Your email address"
+          placeholder="Vul je e-mailadres in"
           required
           disabled={isLoading}
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium">Password</label>
+        <label className="text-sm font-medium">Wachtwoord</label>
         <Input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Your password"
+          placeholder="Vul je wachtwoord in"
           required
           disabled={isLoading}
         />
@@ -127,8 +150,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         disabled={isLoading}
       >
         {isLoading 
-          ? (mode === 'login' ? "Logging in..." : "Creating account...") 
-          : (mode === 'login' ? "Login" : "Create account")}
+          ? (mode === 'login' ? "Bezig met inloggen..." : "Account aanmaken...") 
+          : (mode === 'login' ? "Inloggen" : "Account aanmaken")}
       </Button>
       <LoginLinks mode={mode} />
     </form>
