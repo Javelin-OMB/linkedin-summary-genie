@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Check } from "lucide-react";
@@ -23,7 +23,16 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits: propCred
   const credits = propCredits ?? hookCredits;
   const maxFreeSearches = 10;
   const usagePercentage = credits !== null ? ((maxFreeSearches - credits) / maxFreeSearches) * 100 : 0;
-  const showNoCreditsDialog = credits === 0;
+  const [showNoCreditsDialog, setShowNoCreditsDialog] = React.useState(credits === 0);
+
+  // Add useEffect to watch credits changes
+  useEffect(() => {
+    if (credits && credits > 0) {
+      setShowNoCreditsDialog(false);
+    } else if (credits === 0) {
+      setShowNoCreditsDialog(true);
+    }
+  }, [credits]);
 
   const handleEmailClick = () => {
     window.location.href = 'mailto:tom.spoor@ombdigital.io';
