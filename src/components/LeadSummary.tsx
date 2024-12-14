@@ -6,7 +6,7 @@ const LeadSummary = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen px-4 pt-16 pb-8">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 pt-8 pb-8">
       <div className="max-w-3xl text-center space-y-6">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
           Transform LinkedIn Profiles into Actionable Sales Insights
