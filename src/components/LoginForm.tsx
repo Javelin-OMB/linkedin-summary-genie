@@ -81,9 +81,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         
         onSuccess?.();
         
-        // Always redirect to dashboard after successful login
-        console.log('Redirecting to dashboard after successful login');
-        navigate('/dashboard');
+        // Always redirect to homepage after successful login
+        console.log('Redirecting to homepage after successful login');
+        navigate('/');
       }
     } catch (error) {
       console.error('Login error:', error);

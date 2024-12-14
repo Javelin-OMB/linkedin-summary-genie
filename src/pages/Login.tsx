@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
 import LoginForm from '@/components/LoginForm';
-import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Login = () => {
   const session = useSession();
@@ -10,8 +9,8 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
-      console.log('User is already logged in, redirecting...');
-      navigate('/dashboard');
+      console.log('User is already logged in, redirecting to homepage...');
+      navigate('/');
     }
   }, [session, navigate]);
 
