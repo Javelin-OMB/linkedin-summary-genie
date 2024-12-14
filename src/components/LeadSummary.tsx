@@ -48,8 +48,8 @@ const LeadSummary = () => {
 
     if (credits === 0) {
       toast({
-        title: "No credits remaining",
-        description: "Please purchase more credits to continue using the service.",
+        title: "Geen credits meer",
+        description: "Koop meer credits om door te gaan met de service.",
         variant: "destructive",
       });
       return;
@@ -81,11 +81,11 @@ const LeadSummary = () => {
         <div className="max-w-4xl mx-auto p-4">
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-[#0177B5]">
-              Get instant insights and conversation starters from any LinkedIn profile
+              Krijg direct inzichten en gespreksopeners van elk LinkedIn profiel
             </h1>
             {session && (
               <p className="mt-4 text-gray-600">
-                Credits remaining: {credits ?? '...'}
+                Credits over: {credits ?? '...'}
               </p>
             )}
           </div>
