@@ -81,11 +81,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       console.log(`${mode} successful for user:`, data.user?.email);
       
       if (data.user) {
+        // Check if user exists in our users table
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
           .eq('id', data.user.id)
           .single();
+
+        console.log('User data from database:', userData);
+        console.log('User error from database:', userError);
 
         if (userError && mode === 'signup') {
           console.log('Creating new user record');
@@ -114,7 +118,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         });
         
         onSuccess?.();
-        navigate('/dashboard');
+        navigate('/');
       }
     } catch (error) {
       console.error(`${mode} error:`, error);
