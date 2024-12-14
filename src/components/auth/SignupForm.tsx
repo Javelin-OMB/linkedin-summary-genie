@@ -2,26 +2,20 @@ import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
-import LoginFormFields from './auth/LoginFormFields';
-import LoginLinks from './auth/LoginLinks';
-import SignupForm from './auth/SignupForm';
-import { handleLogin } from '@/utils/authUtils';
+import LoginFormFields from './LoginFormFields';
+import LoginLinks from './LoginLinks';
+import { handleSignup } from '@/utils/authUtils';
 
-interface LoginFormProps {
+interface SignupFormProps {
   onSuccess?: () => void;
-  mode?: 'login' | 'signup';
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
+const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  if (mode === 'signup') {
-    return <SignupForm onSuccess={onSuccess} />;
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,19 +32,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     setIsLoading(true);
 
     try {
-      await handleLogin(email, password);
+      await handleSignup(email, password);
       
       toast({
-        title: "Succesvol ingelogd",
-        description: "Je wordt doorgestuurd naar het dashboard...",
+        title: "Account aangemaakt",
+        description: "Je account is succesvol aangemaakt en je bent nu ingelogd!",
       });
       onSuccess?.();
       navigate('/dashboard');
     } catch (error: any) {
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
-      if (error.message === 'INVALID_CREDENTIALS') {
-        errorMessage = "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.";
+      if (error.message === 'ACCOUNT_EXISTS') {
+        errorMessage = "Log in met je bestaande account of gebruik een ander e-mailadres.";
       } else if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
       } else if (error.message?.includes('Email not confirmed')) {
@@ -58,7 +52,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
       
       toast({
-        title: "Inloggen mislukt",
+        title: "Registratie mislukt",
         description: errorMessage,
         variant: "destructive",
       });
@@ -81,11 +75,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
         disabled={isLoading}
       >
-        {isLoading ? "Bezig met inloggen..." : "Inloggen"}
+        {isLoading ? "Account aanmaken..." : "Account aanmaken"}
       </Button>
-      <LoginLinks mode="login" />
+      <LoginLinks mode="signup" />
     </form>
   );
 };
 
-export default LoginForm;
+export default SignupForm;

@@ -1,55 +1,57 @@
 import { supabase } from "@/integrations/supabase/client";
+import { ensureUserRecord } from "./authUtils";
 
-export const ensureUserRecord = async (userId: string, userEmail: string) => {
-  console.log('Checking for existing user record...');
+export const handleSignup = async (email: string, password: string) => {
+  const trimmedEmail = email.trim().toLowerCase();
   
-  try {
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
+  // Check if user already exists
+  const { data: existingUser } = await supabase
+    .from('users')
+    .select('id')
+    .eq('email', trimmedEmail)
+    .single();
 
-    if (checkError) {
-      console.log('Error checking user record:', checkError);
-      console.log('Creating new user record...');
-      
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: userId,
-            email: userEmail,
-            trial_start: new Date().toISOString(),
-            credits: 10,
-            is_admin: userEmail === 'tom.spoor@ombdigital.io' // Set admin for specific email
-          }
-        ]);
-
-      if (insertError) {
-        console.error('Error creating user record:', insertError);
-        throw new Error('Failed to create user record');
-      }
-      console.log('User record created successfully');
-    } else {
-      console.log('Existing user record found:', existingUser);
-    }
-  } catch (error) {
-    console.error('Error in ensureUserRecord:', error);
-    throw error;
+  if (existingUser) {
+    throw new Error('ACCOUNT_EXISTS');
   }
+
+  // Create new user
+  const { data, error: signUpError } = await supabase.auth.signUp({
+    email: trimmedEmail,
+    password,
+  });
+
+  if (signUpError) throw signUpError;
+
+  if (data?.user) {
+    await ensureUserRecord(data.user.id, trimmedEmail);
+    
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: trimmedEmail,
+      password,
+    });
+
+    if (signInError) throw signInError;
+    return data.user;
+  }
+  
+  throw new Error('SIGNUP_FAILED');
 };
 
-export const validateLoginInputs = (email: string, password: string) => {
-  const errors: string[] = [];
+export const handleLogin = async (email: string, password: string) => {
+  const trimmedEmail = email.trim().toLowerCase();
   
-  if (!email.trim()) {
-    errors.push("Email is required");
+  const { data, error: signInError } = await supabase.auth.signInWithPassword({
+    email: trimmedEmail,
+    password,
+  });
+
+  if (signInError) {
+    if (signInError.message?.includes('Invalid login credentials')) {
+      throw new Error('INVALID_CREDENTIALS');
+    }
+    throw signInError;
   }
-  
-  if (!password) {
-    errors.push("Password is required");
-  }
-  
-  return errors;
+
+  return data.user;
 };
