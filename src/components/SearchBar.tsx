@@ -6,12 +6,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { fetchLinkedInProfile } from "@/services/linkedinService";
 import LeadInfo from "./LeadInfo";
 import SearchLoadingProgress from "./SearchLoadingProgress";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast } = useToast();
+
+  // Simulated auth state - replace with your actual auth logic
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +32,11 @@ const SearchBar = () => {
         description: "Please enter a valid LinkedIn profile URL",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (!isLoggedIn) {
+      setShowAuthDialog(true);
       return;
     }
 
@@ -42,6 +58,14 @@ const SearchBar = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogin = (email: string, password: string) => {
+    // Implement your login logic here
+    localStorage.setItem("isLoggedIn", "true");
+    setShowAuthDialog(false);
+    // Automatically submit the form after successful login
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
   return (
@@ -71,6 +95,46 @@ const SearchBar = () => {
       <SearchLoadingProgress isLoading={isLoading} />
       
       {profileData && <LeadInfo data={profileData} />}
+
+      <Dialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Authentication Required</DialogTitle>
+            <DialogDescription>
+              To analyze LinkedIn profiles, you need to be logged in.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-4">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">Already a customer?</h3>
+              <Button 
+                onClick={() => {
+                  setShowAuthDialog(false);
+                  // Trigger your login dialog here
+                  document.querySelector<HTMLButtonElement>('[data-login-trigger]')?.click();
+                }}
+                className="w-full bg-linkedin-primary hover:bg-linkedin-hover"
+              >
+                Login
+              </Button>
+            </div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold mb-2">New to LeadSummary?</h3>
+              <Button 
+                variant="outline"
+                onClick={() => {
+                  setShowAuthDialog(false);
+                  // Navigate to signup page or trigger signup dialog
+                  window.location.href = "/pricing";
+                }}
+                className="w-full border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+              >
+                Sign Up
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
