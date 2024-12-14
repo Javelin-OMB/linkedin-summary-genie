@@ -13,7 +13,7 @@ export const SessionInitializer = ({ userId, setIsInitialized }: SessionInitiali
 
   useEffect(() => {
     const initializeSession = async () => {
-      console.log('Checking user data for:', userId);
+      console.log('Initializing session for user:', userId);
       
       try {
         const { data: userData, error: userError } = await supabase
@@ -24,28 +24,26 @@ export const SessionInitializer = ({ userId, setIsInitialized }: SessionInitiali
 
         if (userError) {
           console.error('Error fetching user data:', userError);
-          setIsInitialized(true);
-          return;
+          throw userError;
         }
 
-        console.log('User data:', userData);
+        console.log('User data retrieved:', userData);
         
         if (userData) {
-          console.log('Existing user - redirecting to homepage');
-          navigate('/');
+          console.log('Session initialized successfully');
+          setIsInitialized(true);
         } else {
           console.log('No user data found - redirecting to pricing');
           navigate('/pricing');
         }
       } catch (error) {
         console.error('Error initializing session:', error);
-      } finally {
-        setIsInitialized(true);
+        navigate('/login');
       }
     };
 
     initializeSession();
   }, [userId, navigate, setIsInitialized]);
 
-  return <LoadingSpinner message="Initializing session..." />;
+  return <LoadingSpinner message="Even geduld..." />;
 };
