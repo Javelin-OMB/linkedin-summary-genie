@@ -25,25 +25,45 @@ const Navbar = () => {
     const checkAdminStatus = async () => {
       if (session?.user?.id) {
         console.log('Checking admin status for user:', session.user.email);
-        const { data, error } = await supabase
-          .from('users')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
         
-        if (error) {
-          console.error('Error checking admin status:', error);
-          return;
+        try {
+          const { data, error } = await supabase
+            .from('users')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error) {
+            console.error('Error checking admin status:', error);
+            toast({
+              title: "Error",
+              description: "Could not verify admin status",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          console.log('Admin check response:', data);
+          console.log('Is admin value:', data?.is_admin);
+          
+          setIsAdmin(!!data?.is_admin);
+          
+          if (data?.is_admin) {
+            console.log('User confirmed as admin');
+          } else {
+            console.log('User is not an admin');
+          }
+        } catch (err) {
+          console.error('Unexpected error during admin check:', err);
         }
-        
-        console.log('Admin status data:', data);
-        console.log('Is admin value:', data?.is_admin);
-        setIsAdmin(!!data?.is_admin);
+      } else {
+        console.log('No user session found');
+        setIsAdmin(false);
       }
     };
 
     checkAdminStatus();
-  }, [session, supabase]);
+  }, [session, supabase, toast]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
