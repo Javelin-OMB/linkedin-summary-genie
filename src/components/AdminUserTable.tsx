@@ -1,4 +1,4 @@
-import { User, Plus, Minus, Check, X } from "lucide-react";
+import { User, Plus, Minus, Check, X, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface UserData {
   id: string;
@@ -29,8 +30,8 @@ const AdminUserTable = ({ users, onUpdateCredits, onToggleAdmin }: AdminUserTabl
         <TableHeader>
           <TableRow>
             <TableHead>User</TableHead>
+            <TableHead>Role</TableHead>
             <TableHead>Credits</TableHead>
-            <TableHead>Admin</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -41,14 +42,17 @@ const AdminUserTable = ({ users, onUpdateCredits, onToggleAdmin }: AdminUserTabl
                 <User className="h-4 w-4" />
                 {user.email}
               </TableCell>
-              <TableCell>{user.credits}</TableCell>
               <TableCell>
                 {user.is_admin ? (
-                  <Check className="h-4 w-4 text-green-500" />
+                  <Badge variant="default" className="bg-linkedin-primary hover:bg-linkedin-primary">
+                    <Shield className="h-3 w-3 mr-1" />
+                    Admin
+                  </Badge>
                 ) : (
-                  <X className="h-4 w-4 text-red-500" />
+                  <Badge variant="secondary">User</Badge>
                 )}
               </TableCell>
+              <TableCell>{user.credits}</TableCell>
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Button
@@ -69,11 +73,12 @@ const AdminUserTable = ({ users, onUpdateCredits, onToggleAdmin }: AdminUserTabl
                     variant="outline"
                     size="sm"
                     onClick={() => onToggleAdmin(user.id)}
+                    className={user.is_admin ? "border-red-500 hover:border-red-600" : "border-green-500 hover:border-green-600"}
                   >
                     {user.is_admin ? (
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 text-red-500" />
                     ) : (
-                      <Check className="h-4 w-4" />
+                      <Check className="h-4 w-4 text-green-500" />
                     )}
                   </Button>
                 </div>
