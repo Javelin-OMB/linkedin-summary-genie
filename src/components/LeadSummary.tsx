@@ -18,23 +18,31 @@ const LeadSummary = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const fetchCredits = async () => {
+    if (!session?.user?.id) return;
+
+    try {
+      console.log('Fetching credits for user:', session.user.email);
+      const { data, error } = await supabase
+        .from('users')
+        .select('credits')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching credits:', error);
+        return;
+      }
+
+      console.log('Credits fetched:', data?.credits);
+      setCredits(data?.credits ?? 0);
+    } catch (error) {
+      console.error('Error in fetchCredits:', error);
+    }
+  };
+
   useEffect(() => {
     if (session) {
-      const fetchCredits = async () => {
-        const { data, error } = await supabase
-          .from('users')
-          .select('credits')
-          .eq('id', session.user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching credits:', error);
-          return;
-        }
-
-        setCredits(data?.credits ?? 0);
-      };
-
       fetchCredits();
     }
   }, [session, supabase]);
@@ -45,6 +53,9 @@ const LeadSummary = () => {
       navigate('/login');
       return;
     }
+
+    // Fetch latest credits before analyzing
+    await fetchCredits();
 
     if (credits === 0) {
       toast({
@@ -62,7 +73,8 @@ const LeadSummary = () => {
     try {
       const data = await analyzeLinkedInProfile(url, session.user.id, credits);
       setResult(data);
-      setCredits(prev => prev !== null ? prev - 1 : null);
+      // Refresh credits after successful analysis
+      await fetchCredits();
     } catch (err) {
       console.error('Error analyzing profile:', err);
       setError('Er ging iets mis bij het analyseren van het profiel. Probeer het opnieuw.');
