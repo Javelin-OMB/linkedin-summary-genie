@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
 import LoginForm from '@/components/LoginForm';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const Login = () => {
   const session = useSession();
