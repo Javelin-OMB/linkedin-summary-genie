@@ -8,17 +8,14 @@ export const analyzeLinkedInProfile = async (url: string, userId: string, curren
   console.log('Making API request with URL:', url);
   
   try {
-    const response = await fetch('https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited', {
+    // Get the API key and endpoint from Supabase Edge Function
+    const response = await fetch('/api/analyze-linkedin', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'd607c466-f207-4c47-907f-d928278273e2:sk-YjBhNjVmMjltZjg3Zi00ZjMyLWFlMWMtM2E1NDhiOWU4MmIw'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        params: {
-          linkedin_url: url
-        },
-        project: "d607c466-f207-4c47-907f-d928278273e2"
+        linkedin_url: url
       })
     });
 
