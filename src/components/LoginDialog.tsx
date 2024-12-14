@@ -37,7 +37,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
 
     try {
       setIsLoading(true);
-      console.log('Attempting login with:', email);
+      console.log('Starting login attempt for:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
@@ -45,25 +45,29 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
       });
 
       if (error) {
-        console.error('Login error:', error);
+        console.error('Supabase login error:', error.message);
         throw error;
       }
 
-      console.log('Login response:', data);
+      console.log('Raw login response:', data);
 
       if (data.user) {
-        console.log('Login successful:', data.user.email);
+        console.log('Login successful for user:', data.user.email);
+        console.log('User ID:', data.user.id);
         
         // Check if user exists in our users table
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('trial_start')
+          .select('trial_start, email')
           .eq('id', data.user.id)
           .single();
 
         if (userError) {
           console.error('Error fetching user data:', userError);
+          // Continue anyway since the auth was successful
         }
+
+        console.log('User data from database:', userData);
 
         toast({
           title: "Success",
@@ -79,12 +83,15 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
           console.log('Existing user - redirecting to dashboard');
           navigate('/dashboard');
         }
+      } else {
+        console.error('No user data in response');
+        throw new Error('Login successful but no user data received');
       }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Login error details:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to login. Please check your credentials.",
+        title: "Login Failed",
+        description: error instanceof Error ? error.message : "Failed to login. Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
