@@ -114,9 +114,9 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits: propCred
       <AlertDialog open={showNoCreditsDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Need More Analyses?</AlertDialogTitle>
+            <AlertDialogTitle>Need More Leadsummaries?</AlertDialogTitle>
             <AlertDialogDescription>
-              You've used all your free analyses. Would you like to test more? Contact us to discuss your needs.
+              You've used all your free leadsummaries. Would you like to test more? Contact us to discuss your needs.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
