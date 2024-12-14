@@ -47,7 +47,20 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
       if (error) {
         console.error('Supabase auth error:', error);
-        throw error;
+        let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
+        
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.";
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
+        }
+        
+        toast({
+          title: "Inloggen mislukt",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return;
       }
 
       if (data?.user) {
@@ -62,7 +75,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
         if (userError) {
           console.error('Error fetching user data:', userError);
-          throw userError;
+          toast({
+            title: "Fout bij ophalen gebruikersgegevens",
+            description: "Er is een fout opgetreden bij het ophalen van je gebruikersgegevens. Probeer het opnieuw.",
+            variant: "destructive",
+          });
+          return;
         }
 
         toast({
