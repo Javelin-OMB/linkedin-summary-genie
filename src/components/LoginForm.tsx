@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
+import { ensureUserRecord, validateLoginInputs } from '@/utils/authUtils';
+import LoginLinks from './auth/LoginLinks';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -17,63 +19,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const validateInputs = () => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
-      toast({
-        title: "Error",
-        description: "Email is vereist",
-        variant: "destructive",
-      });
-      return false;
-    }
-    if (!password) {
-      toast({
-        title: "Error",
-        description: "Wachtwoord is vereist",
-        variant: "destructive",
-      });
-      return false;
-    }
-    return true;
-  };
-
-  const ensureUserRecord = async (userId: string, userEmail: string) => {
-    console.log('Checking for existing user record...');
-    const { data: existingUser, error: checkError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (checkError) {
-      console.log('Error checking user record:', checkError);
-      console.log('Creating new user record...');
-      const { error: insertError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: userId,
-            email: userEmail,
-            trial_start: new Date().toISOString(),
-            credits: 10
-          }
-        ]);
-
-      if (insertError) {
-        console.error('Error creating user record:', insertError);
-        throw new Error('Failed to create user record');
-      }
-      console.log('User record created successfully');
-    } else {
-      console.log('Existing user record found:', existingUser);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validateInputs()) {
+    const errors = validateLoginInputs(email, password);
+    if (errors.length > 0) {
+      errors.forEach(error => {
+        toast({
+          title: "Error",
+          description: error,
+          variant: "destructive",
+        });
+      });
       return;
     }
 
@@ -82,39 +39,28 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       const trimmedEmail = email.trim();
       console.log(`Starting ${mode} attempt for:`, trimmedEmail);
       
-      let authResponse;
-      if (mode === 'signup') {
-        console.log('Attempting signup...');
-        authResponse = await supabase.auth.signUp({
-          email: trimmedEmail,
-          password: password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: {
-              email: trimmedEmail,
+      const authResponse = mode === 'signup'
+        ? await supabase.auth.signUp({
+            email: trimmedEmail,
+            password: password,
+            options: {
+              emailRedirectTo: window.location.origin,
+              data: { email: trimmedEmail }
             }
-          }
-        });
-      } else {
-        console.log('Attempting login...');
-        authResponse = await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password: password,
-        });
-      }
+          })
+        : await supabase.auth.signInWithPassword({
+            email: trimmedEmail,
+            password: password,
+          });
 
       const { data, error } = authResponse;
 
-      if (error) {
-        console.error(`Supabase ${mode} error:`, error.message);
-        throw error;
-      }
+      if (error) throw error;
 
       console.log(`${mode} successful for user:`, data.user?.email);
       
       if (data.user) {
         await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
-
         toast({
           title: "Success",
           description: mode === 'login' 
@@ -176,24 +122,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
         disabled={isLoading}
       >
-        {isLoading ? (mode === 'login' ? "Bezig met inloggen..." : "Account aanmaken...") : (mode === 'login' ? "Inloggen" : "Account aanmaken")}
+        {isLoading 
+          ? (mode === 'login' ? "Bezig met inloggen..." : "Account aanmaken...") 
+          : (mode === 'login' ? "Inloggen" : "Account aanmaken")}
       </Button>
-      <div className="space-y-2 text-center">
-        {mode === 'login' ? (
-          <>
-            <a href="#" className="text-sm text-[#0177B5] hover:underline block">
-              Wachtwoord vergeten?
-            </a>
-            <a href="/pricing" className="text-sm text-[#0177B5] hover:underline block">
-              Nog geen account? Registreer je hier
-            </a>
-          </>
-        ) : (
-          <a href="#" className="text-sm text-[#0177B5] hover:underline block" onClick={() => navigate('/login')}>
-            Al een account? Log hier in
-          </a>
-        )}
-      </div>
+      <LoginLinks mode={mode} />
     </form>
   );
 };
