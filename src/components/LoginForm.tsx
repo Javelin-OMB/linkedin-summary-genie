@@ -39,45 +39,43 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     console.log(`Starting ${mode} attempt for:`, trimmedEmail);
 
     try {
-      let authResponse;
-      
       if (mode === 'signup') {
-        authResponse = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
-          password: password,
+          password,
           options: {
             emailRedirectTo: window.location.origin,
             data: { email: trimmedEmail }
           }
         });
-      } else {
-        authResponse = await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password: password,
-        });
-      }
 
-      if (authResponse.error) {
-        throw authResponse.error;
-      }
+        if (error) throw error;
 
-      const user = authResponse.data.user;
-      console.log(`${mode} successful for user:`, user?.email);
-      
-      if (user) {
-        if (mode === 'signup') {
-          await ensureUserRecord(user.id, user.email || trimmedEmail);
+        if (data.user) {
+          await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
+          toast({
+            title: "Success",
+            description: "Account created! Please check your email for confirmation.",
+          });
+          onSuccess?.();
+          navigate('/dashboard');
         }
-        
-        toast({
-          title: "Success",
-          description: mode === 'login' 
-            ? "Login successful! Redirecting..." 
-            : "Account created! Redirecting...",
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
         });
-        
-        onSuccess?.();
-        navigate('/dashboard');
+
+        if (error) throw error;
+
+        if (data.user) {
+          toast({
+            title: "Success",
+            description: "Login successful! Redirecting...",
+          });
+          onSuccess?.();
+          navigate('/dashboard');
+        }
       }
     } catch (error: any) {
       console.error(`${mode} error:`, error);
