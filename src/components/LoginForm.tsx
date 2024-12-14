@@ -22,25 +22,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const errors = validateLoginInputs(email, password);
-    if (errors.length > 0) {
-      errors.forEach(error => {
-        toast({
-          title: "Error",
-          description: error,
-          variant: "destructive",
-        });
+    // Additional validation before submission
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Validatie fout",
+        description: "Vul zowel je e-mailadres als wachtwoord in",
+        variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    const trimmedEmail = email.trim().toLowerCase(); // Normalize email
-    console.log(`Starting ${mode} attempt for:`, trimmedEmail);
+    const trimmedEmail = email.trim().toLowerCase();
+    console.log(`Attempting ${mode} for email:`, trimmedEmail);
 
     try {
       if (mode === 'signup') {
-        // Check if user already exists
+        console.log('Starting signup process...');
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
@@ -57,13 +55,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           return;
         }
 
-        // Proceed with signup
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
-          options: {
-            emailRedirectTo: window.location.origin,
-          }
         });
 
         if (signUpError) {
@@ -72,16 +66,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         }
 
         if (data?.user) {
-          await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
+          await ensureUserRecord(data.user.id, trimmedEmail);
+          console.log('User record created, attempting auto-login...');
           
-          // Direct login since email confirmation is disabled
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: trimmedEmail,
             password,
           });
 
           if (signInError) {
-            console.error('Auto-login error:', signInError);
+            console.error('Auto-login after signup failed:', signInError);
             throw signInError;
           }
 
@@ -93,7 +87,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           navigate('/dashboard');
         }
       } else {
-        // Handle login
+        console.log('Starting login process...');
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
@@ -105,7 +99,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           if (signInError.message?.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
-              description: "Controleer je e-mailadres en wachtwoord.",
+              description: "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.",
               variant: "destructive",
             });
             setIsLoading(false);
@@ -115,6 +109,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           throw signInError;
         }
 
+        console.log('Login successful, redirecting...');
         toast({
           title: "Succesvol ingelogd",
           description: "Je wordt doorgestuurd naar het dashboard...",
@@ -128,7 +123,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
       
       if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Controleer je e-mailadres en wachtwoord.";
+        errorMessage = "E-mailadres of wachtwoord is onjuist. Controleer je gegevens en probeer het opnieuw.";
       } else if (error.message?.includes('rate limit')) {
         errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
       } else if (error.message?.includes('Email not confirmed')) {
