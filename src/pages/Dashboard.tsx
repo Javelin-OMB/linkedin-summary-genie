@@ -23,38 +23,69 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    let isSubscribed = true;
+
     const fetchUserData = async () => {
-      if (!session?.user?.id) return;
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         console.log('Fetching user data for:', session.user.email);
-        const { data, error } = await supabase
+        
+        // First check if the user exists and is admin
+        const { data: adminData, error: adminError } = await supabase
           .from('users')
-          .select('is_admin, credits')
+          .select('is_admin')
           .eq('id', session.user.id)
           .single();
 
-        if (error) {
-          console.error('Error fetching user data:', error);
+        if (adminError) {
+          console.error('Error checking admin status:', adminError);
           toast({
             title: "Error",
-            description: "Could not load user data",
+            description: "Could not verify admin status",
             variant: "destructive",
           });
           return;
         }
 
-        console.log('User data fetched:', data);
-        setIsAdmin(!!data?.is_admin);
-        setCredits(data?.credits ?? 0);
+        if (isSubscribed) {
+          setIsAdmin(!!adminData?.is_admin);
+          console.log('Admin status:', !!adminData?.is_admin);
+        }
+
+        // Then fetch credits in a separate query
+        const { data: creditsData, error: creditsError } = await supabase
+          .from('users')
+          .select('credits')
+          .eq('id', session.user.id)
+          .single();
+
+        if (creditsError) {
+          console.error('Error fetching credits:', creditsError);
+          return;
+        }
+
+        if (isSubscribed) {
+          setCredits(creditsData?.credits ?? 0);
+          console.log('Credits:', creditsData?.credits);
+        }
       } catch (error) {
         console.error('Error in fetchUserData:', error);
       } finally {
-        setIsLoading(false);
+        if (isSubscribed) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchUserData();
+
+    return () => {
+      isSubscribed = false;
+    };
   }, [session, supabase, toast]);
 
   const renderSection = () => {
