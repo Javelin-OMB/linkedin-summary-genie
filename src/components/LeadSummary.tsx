@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navigation from './Navigation';
 import SearchLoadingProgress from './SearchLoadingProgress';
-import LoginDialog from './LoginDialog';
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -13,7 +12,6 @@ const LeadSummary = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const session = useSession();
   const supabase = useSupabaseClient();
@@ -43,7 +41,8 @@ const LeadSummary = () => {
 
   const handleAnalyze = async () => {
     if (!session) {
-      setIsLoginOpen(true);
+      console.log('No session, redirecting to login');
+      navigate('/login');
       return;
     }
 
@@ -116,10 +115,6 @@ const LeadSummary = () => {
     }
   };
 
-  const handleLogin = (email: string, password: string) => {
-    navigate('/login');
-  };
-
   return (
     <div className="w-full">
       <Navigation onLoginClick={() => navigate('/login')} />
@@ -172,12 +167,6 @@ const LeadSummary = () => {
           )}
         </div>
       </main>
-
-      <LoginDialog 
-        isOpen={isLoginOpen}
-        onOpenChange={setIsLoginOpen}
-        onSubmit={handleLogin}
-      />
     </div>
   );
 };
