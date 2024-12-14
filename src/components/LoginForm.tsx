@@ -40,6 +40,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
     try {
       if (mode === 'signup') {
+        // Check if user already exists
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')
@@ -52,10 +53,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             description: "Log in met je bestaande account of gebruik een ander e-mailadres.",
             variant: "destructive",
           });
+          setIsLoading(false);
           return;
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        // Proceed with signup
+        const signUpResult = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
           options: {
@@ -64,36 +67,37 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           }
         });
 
-        if (error) throw error;
+        if (signUpResult.error) throw signUpResult.error;
 
-        if (data.user) {
-          await ensureUserRecord(data.user.id, data.user.email || trimmedEmail);
+        if (signUpResult.data.user) {
+          await ensureUserRecord(signUpResult.data.user.id, signUpResult.data.user.email || trimmedEmail);
           toast({
             title: "Account aangemaakt",
-            description: "Je account is succesvol aangemaakt! Je kunt nu inloggen.",
+            description: "Je account is succesvol aangemaakt! Controleer je email voor de bevestigingslink.",
           });
-          // Redirect to login after successful registration
           navigate('/login');
         }
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        // Handle login
+        const signInResult = await supabase.auth.signInWithPassword({
           email: trimmedEmail,
           password,
         });
 
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
+        if (signInResult.error) {
+          if (signInResult.error.message.includes('Invalid login credentials')) {
             toast({
               title: "Inloggen mislukt",
               description: "Controleer je e-mailadres en wachtwoord of maak eerst een account aan.",
               variant: "destructive",
             });
+            setIsLoading(false);
             return;
           }
-          throw error;
+          throw signInResult.error;
         }
 
-        if (data.user) {
+        if (signInResult.data.user) {
           toast({
             title: "Succesvol ingelogd",
             description: "Je wordt doorgestuurd naar het dashboard...",
