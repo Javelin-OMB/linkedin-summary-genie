@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, Home, LogOut } from "lucide-react";
+import { Menu, Home, LogIn, LogOut, UserPlus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import {
@@ -8,6 +8,13 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/components/ui/use-toast";
 
 interface NavigationProps {
   onLoginClick: () => void;
@@ -17,10 +24,15 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
+    toast({
+      title: "Logged out successfully",
+      description: "You have been logged out of your account.",
+    });
+    navigate('/');
   };
 
   return (
@@ -42,45 +54,73 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
             {session ? (
               <>
                 <Link to="/dashboard" className="text-gray-600 hover:text-linkedin-primary">Dashboard</Link>
-                <Button 
-                  variant="outline" 
-                  onClick={handleLogout}
-                  className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Logout
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white">
+                      Account
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
-              <Button 
-                variant="outline" 
-                onClick={onLoginClick}
-                className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              >
-                Login
-              </Button>
+              <div className="flex items-center space-x-4">
+                <Button 
+                  variant="outline" 
+                  onClick={onLoginClick}
+                  className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+                <Button 
+                  onClick={() => navigate('/login')}
+                  className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Sign Up
+                </Button>
+              </div>
             )}
           </div>
 
           {/* Mobile Menu */}
           <div className="md:hidden flex items-center space-x-2">
             {session ? (
-              <Button 
-                variant="outline" 
-                onClick={handleLogout}
-                className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white">
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleLogout}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button 
-                variant="outline" 
-                onClick={onLoginClick}
-                className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-              >
-                Login
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={onLoginClick}
+                  className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+                >
+                  <LogIn className="w-4 h-4" />
+                </Button>
+                <Button 
+                  onClick={() => navigate('/login')}
+                  className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
+                >
+                  <UserPlus className="w-4 h-4" />
+                </Button>
+              </div>
             )}
             <Sheet>
               <SheetTrigger asChild>
