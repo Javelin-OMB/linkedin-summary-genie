@@ -43,21 +43,11 @@ const Navbar = () => {
             return;
           }
           
-          console.log('Admin check response:', data);
-          console.log('Is admin value:', data?.is_admin);
-          
           setIsAdmin(!!data?.is_admin);
-          
-          if (data?.is_admin) {
-            console.log('User confirmed as admin');
-          } else {
-            console.log('User is not an admin');
-          }
         } catch (err) {
           console.error('Unexpected error during admin check:', err);
         }
       } else {
-        console.log('No user session found');
         setIsAdmin(false);
       }
     };
@@ -66,12 +56,34 @@ const Navbar = () => {
   }, [session, supabase, toast]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account.",
-    });
-    navigate('/');
+    try {
+      console.log('Starting logout process...');
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Uitloggen mislukt",
+          description: "Er is een fout opgetreden tijdens het uitloggen. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Logout successful');
+      toast({
+        title: "Uitgelogd",
+        description: "Je bent succesvol uitgelogd.",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Unexpected logout error:', error);
+      toast({
+        title: "Uitloggen mislukt",
+        description: "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -121,9 +133,12 @@ const Navbar = () => {
                       Admin
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={handleLogout}>
+                  <DropdownMenuItem 
+                    onClick={handleLogout}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    Uitloggen
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
