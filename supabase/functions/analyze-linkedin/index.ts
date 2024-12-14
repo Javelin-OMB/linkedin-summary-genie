@@ -37,12 +37,13 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error('Relevance API error:', response.status, await response.text());
-      throw new Error(`Relevance API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Relevance API error:', response.status, errorText);
+      throw new Error(`Relevance API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Relevance API response received');
+    console.log('Relevance API response received:', data);
 
     return new Response(
       JSON.stringify(data),
