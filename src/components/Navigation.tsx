@@ -54,7 +54,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
           console.log('Admin status confirmed for user:', session.user.email);
           toast({
             title: "Admin Access",
-            description: "Je bent ingelogd als administrator",
+            description: "You are logged in as administrator",
           });
         }
       } catch (error) {
@@ -72,15 +72,15 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
       if (error) throw error;
 
       toast({
-        title: "Uitgelogd",
-        description: "Je bent succesvol uitgelogd.",
+        title: "Logged Out",
+        description: "You have been successfully logged out.",
       });
       navigate('/');
     } catch (error) {
       console.error('Error during logout:', error);
       toast({
-        title: "Uitloggen mislukt",
-        description: "Er is een fout opgetreden tijdens het uitloggen.",
+        title: "Logout Failed",
+        description: "An error occurred during logout.",
         variant: "destructive",
       });
     }
@@ -130,7 +130,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Uitloggen
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
