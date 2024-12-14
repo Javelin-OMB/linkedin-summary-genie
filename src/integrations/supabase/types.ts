@@ -35,20 +35,26 @@ export type Database = {
       }
       users: {
         Row: {
+          credits: number | null
           email: string
           id: string
+          is_admin: boolean | null
           name: string | null
           trial_start: string | null
         }
         Insert: {
+          credits?: number | null
           email: string
           id: string
+          is_admin?: boolean | null
           name?: string | null
           trial_start?: string | null
         }
         Update: {
+          credits?: number | null
           email?: string
           id?: string
+          is_admin?: boolean | null
           name?: string | null
           trial_start?: string | null
         }
