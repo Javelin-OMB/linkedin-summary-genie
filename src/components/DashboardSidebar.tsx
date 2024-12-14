@@ -12,8 +12,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { User, Linkedin, ChevronDown, ChevronUp } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { User, Linkedin } from "lucide-react";
 
 const menuItems = [
   {
@@ -35,7 +34,6 @@ const menuItems = [
 
 const DashboardSidebar = () => {
   const [analyses, setAnalyses] = useState<any[]>([]);
-  const [expandedAnalysis, setExpandedAnalysis] = useState<string | null>(null);
   const session = useSession();
   const supabase = useSupabaseClient();
 
@@ -72,13 +70,12 @@ const DashboardSidebar = () => {
     const sections = profileData.split('\n\n');
     const profileInfo = sections[0]?.split('\n') || [];
     const name = profileInfo[1]?.replace('- ', '') || 'Name not available';
-    const summary = sections[1]?.split('\n')[1] || 'No summary available';
 
     return (
       <div key={analysis.id} className="mb-4">
-        <div 
-          className="flex items-start justify-between p-2 hover:bg-gray-100 rounded-md cursor-pointer"
-          onClick={() => setExpandedAnalysis(expandedAnalysis === analysis.id ? null : analysis.id)}
+        <Link 
+          to={`/dashboard/analysis/${analysis.id}`} 
+          className="flex items-start p-2 hover:bg-gray-100 rounded-md group"
         >
           <div className="flex items-center space-x-3">
             <User className="h-4 w-4 text-gray-500" />
@@ -96,32 +93,7 @@ const DashboardSidebar = () => {
               </a>
             </div>
           </div>
-          {expandedAnalysis === analysis.id ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
-        </div>
-        
-        <p className="text-xs text-gray-600 px-2 line-clamp-1">{summary}</p>
-        
-        {expandedAnalysis === analysis.id && (
-          <Card className="mt-2 p-3 bg-gray-50">
-            {sections.map((section, index) => {
-              const [title, ...content] = section.split('\n');
-              return (
-                <div key={index} className="mb-3 last:mb-0">
-                  <h4 className="text-xs font-medium mb-1">{title}</h4>
-                  <div className="text-xs text-gray-600 space-y-1">
-                    {content.map((line, lineIndex) => (
-                      <p key={lineIndex}>{line.trim()}</p>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </Card>
-        )}
+        </Link>
       </div>
     );
   };
