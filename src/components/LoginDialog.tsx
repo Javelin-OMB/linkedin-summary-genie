@@ -56,9 +56,6 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
       const trimmedEmail = email.trim();
       console.log('Starting login attempt for:', trimmedEmail);
       
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      console.log('Current session before login:', sessionData?.session?.user?.email);
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email: trimmedEmail,
         password: password,
@@ -69,29 +66,18 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
         throw error;
       }
 
-      console.log('Raw login response:', data);
-
+      console.log('Login successful for user:', data.user?.email);
+      
       if (data.user) {
-        console.log('Login successful for user:', data.user.email);
-        console.log('User ID:', data.user.id);
-        
-        // Check if user exists in our users table
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('trial_start, email')
+          .select('trial_start')
           .eq('id', data.user.id)
           .single();
 
         if (userError) {
           console.error('Error fetching user data:', userError);
-          // Continue anyway since the auth was successful
         }
-
-        console.log('User data from database:', userData);
-
-        // Verify the session was created
-        const { data: newSessionData } = await supabase.auth.getSession();
-        console.log('New session after login:', newSessionData?.session?.user?.email);
 
         toast({
           title: "Success",
@@ -107,12 +93,9 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
           console.log('Existing user - redirecting to dashboard');
           navigate('/dashboard');
         }
-      } else {
-        console.error('No user data in response');
-        throw new Error('Login successful but no user data received');
       }
     } catch (error) {
-      console.error('Login error details:', error);
+      console.error('Login error:', error);
       toast({
         title: "Login Failed",
         description: error instanceof Error ? error.message : "Failed to login. Please check your credentials and try again.",
@@ -125,41 +108,47 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Login to LeadSummary</DialogTitle>
+          <DialogTitle className="text-2xl font-bold text-center">Welcome Back</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Email</label>
+            <label className="text-sm font-medium">Email address</label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="Your email address"
               required
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">Password</label>
+            <label className="text-sm font-medium">Your Password</label>
             <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
               required
               disabled={isLoading}
             />
           </div>
           <Button 
             type="submit" 
-            className="w-full bg-linkedin-primary hover:bg-linkedin-hover"
+            className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
             disabled={isLoading}
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Signing in..." : "Sign in"}
           </Button>
-          <div className="text-center text-sm text-gray-500">
-            Don't have an account? <a href="/pricing" className="text-linkedin-primary hover:underline cursor-pointer">Sign up</a>
+          <div className="space-y-2 text-center">
+            <a href="#" className="text-sm text-[#0177B5] hover:underline block">
+              Forgot your password?
+            </a>
+            <a href="/pricing" className="text-sm text-[#0177B5] hover:underline block">
+              Don't have an account? Sign up
+            </a>
           </div>
         </form>
       </DialogContent>
