@@ -16,6 +16,10 @@ const DashboardPlan = () => {
           <div className="mb-6">
             <h2 className="text-xl font-semibold mb-2">Current Usage</h2>
             <p className="text-gray-600">Free Plan</p>
+            <div className="mt-4">
+              <span className="text-3xl font-bold">10</span>
+              <span className="text-gray-600 ml-1">free analyses</span>
+            </div>
           </div>
 
           <ul className="space-y-3 mb-6 text-gray-600">
@@ -32,6 +36,13 @@ const DashboardPlan = () => {
               Basic insights
             </li>
           </ul>
+
+          <Button 
+            onClick={() => navigate('/pricing')}
+            className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+          >
+            Get Free Trial
+          </Button>
         </Card>
 
         {/* Pro Plan */}
