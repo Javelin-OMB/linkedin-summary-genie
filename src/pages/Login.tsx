@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
-import LoginDialog from '@/components/LoginDialog';
+import LoginForm from '@/components/LoginForm';
 
 const Login = () => {
   const session = useSession();
@@ -16,13 +16,10 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <LoginDialog 
-        isOpen={true} 
-        onOpenChange={() => {
-          // This dialog should always stay open on the login page
-          return;
-        }} 
-      />
+      <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
+        <h1 className="text-2xl font-bold text-center mb-6">Welcome Back</h1>
+        <LoginForm />
+      </div>
     </div>
   );
 };
