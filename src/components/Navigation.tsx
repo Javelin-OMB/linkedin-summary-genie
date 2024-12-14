@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, User, LogOut } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useSession } from '@supabase/auth-helpers-react';
+import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import DesktopMenuItems from './navigation/DesktopMenuItems';
@@ -39,14 +39,12 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
             .eq('id', session.user.id)
             .single();
           
-          if (error) {
-            console.error('Error checking admin status:', error);
-            return;
-          }
+          if (error) throw error;
           
           setIsAdmin(!!data?.is_admin);
+          console.log('Navigation: Admin status checked:', !!data?.is_admin);
         } catch (error) {
-          console.error('Error in checkAdminStatus:', error);
+          console.error('Error checking admin status:', error);
         }
       }
     };
@@ -55,12 +53,24 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
   }, [session]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged out successfully",
-      description: "You have been logged out of your account.",
-    });
-    navigate('/');
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) throw error;
+
+      toast({
+        title: "Uitgelogd",
+        description: "Je bent succesvol uitgelogd.",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast({
+        title: "Uitloggen mislukt",
+        description: "Er is een fout opgetreden tijdens het uitloggen.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

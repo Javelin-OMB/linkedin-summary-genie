@@ -25,27 +25,24 @@ const Dashboard = () => {
       if (!session?.user?.id) return;
 
       try {
-        console.log('Checking admin status for user:', session.user.email);
         const { data, error } = await supabase
           .from('users')
           .select('is_admin')
           .eq('id', session.user.id)
           .single();
 
-        if (error) {
-          console.error('Error checking admin status:', error);
-          return;
-        }
+        if (error) throw error;
 
         setIsAdmin(!!data?.is_admin);
         if (data?.is_admin) {
+          console.log('User is admin:', session.user.email);
           toast({
             title: "Admin Access",
             description: "Je bent ingelogd als administrator",
           });
         }
       } catch (error) {
-        console.error('Error in checkAdminStatus:', error);
+        console.error('Error checking admin status:', error);
       }
     };
 
@@ -53,30 +50,22 @@ const Dashboard = () => {
       if (!session?.user?.id) return;
 
       try {
-        console.log('Fetching credits for user:', session.user.id);
         const { data, error } = await supabase
           .from('users')
           .select('credits')
           .eq('id', session.user.id)
           .single();
 
-        if (error) {
-          console.error('Error fetching credits:', error);
-          toast({
-            title: "Error",
-            description: "Could not load credits information",
-            variant: "destructive",
-          });
-          return;
-        }
+        if (error) throw error;
 
-        console.log('Fetched credits:', data);
+        console.log('Fetched credits:', data?.credits);
         setCredits(data?.credits ?? 0);
       } catch (error) {
-        console.error('Error in fetchCredits:', error);
+        console.error('Error fetching credits:', error);
       }
     };
 
+    // Run both checks
     checkAdminStatus();
     fetchCredits();
   }, [session, supabase, toast]);
@@ -95,9 +84,14 @@ const Dashboard = () => {
               )}
             </div>
             {session?.user?.email && (
-              <p className="text-gray-600 mb-6">
-                Ingelogd als: {session.user.email}
-              </p>
+              <div className="space-y-2 mb-6">
+                <p className="text-gray-600">
+                  Ingelogd als: {session.user.email}
+                </p>
+                <p className="text-gray-600 font-medium">
+                  Beschikbare credits: {credits !== null ? credits : '...'}
+                </p>
+              </div>
             )}
             <DashboardOverview credits={credits} />
           </>
