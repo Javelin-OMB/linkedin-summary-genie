@@ -34,46 +34,34 @@ const Dashboard = () => {
       try {
         console.log('Fetching user data for:', session.user.email);
         
-        // First check if the user exists and is admin
-        const { data: adminData, error: adminError } = await supabase
+        const { data, error } = await supabase
           .from('users')
-          .select('is_admin')
+          .select('is_admin, credits')
           .eq('id', session.user.id)
           .single();
 
-        if (adminError) {
-          console.error('Error checking admin status:', adminError);
+        if (error) {
+          console.error('Error fetching user data:', error);
           toast({
             title: "Error",
-            description: "Could not verify admin status",
+            description: "Could not load user data",
             variant: "destructive",
           });
           return;
         }
 
         if (isSubscribed) {
-          setIsAdmin(!!adminData?.is_admin);
-          console.log('Admin status:', !!adminData?.is_admin);
-        }
-
-        // Then fetch credits in a separate query
-        const { data: creditsData, error: creditsError } = await supabase
-          .from('users')
-          .select('credits')
-          .eq('id', session.user.id)
-          .single();
-
-        if (creditsError) {
-          console.error('Error fetching credits:', creditsError);
-          return;
-        }
-
-        if (isSubscribed) {
-          setCredits(creditsData?.credits ?? 0);
-          console.log('Credits:', creditsData?.credits);
+          setIsAdmin(!!data?.is_admin);
+          setCredits(data?.credits ?? 0);
+          console.log('User data loaded:', { isAdmin: data?.is_admin, credits: data?.credits });
         }
       } catch (error) {
         console.error('Error in fetchUserData:', error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while loading user data",
+          variant: "destructive",
+        });
       } finally {
         if (isSubscribed) {
           setIsLoading(false);
