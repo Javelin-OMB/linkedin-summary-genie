@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, User, LogOut, Users } from "lucide-react";
+import { useEffect, useState } from 'react';
+import { Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
+import DesktopMenu from './navigation/DesktopMenu';
 import MobileMenu from './navigation/MobileMenu';
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface NavigationProps {
   onLoginClick: () => void;
@@ -19,11 +12,10 @@ interface NavigationProps {
 
 const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const session = useSession();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const supabase = useSupabaseClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -76,7 +68,6 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
         title: "Uitgelogd",
         description: "Je bent succesvol uitgelogd.",
       });
-      navigate('/');
     } catch (error) {
       console.error('Unexpected logout error:', error);
       toast({
@@ -98,62 +89,13 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center space-x-8">
-            <Link to="/about" className="text-gray-600 hover:text-linkedin-primary">About</Link>
-            <Link to="/pricing" className="text-gray-600 hover:text-linkedin-primary">Pricing</Link>
-            
-            {session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-                  >
-                    <User className="h-5 w-5 mr-1" />
-                    Account {credits !== null && `(${credits} credits)`}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                    Dashboard
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/settings')}>
-                    Settings
-                  </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Admin Panel
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={handleLogout}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Uitloggen
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <div className="flex items-center space-x-4">
-                <Button 
-                  variant="outline" 
-                  onClick={onLoginClick}
-                  className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
-                >
-                  <User className="h-5 w-5 mr-1" />
-                  Login
-                </Button>
-                <Button 
-                  onClick={() => navigate('/login?mode=signup')}
-                  className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
-                >
-                  Sign Up
-                </Button>
-              </div>
-            )}
-          </div>
+          <DesktopMenu 
+            session={!!session}
+            isAdmin={isAdmin}
+            credits={credits}
+            onLoginClick={onLoginClick}
+            handleLogout={handleLogout}
+          />
 
           <MobileMenu 
             isAuthenticated={!!session}
