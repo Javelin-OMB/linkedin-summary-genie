@@ -88,8 +88,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           description: "Je wordt doorgestuurd naar het dashboard...",
         });
         
+        // Close any open dialogs or modals
         onSuccess?.();
-        navigate('/dashboard');
+        
+        // Use a timeout to ensure the toast is shown and any dialogs are closed
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
       }
     } catch (error: any) {
       console.error('Login error:', error);
