@@ -44,6 +44,13 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               About
             </Link>
             <Link 
+              to="/how-it-works" 
+              className="text-lg hover:text-linkedin-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              How it Works
+            </Link>
+            <Link 
               to="/pricing" 
               className="text-lg hover:text-linkedin-primary"
               onClick={() => setIsOpen(false)}
