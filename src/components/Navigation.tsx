@@ -4,7 +4,6 @@ import { Home, User, LogOut, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
-import DesktopMenuItems from './navigation/DesktopMenuItems';
 import MobileMenu from './navigation/MobileMenu';
 import { Button } from "@/components/ui/button";
 import {
@@ -16,19 +15,15 @@ import {
 
 interface NavigationProps {
   onLoginClick: () => void;
-  onSectionChange?: (section: string) => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }) => {
+const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const session = useSession();
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
   const supabase = useSupabaseClient();
-  
-  const isDashboardRoute = location.pathname === '/dashboard';
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -164,8 +159,8 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
             isAuthenticated={!!session}
             isAdmin={isAdmin}
             onLoginClick={onLoginClick}
-            onSectionChange={onSectionChange}
-            isDashboardRoute={isDashboardRoute}
+            handleLogout={handleLogout}
+            credits={credits}
           />
         </div>
       </div>

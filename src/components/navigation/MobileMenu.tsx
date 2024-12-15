@@ -1,17 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { 
-  Menu, 
-  LogIn, 
-  UserPlus,
-  LayoutDashboard,
-  CreditCard,
-  History,
-  Settings,
-  Users,
-  LogOut
-} from "lucide-react";
+import { Menu, LogOut, User } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -22,53 +12,23 @@ interface MobileMenuProps {
   isAuthenticated: boolean;
   isAdmin: boolean;
   onLoginClick: () => void;
-  onSectionChange?: (section: string) => void;
-  isDashboardRoute: boolean;
+  handleLogout: () => void;
+  credits?: number | null;
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({
   isAuthenticated,
   isAdmin,
   onLoginClick,
-  onSectionChange,
-  isDashboardRoute
+  handleLogout,
+  credits
 }) => {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
-  const handleSectionClick = (section: string) => {
-    if (onSectionChange) {
-      onSectionChange(section);
-      setIsSheetOpen(false);
-    }
-  };
-
-  const dashboardSections = [
-    {
-      title: "Dashboard",
-      icon: LayoutDashboard,
-      section: "overview"
-    },
-    {
-      title: "Plan",
-      icon: CreditCard,
-      section: "plan"
-    },
-    {
-      title: "Recent Leadsummaries",
-      icon: History,
-      section: "analyses"
-    },
-    {
-      title: "Settings",
-      icon: Settings,
-      section: "settings"
-    }
-  ];
 
   return (
     <div className="md:hidden">
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button variant="ghost" size="icon" className="text-linkedin-primary">
             <Menu className="h-6 w-6" />
@@ -76,38 +36,51 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         </SheetTrigger>
         <SheetContent>
           <nav className="flex flex-col space-y-4 mt-8">
-            <Link to="/about" className="text-lg hover:text-linkedin-primary">About</Link>
-            <Link to="/pricing" className="text-lg hover:text-linkedin-primary">Pricing</Link>
-            {isAuthenticated && (
+            <Link 
+              to="/about" 
+              className="text-lg hover:text-linkedin-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              About
+            </Link>
+            <Link 
+              to="/pricing" 
+              className="text-lg hover:text-linkedin-primary"
+              onClick={() => setIsOpen(false)}
+            >
+              Pricing
+            </Link>
+            
+            {isAuthenticated ? (
               <>
-                <Link to="/dashboard" className="text-lg hover:text-linkedin-primary">Dashboard</Link>
-                <Link to="/settings" className="text-lg hover:text-linkedin-primary">Settings</Link>
+                <Link 
+                  to="/dashboard" 
+                  className="text-lg hover:text-linkedin-primary"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Dashboard {credits !== null && `(${credits} credits)`}
+                </Link>
+                <Link 
+                  to="/settings" 
+                  className="text-lg hover:text-linkedin-primary"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Settings
+                </Link>
                 {isAdmin && (
-                  <Link to="/admin" className="text-lg hover:text-linkedin-primary flex items-center">
-                    <Users className="w-5 h-5 mr-2" />
+                  <Link 
+                    to="/admin" 
+                    className="text-lg hover:text-linkedin-primary flex items-center"
+                    onClick={() => setIsOpen(false)}
+                  >
                     Admin Panel
                   </Link>
-                )}
-                {isDashboardRoute && (
-                  <div className="pt-4 border-t">
-                    <h3 className="text-sm font-semibold text-gray-500 mb-4">Dashboard Sections</h3>
-                    {dashboardSections.map((item) => (
-                      <button
-                        key={item.section}
-                        onClick={() => handleSectionClick(item.section)}
-                        className="flex items-center space-x-2 w-full py-2 px-2 rounded-lg hover:bg-gray-100 text-gray-700"
-                      >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.title}</span>
-                      </button>
-                    ))}
-                  </div>
                 )}
                 <Button 
                   variant="ghost" 
                   onClick={() => {
-                    setIsSheetOpen(false);
-                    navigate('/');
+                    setIsOpen(false);
+                    handleLogout();
                   }}
                   className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                 >
@@ -115,28 +88,26 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   Uitloggen
                 </Button>
               </>
-            )}
-            {!isAuthenticated && (
+            ) : (
               <div className="flex flex-col space-y-2">
                 <Button 
                   variant="outline" 
                   onClick={() => {
-                    setIsSheetOpen(false);
+                    setIsOpen(false);
                     onLoginClick();
                   }}
                   className="w-full justify-center"
                 >
-                  <LogIn className="w-4 h-4 mr-2" />
+                  <User className="w-4 h-4 mr-2" />
                   Login
                 </Button>
                 <Button 
                   onClick={() => {
-                    setIsSheetOpen(false);
+                    setIsOpen(false);
                     navigate('/login?mode=signup');
                   }}
-                  className="w-full justify-center"
+                  className="w-full justify-center bg-linkedin-primary hover:bg-linkedin-hover text-white"
                 >
-                  <UserPlus className="w-4 h-4 mr-2" />
                   Sign Up
                 </Button>
               </div>
