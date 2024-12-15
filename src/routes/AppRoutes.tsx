@@ -9,12 +9,14 @@ import Plan from "@/pages/Plan";
 import Login from "@/pages/Login";
 import Admin from "@/pages/Admin";
 import RecentAnalyses from "@/pages/RecentAnalyses";
+import HowItWorks from "@/pages/HowItWorks";
 
 export const AppRoutes = () => (
   <Routes>
     {/* Public routes */}
     <Route path="/" element={<Index />} />
     <Route path="/about" element={<About />} />
+    <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/pricing" element={<Pricing />} />
     <Route path="/login" element={<Login />} />
     
