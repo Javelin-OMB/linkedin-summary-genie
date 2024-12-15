@@ -52,10 +52,6 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
         
         if (data?.is_admin) {
           console.log('Admin status confirmed for user:', session.user.email);
-          toast({
-            title: "Admin Access",
-            description: "You are logged in as administrator",
-          });
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
@@ -63,24 +59,34 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
     };
 
     fetchUserData();
-  }, [session, toast, supabase]);
+  }, [session, supabase]);
 
   const handleLogout = async () => {
     try {
+      console.log('Starting logout process...');
       const { error } = await supabase.auth.signOut();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Logout error:', error);
+        toast({
+          title: "Uitloggen mislukt",
+          description: "Er is een fout opgetreden tijdens het uitloggen. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        return;
+      }
 
+      console.log('Logout successful');
       toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out.",
+        title: "Uitgelogd",
+        description: "Je bent succesvol uitgelogd.",
       });
       navigate('/');
     } catch (error) {
-      console.error('Error during logout:', error);
+      console.error('Unexpected logout error:', error);
       toast({
-        title: "Logout Failed",
-        description: "An error occurred during logout.",
+        title: "Uitloggen mislukt",
+        description: "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
         variant: "destructive",
       });
     }
@@ -130,7 +136,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick, onSectionChange }
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Logout
+                    Uitloggen
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
