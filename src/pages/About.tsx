@@ -1,3 +1,5 @@
+import Navigation from "@/components/Navigation";
+
 const About = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
