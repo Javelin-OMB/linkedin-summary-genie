@@ -11,6 +11,7 @@ import DashboardPlan from '@/components/dashboard/DashboardPlan';
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Dashboard = () => {
   const [credits, setCredits] = useState<number | null>(null);
@@ -21,6 +22,7 @@ const Dashboard = () => {
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -96,6 +98,7 @@ const Dashboard = () => {
               </div>
             )}
             <DashboardOverview credits={credits} />
+            {isMobile && <DashboardAnalyses />}
           </div>
         );
       case 'plan':
