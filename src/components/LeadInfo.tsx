@@ -79,9 +79,9 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
   // Extract profile information from the first section
   const firstSectionContent = Object.values(sections)[0] || '';
   const profileLines = firstSectionContent.split('\n');
-  const name = profileLines[0]?.replace('- ', '') || 'Naam niet beschikbaar';
-  const function_title = profileLines[1]?.replace('- ', '') || 'Functie niet beschikbaar';
-  const company = profileLines[2]?.replace('- ', '') || 'Bedrijf niet beschikbaar';
+  const name = profileLines[0]?.replace('- ', '') || '-';
+  const function_title = profileLines[1]?.replace('- ', '') || '-';
+  const company = profileLines[2]?.replace('- ', '') || '-';
 
   const handleCopyAll = async () => {
     try {
