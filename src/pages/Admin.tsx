@@ -2,11 +2,9 @@ import { useEffect } from "react";
 import { Users } from "lucide-react";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import AdminUserTable from "@/components/AdminUserTable";
-import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useAdminUsers } from "@/hooks/useAdminUsers";
 
 const Admin = () => {
-  const { isCheckingAdmin } = useAdminCheck();
   const {
     users,
     isLoading,
@@ -17,14 +15,8 @@ const Admin = () => {
   } = useAdminUsers();
 
   useEffect(() => {
-    if (!isCheckingAdmin) {
-      fetchUsers();
-    }
-  }, [isCheckingAdmin, fetchUsers]);
-
-  if (isCheckingAdmin) {
-    return <LoadingSpinner message="Controleren van rechten..." />;
-  }
+    fetchUsers();
+  }, [fetchUsers]);
 
   if (isLoading) {
     return <LoadingSpinner message="Gebruikers laden..." />;
