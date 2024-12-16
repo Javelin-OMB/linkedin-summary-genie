@@ -45,7 +45,29 @@ const SearchBar = () => {
 
     setIsLoading(true);
     try {
-      // First, get user data including trial start and credits
+      // First, check if there's already an analysis in progress for this URL
+      const { data: existingAnalysis, error: checkError } = await supabase
+        .from('linkedin_analyses')
+        .select('*')
+        .eq('linkedin_url', url)
+        .eq('status', 'processing')
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+        throw new Error('Failed to check analysis status');
+      }
+
+      if (existingAnalysis) {
+        toast({
+          title: "Analysis in Progress",
+          description: "This profile is currently being analyzed. Please try again in a moment.",
+          variant: "default",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // Get user data including trial start and credits
       const { data: userData, error: userError } = await supabase
         .from('users')
         .select('credits, trial_start')
@@ -66,33 +88,43 @@ const SearchBar = () => {
         return;
       }
 
-      const data = await fetchLinkedInProfile(url);
-      setProfileData(data);
-
-      // Store analysis in database and manage recent analyses
-      const { data: existingAnalyses } = await supabase
-        .from('linkedin_analyses')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: true });
-
-      // If we have more than 5 analyses, remove the oldest one
-      if (existingAnalyses && existingAnalyses.length >= 5) {
-        const oldestAnalysis = existingAnalyses[0];
-        await supabase
-          .from('linkedin_analyses')
-          .delete()
-          .eq('id', oldestAnalysis.id);
-      }
-
-      // Add new analysis
-      await supabase
+      // Create a new analysis record with 'processing' status
+      const { data: newAnalysis, error: insertError } = await supabase
         .from('linkedin_analyses')
         .insert({
           linkedin_url: url,
+          user_id: session.user.id,
+          status: 'processing',
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (insertError) {
+        if (insertError.code === '23505') { // Unique violation
+          toast({
+            title: "Analysis Already in Progress",
+            description: "This profile is currently being analyzed by another user. Please try again in a moment.",
+            variant: "default",
+          });
+          setIsLoading(false);
+          return;
+        }
+        throw insertError;
+      }
+
+      // Fetch and process the profile
+      const data = await fetchLinkedInProfile(url);
+      setProfileData(data);
+
+      // Update the analysis record with the results
+      await supabase
+        .from('linkedin_analyses')
+        .update({
           analysis: data,
-          user_id: session.user.id
-        });
+          status: 'completed'
+        })
+        .eq('id', newAnalysis.id);
 
       // Decrease credits
       await supabase
@@ -106,6 +138,17 @@ const SearchBar = () => {
       });
     } catch (error) {
       console.error('Error in handleSubmit:', error);
+      
+      // Clean up failed analysis
+      if (session?.user?.id) {
+        await supabase
+          .from('linkedin_analyses')
+          .update({ status: 'failed' })
+          .eq('user_id', session.user.id)
+          .eq('linkedin_url', url)
+          .eq('status', 'processing');
+      }
+
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to analyze profile",

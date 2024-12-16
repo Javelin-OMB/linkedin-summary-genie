@@ -24,7 +24,7 @@ const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading
           // Then very slow
           return prev + 0.5;
         });
-      }, 250); // Longer interval for smoother animation
+      }, 250);
 
       return () => clearInterval(interval);
     } else if (progress > 0) {
@@ -40,7 +40,7 @@ const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading
   return (
     <div className="w-full mt-4">
       <div className="mb-2 flex justify-between items-center text-sm text-gray-600">
-        <span>Analyzing LinkedIn profile...</span>
+        <span>Analyzing LinkedIn profile... Please wait while we process your request.</span>
         <span>{Math.round(progress)}%</span>
       </div>
       <Progress 
