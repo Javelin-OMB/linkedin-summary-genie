@@ -9,25 +9,28 @@ import SearchLoadingProgress from "./SearchLoadingProgress";
 import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from 'react-router-dom';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 const SearchBar = () => {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [profileData, setProfileData] = useState(null);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const { toast } = useToast();
   const session = useSession();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate URL format
+    if (!url.trim()) {
+      toast({
+        title: "Invalid URL",
+        description: "Please enter a LinkedIn profile URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!url.includes("linkedin.com")) {
       toast({
         title: "Invalid URL",
@@ -45,7 +48,9 @@ const SearchBar = () => {
 
     setIsLoading(true);
     try {
-      // First, check if there's already an analysis in progress for this URL
+      console.log('Starting analysis for URL:', url);
+      
+      // First, check if there's already an analysis in progress
       const { data: existingAnalyses, error: checkError } = await supabase
         .from('linkedin_analyses')
         .select('*')
@@ -57,7 +62,6 @@ const SearchBar = () => {
         throw new Error('Failed to check analysis status');
       }
 
-      // Check if there are any processing analyses
       if (existingAnalyses && existingAnalyses.length > 0) {
         toast({
           title: "Analysis in Progress",
@@ -89,7 +93,7 @@ const SearchBar = () => {
         return;
       }
 
-      // Create a new analysis record with 'processing' status and empty analysis
+      // Create a new analysis record
       const { data: newAnalysis, error: insertError } = await supabase
         .from('linkedin_analyses')
         .insert({
@@ -97,16 +101,17 @@ const SearchBar = () => {
           user_id: session.user.id,
           status: 'processing',
           started_at: new Date().toISOString(),
-          analysis: {} // Add empty analysis object to satisfy TypeScript
+          analysis: {}
         })
         .select()
         .single();
 
       if (insertError) {
-        if (insertError.code === '23505') { // Unique violation
+        console.error('Error creating analysis record:', insertError);
+        if (insertError.code === '23505') {
           toast({
             title: "Analysis Already in Progress",
-            description: "This profile is currently being analyzed by another user. Please try again in a moment.",
+            description: "This profile is currently being analyzed. Please try again in a moment.",
             variant: "default",
           });
           setIsLoading(false);
@@ -116,9 +121,10 @@ const SearchBar = () => {
       }
 
       // Fetch and process the profile
+      console.log('Fetching LinkedIn profile...');
       const data = await fetchLinkedInProfile(url);
+      console.log('Profile data received:', data);
       setProfileData(data);
-      console.log('Profile data received:', data); // Add this log
 
       // Update the analysis record with the results
       await supabase
@@ -154,7 +160,9 @@ const SearchBar = () => {
 
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to analyze profile",
+        description: error instanceof Error 
+          ? error.message 
+          : "Failed to analyze profile. Please try again later.",
         variant: "destructive",
       });
     } finally {
