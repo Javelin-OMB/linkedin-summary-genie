@@ -116,17 +116,27 @@ export const useAdminUsers = () => {
     try {
       await checkAdminStatus();
 
-      const { error } = await supabase
-        .from('users')
-        .insert([
-          { 
-            email,
-            credits: initialCredits,
-            is_admin: false
-          }
-        ]);
+      // First create the auth user
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: email,
+        email_confirm: true,
+        password: Math.random().toString(36).slice(-8), // Generate a random password
+      });
 
-      if (error) throw error;
+      if (authError) throw authError;
+      if (!authData.user) throw new Error('Failed to create auth user');
+
+      // Then create the user record with the auth user's ID
+      const { error: userError } = await supabase
+        .from('users')
+        .insert({
+          id: authData.user.id,
+          email: email,
+          credits: initialCredits,
+          is_admin: false
+        });
+
+      if (userError) throw userError;
 
       await fetchUsers(); // Refresh the users list
       toast({
