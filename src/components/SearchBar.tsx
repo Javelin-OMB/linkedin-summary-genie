@@ -88,14 +88,15 @@ const SearchBar = () => {
         return;
       }
 
-      // Create a new analysis record with 'processing' status
+      // Create a new analysis record with 'processing' status and empty analysis
       const { data: newAnalysis, error: insertError } = await supabase
         .from('linkedin_analyses')
         .insert({
           linkedin_url: url,
           user_id: session.user.id,
           status: 'processing',
-          started_at: new Date().toISOString()
+          started_at: new Date().toISOString(),
+          analysis: {} // Add empty analysis object to satisfy TypeScript
         })
         .select()
         .single();
