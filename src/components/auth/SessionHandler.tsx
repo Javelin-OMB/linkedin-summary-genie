@@ -50,7 +50,7 @@ export const SessionHandler = () => {
         setIsInitialized(true);
 
         if (location.pathname === '/login') {
-          navigate('/dashboard');
+          navigate('/');
           toast({
             title: "Welcome back!",
             description: "You've been successfully logged in.",
@@ -76,7 +76,7 @@ export const SessionHandler = () => {
       if (event === 'SIGNED_IN') {
         console.log('User signed in successfully:', session?.user?.email);
         setIsInitialized(true);
-        navigate('/dashboard');
+        navigate('/');
         toast({
           title: "Welcome!",
           description: "You've been successfully logged in.",
