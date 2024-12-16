@@ -1,59 +1,40 @@
-import { useEffect, useState } from 'react';
 import { useSession } from '@supabase/auth-helpers-react';
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 
 export const useAdminCheck = () => {
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
   const session = useSession();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      try {
-        if (!session?.user?.id) {
-          console.log('No session found, redirecting to login');
-          navigate('/login');
-          return;
-        }
+  const checkAdminStatus = async () => {
+    if (!session?.user?.id) {
+      console.error('No session found when checking admin status');
+      throw new Error('Authentication required');
+    }
 
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .single();
+    const { data: currentUser, error: currentUserError } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', session.user.id)
+      .single();
 
-        if (userError) {
-          throw new Error('Failed to check admin status');
-        }
+    if (currentUserError) {
+      console.error('Error checking admin status:', currentUserError);
+      toast({
+        title: "Fout",
+        description: "Failed to verify admin status",
+        variant: "destructive",
+      });
+      throw new Error('Failed to verify admin status');
+    }
 
-        if (!userData?.is_admin) {
-          console.log('User is not admin, redirecting to home');
-          navigate('/');
-          toast({
-            title: "Toegang geweigerd",
-            description: "Je hebt geen toegang tot deze pagina.",
-            variant: "destructive",
-          });
-          return;
-        }
+    if (!currentUser?.is_admin) {
+      console.error('Non-admin user attempted admin action');
+      throw new Error('Unauthorized: Admin access required');
+    }
 
-        setIsCheckingAdmin(false);
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-        toast({
-          title: "Fout",
-          description: "Er is een fout opgetreden bij het controleren van admin rechten.",
-          variant: "destructive",
-        });
-        navigate('/');
-      }
-    };
+    return true;
+  };
 
-    checkAdminStatus();
-  }, [session, navigate, toast]);
-
-  return { isCheckingAdmin };
+  return { checkAdminStatus };
 };
