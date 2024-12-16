@@ -18,76 +18,105 @@ const LeadContent = ({ data }: LeadContentProps) => {
     return null;
   }
 
-  // Split the profile data into sections, handling both \n\n and single \n
-  const sections = data.output.profile_data.split('\n').reduce((acc: string[], line: string) => {
-    if (line.trim() === '') {
-      acc.push('');
-    } else if (acc.length === 0 || acc[acc.length - 1] === '') {
-      acc.push(line);
+  // Split the profile data into main sections
+  const sections = {
+    samenvatting: [] as string[],
+    linkedinActiviteit: [] as string[],
+    websiteSamenvatting: [] as string[],
+    vergadertips: [] as string[],
+    spinVragen: [] as string[]
+  };
+
+  // Parse the profile data
+  const lines = data.output.profile_data.split('\n');
+  let currentSection = 'samenvatting';
+
+  lines.forEach((line: string) => {
+    const trimmedLine = line.trim();
+    if (!trimmedLine) return;
+
+    if (trimmedLine.toLowerCase().includes('linkedin-activiteit:')) {
+      currentSection = 'linkedinActiviteit';
+    } else if (trimmedLine.toLowerCase().includes('website samenvatting:')) {
+      currentSection = 'websiteSamenvatting';
+    } else if (trimmedLine.toLowerCase().includes('vergadertips:')) {
+      currentSection = 'vergadertips';
+    } else if (trimmedLine.toLowerCase().includes('spin-selling vragen:')) {
+      currentSection = 'spinVragen';
     } else {
-      acc[acc.length - 1] += '\n' + line;
+      sections[currentSection].push(trimmedLine);
     }
-    return acc;
-  }, []).filter(section => section !== '');
+  });
 
   const handleCopyAll = async () => {
     try {
-      const allContent = sections.join('\n\n');
+      const allContent = Object.entries(sections)
+        .map(([title, content]) => `${title}:\n${content.join('\n')}`)
+        .join('\n\n');
       await navigator.clipboard.writeText(allContent);
       setCopyingAll(true);
       toast({
-        title: "Copied to clipboard",
-        description: "The complete lead summary has been copied to your clipboard.",
+        title: "Gekopieerd",
+        description: "De volledige samenvatting is gekopieerd naar het klembord.",
       });
       setTimeout(() => {
         setCopyingAll(false);
       }, 2000);
     } catch (err) {
       toast({
-        title: "Failed to copy",
-        description: "There was an error copying to clipboard.",
+        title: "Fout bij kopiëren",
+        description: "Er is een fout opgetreden bij het kopiëren naar het klembord.",
         variant: "destructive",
       });
     }
   };
 
+  const renderSection = (title: string, content: string[]) => {
+    if (!content.length) return null;
+
+    return (
+      <div className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0">
+        <h3 className="font-semibold text-lg">{title}</h3>
+        <div className="space-y-2">
+          {content.map((line, index) => {
+            // Handle numbered items
+            if (line.match(/^\d+\./)) {
+              const [num, ...rest] = line.split('.');
+              return (
+                <div key={index} className="flex gap-2">
+                  <span className="font-semibold min-w-[24px]">{num}.</span>
+                  <span>{rest.join('.').trim()}</span>
+                </div>
+              );
+            }
+            // Handle bullet points
+            else if (line.startsWith('-') || line.startsWith('•')) {
+              return (
+                <div key={index} className="flex gap-2 pl-2">
+                  <span>•</span>
+                  <span>{line.substring(1).trim()}</span>
+                </div>
+              );
+            }
+            // Regular text
+            return <p key={index} className="text-gray-700">{line}</p>;
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="space-y-8">
-      {sections.map((section, index) => {
-        const lines = section.split('\n');
-        const title = lines[0];
-        const content = lines.slice(1);
-        
-        return (
-          <div key={index} className="bg-white rounded-lg p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">{title}</h2>
-            <div className="space-y-2">
-              {content.map((line, lineIndex) => {
-                if (line.trim().startsWith('-')) {
-                  return (
-                    <div key={lineIndex} className="flex items-start">
-                      <span className="mr-2">•</span>
-                      <span>{line.substring(1).trim()}</span>
-                    </div>
-                  );
-                } else if (line.match(/^\d+\./)) {
-                  const [num, ...rest] = line.split('.');
-                  return (
-                    <div key={lineIndex}>
-                      <strong>{num}.</strong>{rest.join('.')}
-                    </div>
-                  );
-                } else {
-                  return <p key={lineIndex}>{line.trim()}</p>;
-                }
-              })}
-            </div>
-          </div>
-        );
-      })}
-      <div className="flex justify-center mt-8">
+    <div className="space-y-6 bg-white rounded-lg p-6 shadow-lg">
+      {renderSection("Samenvatting voor leadgeneratie", sections.samenvatting)}
+      {renderSection("LinkedIn-activiteit", sections.linkedinActiviteit)}
+      {renderSection("Website Samenvatting", sections.websiteSamenvatting)}
+      {renderSection("Vergadertips", sections.vergadertips)}
+      {renderSection("SPIN-selling vragen", sections.spinVragen)}
+
+      <div className="flex justify-center mt-6 border-t pt-6">
         <Button
-          variant="default"
+          variant="outline"
           size="lg"
           onClick={handleCopyAll}
           className="gap-2"
@@ -95,12 +124,12 @@ const LeadContent = ({ data }: LeadContentProps) => {
           {copyingAll ? (
             <>
               <CheckCheck className="h-5 w-5" />
-              Copied Complete Summary
+              Gekopieerd
             </>
           ) : (
             <>
               <Copy className="h-5 w-5" />
-              Copy Complete Summary
+              Kopieer volledige samenvatting
             </>
           )}
         </Button>
