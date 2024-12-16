@@ -25,7 +25,7 @@ const LeadContent = ({ data }: LeadContentProps) => {
   };
 
   return (
-    <div className="space-y-6 bg-white rounded-lg p-8 shadow-lg">
+    <div className="space-y-6 bg-white rounded-lg p-8 shadow-lg max-w-4xl mx-auto">
       {Object.entries(sections).map(([key, content]) => (
         <ContentSection
           key={key}

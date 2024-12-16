@@ -8,41 +8,47 @@ interface ContentSectionProps {
 const ContentSection = ({ title, content }: ContentSectionProps) => {
   if (!content.length) return null;
 
+  const renderContent = (line: string, index: number) => {
+    // Handle numbered items (e.g., "1. Name: John Doe")
+    if (line.match(/^\d+\./)) {
+      const [num, ...rest] = line.split('.');
+      return (
+        <div key={index} className="flex gap-2 items-start">
+          <span className="font-semibold text-xl min-w-[1.5rem]">{num}.</span>
+          <span className="text-xl leading-relaxed">
+            {rest.join('.').trim()}
+          </span>
+        </div>
+      );
+    }
+    
+    // Handle bullet points
+    if (line.startsWith('-') || line.startsWith('•')) {
+      return (
+        <div key={index} className="flex gap-2 items-start ml-7">
+          <span className="text-xl">•</span>
+          <span className="text-xl leading-relaxed">
+            {line.substring(1).trim()}
+          </span>
+        </div>
+      );
+    }
+    
+    // Regular text
+    return (
+      <p key={index} className="text-xl leading-relaxed ml-7">
+        {line}
+      </p>
+    );
+  };
+
   return (
-    <div className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0">
-      <h3 className="font-bold text-xl text-gray-900 mb-4">{title}</h3>
-      <div className="space-y-3">
-        {content.map((line, index) => {
-          // Handle numbered items
-          if (line.match(/^\d+\./)) {
-            const [num, ...rest] = line.split('.');
-            return (
-              <div key={index} className="flex gap-3">
-                <span className="font-semibold min-w-[24px]">{num}.</span>
-                <span className="text-gray-700 text-base leading-relaxed">
-                  {rest.join('.').trim()}
-                </span>
-              </div>
-            );
-          }
-          // Handle bullet points
-          else if (line.startsWith('-') || line.startsWith('•')) {
-            return (
-              <div key={index} className="flex gap-3 pl-2">
-                <span className="text-gray-500">•</span>
-                <span className="text-gray-700 text-base leading-relaxed">
-                  {line.substring(1).trim()}
-                </span>
-              </div>
-            );
-          }
-          // Regular text
-          return (
-            <p key={index} className="text-gray-700 text-base leading-relaxed">
-              {line}
-            </p>
-          );
-        })}
+    <div className="space-y-4">
+      {title === "Samenvatting voor leadgeneratie" ? (
+        <h2 className="text-2xl font-bold mb-6">{title}:</h2>
+      ) : null}
+      <div className="space-y-4">
+        {content.map((line, index) => renderContent(line, index))}
       </div>
     </div>
   );
