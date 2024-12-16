@@ -21,6 +21,8 @@ const LeadContent = ({ data }: LeadContentProps) => {
   // Split the profile data into main sections
   const sections = {
     samenvatting: [] as string[],
+    profielinformatie: [] as string[],
+    bedrijfsinformatie: [] as string[],
     linkedinActiviteit: [] as string[],
     websiteSamenvatting: [] as string[],
     vergadertips: [] as string[],
@@ -35,13 +37,17 @@ const LeadContent = ({ data }: LeadContentProps) => {
     const trimmedLine = line.trim();
     if (!trimmedLine) return;
 
-    if (trimmedLine.toLowerCase().includes('linkedin-activiteit:')) {
+    if (trimmedLine.toLowerCase().includes('profielinformatie')) {
+      currentSection = 'profielinformatie';
+    } else if (trimmedLine.toLowerCase().includes('bedrijfsinformatie')) {
+      currentSection = 'bedrijfsinformatie';
+    } else if (trimmedLine.toLowerCase().includes('linkedin-activiteit')) {
       currentSection = 'linkedinActiviteit';
-    } else if (trimmedLine.toLowerCase().includes('website samenvatting:')) {
+    } else if (trimmedLine.toLowerCase().includes('website samenvatting')) {
       currentSection = 'websiteSamenvatting';
-    } else if (trimmedLine.toLowerCase().includes('vergadertips:')) {
+    } else if (trimmedLine.toLowerCase().includes('vergadertips')) {
       currentSection = 'vergadertips';
-    } else if (trimmedLine.toLowerCase().includes('spin-selling vragen:')) {
+    } else if (trimmedLine.toLowerCase().includes('spin-selling vragen')) {
       currentSection = 'spinVragen';
     } else {
       sections[currentSection].push(trimmedLine);
@@ -76,45 +82,57 @@ const LeadContent = ({ data }: LeadContentProps) => {
 
     return (
       <div className="space-y-3 border-t pt-4 first:border-t-0 first:pt-0">
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <div className="space-y-2">
+        <h3 className="font-bold text-xl text-gray-900 mb-4">{title}</h3>
+        <div className="space-y-3">
           {content.map((line, index) => {
             // Handle numbered items
             if (line.match(/^\d+\./)) {
               const [num, ...rest] = line.split('.');
               return (
-                <div key={index} className="flex gap-2">
+                <div key={index} className="flex gap-3">
                   <span className="font-semibold min-w-[24px]">{num}.</span>
-                  <span>{rest.join('.').trim()}</span>
+                  <span className="text-gray-700 text-base leading-relaxed">{rest.join('.').trim()}</span>
                 </div>
               );
             }
             // Handle bullet points
             else if (line.startsWith('-') || line.startsWith('•')) {
               return (
-                <div key={index} className="flex gap-2 pl-2">
-                  <span>•</span>
-                  <span>{line.substring(1).trim()}</span>
+                <div key={index} className="flex gap-3 pl-2">
+                  <span className="text-gray-500">•</span>
+                  <span className="text-gray-700 text-base leading-relaxed">{line.substring(1).trim()}</span>
                 </div>
               );
             }
             // Regular text
-            return <p key={index} className="text-gray-700">{line}</p>;
+            return (
+              <p key={index} className="text-gray-700 text-base leading-relaxed">
+                {line}
+              </p>
+            );
           })}
         </div>
       </div>
     );
   };
 
-  return (
-    <div className="space-y-6 bg-white rounded-lg p-6 shadow-lg">
-      {renderSection("Samenvatting voor leadgeneratie", sections.samenvatting)}
-      {renderSection("LinkedIn-activiteit", sections.linkedinActiviteit)}
-      {renderSection("Website Samenvatting", sections.websiteSamenvatting)}
-      {renderSection("Vergadertips", sections.vergadertips)}
-      {renderSection("SPIN-selling vragen", sections.spinVragen)}
+  const sectionTitles = {
+    samenvatting: "Samenvatting voor leadgeneratie",
+    profielinformatie: "Profielinformatie",
+    bedrijfsinformatie: "Bedrijfsinformatie",
+    linkedinActiviteit: "LinkedIn-activiteit",
+    websiteSamenvatting: "Website Samenvatting",
+    vergadertips: "Vergadertips",
+    spinVragen: "SPIN-selling vragen"
+  };
 
-      <div className="flex justify-center mt-6 border-t pt-6">
+  return (
+    <div className="space-y-6 bg-white rounded-lg p-8 shadow-lg">
+      {Object.entries(sections).map(([key, content]) => 
+        renderSection(sectionTitles[key as keyof typeof sectionTitles], content)
+      )}
+
+      <div className="flex justify-center mt-8 border-t pt-6">
         <Button
           variant="outline"
           size="lg"
