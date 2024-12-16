@@ -21,6 +21,7 @@ export const SessionHandler = () => {
         
         if (!currentSession?.user?.id) {
           console.log('No session found in SessionHandler');
+          localStorage.removeItem('supabase.auth.token'); // Clear any stored session data
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/login');
             toast({
@@ -83,9 +84,11 @@ export const SessionHandler = () => {
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
-        // Clear any stored session data
-        localStorage.removeItem('supabase.auth.token');
-        navigate('/');
+        // Clear all session-related data
+        localStorage.clear();
+        sessionStorage.clear();
+        // Force reload to clear any remaining state
+        window.location.href = '/';
         toast({
           title: "Signed out",
           description: "You've been successfully logged out.",
