@@ -46,18 +46,19 @@ const SearchBar = () => {
     setIsLoading(true);
     try {
       // First, check if there's already an analysis in progress for this URL
-      const { data: existingAnalysis, error: checkError } = await supabase
+      const { data: existingAnalyses, error: checkError } = await supabase
         .from('linkedin_analyses')
         .select('*')
         .eq('linkedin_url', url)
-        .eq('status', 'processing')
-        .single();
+        .eq('status', 'processing');
 
-      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 means no rows returned
+      if (checkError) {
+        console.error('Error checking analysis status:', checkError);
         throw new Error('Failed to check analysis status');
       }
 
-      if (existingAnalysis) {
+      // Check if there are any processing analyses
+      if (existingAnalyses && existingAnalyses.length > 0) {
         toast({
           title: "Analysis in Progress",
           description: "This profile is currently being analyzed. Please try again in a moment.",
