@@ -83,7 +83,9 @@ export const SessionHandler = () => {
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
-        navigate('/login');
+        // Clear any stored session data
+        localStorage.removeItem('supabase.auth.token');
+        navigate('/');
         toast({
           title: "Signed out",
           description: "You've been successfully logged out.",
