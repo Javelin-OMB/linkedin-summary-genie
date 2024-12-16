@@ -53,16 +53,32 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
   const [copying, setCopying] = useState(false);
   const { toast } = useToast();
 
-  if (!data?.output?.profile_data) return null;
+  console.log("LeadInfo received data:", data);
 
-  const sections = data.output.profile_data.split('\n\n').reduce<Record<string, string>>((acc, section) => {
-    const [title, ...content] = section.split('\n');
-    acc[title.trim()] = content.join('\n');
+  if (!data?.output?.profile_data) {
+    console.log("No profile data found in LeadInfo:", data);
+    return null;
+  }
+
+  // Split the profile data into sections
+  const sections = data.output.profile_data.split('\n').reduce((acc: Record<string, string>, line: string) => {
+    if (line.trim()) {
+      const firstDash = line.indexOf('-');
+      if (firstDash === -1) {
+        // This is a section title
+        acc[line.trim()] = '';
+      } else {
+        // This is content for the current section
+        const lastTitle = Object.keys(acc).pop() || 'Miscellaneous';
+        acc[lastTitle] = acc[lastTitle] ? acc[lastTitle] + '\n' + line : line;
+      }
+    }
     return acc;
   }, {});
 
-  // Extract profile information
-  const profileLines = sections['Profielinformatie']?.split('\n') || [];
+  // Extract profile information from the first section
+  const firstSectionContent = Object.values(sections)[0] || '';
+  const profileLines = firstSectionContent.split('\n');
   const name = profileLines[0]?.replace('- ', '') || 'Naam niet beschikbaar';
   const function_title = profileLines[1]?.replace('- ', '') || 'Functie niet beschikbaar';
   const company = profileLines[2]?.replace('- ', '') || 'Bedrijf niet beschikbaar';

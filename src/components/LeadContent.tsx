@@ -11,9 +11,24 @@ const LeadContent = ({ data }: LeadContentProps) => {
   const [copyingAll, setCopyingAll] = useState(false);
   const { toast } = useToast();
   
-  if (!data?.output?.profile_data) return null;
+  console.log("LeadContent data:", data);
 
-  const sections = data.output.profile_data.split('\n\n');
+  if (!data?.output?.profile_data) {
+    console.log("No profile data found in:", data);
+    return null;
+  }
+
+  // Split the profile data into sections, handling both \n\n and single \n
+  const sections = data.output.profile_data.split('\n').reduce((acc: string[], line: string) => {
+    if (line.trim() === '') {
+      acc.push('');
+    } else if (acc.length === 0 || acc[acc.length - 1] === '') {
+      acc.push(line);
+    } else {
+      acc[acc.length - 1] += '\n' + line;
+    }
+    return acc;
+  }, []).filter(section => section !== '');
 
   const handleCopyAll = async () => {
     try {
@@ -39,13 +54,16 @@ const LeadContent = ({ data }: LeadContentProps) => {
   return (
     <div className="space-y-8">
       {sections.map((section, index) => {
-        const [title, ...content] = section.split('\n');
+        const lines = section.split('\n');
+        const title = lines[0];
+        const content = lines.slice(1);
+        
         return (
           <div key={index} className="bg-white rounded-lg p-6 shadow">
             <h2 className="text-xl font-bold mb-4">{title}</h2>
             <div className="space-y-2">
               {content.map((line, lineIndex) => {
-                if (line.startsWith('-')) {
+                if (line.trim().startsWith('-')) {
                   return (
                     <div key={lineIndex} className="flex items-start">
                       <span className="mr-2">•</span>
@@ -60,7 +78,7 @@ const LeadContent = ({ data }: LeadContentProps) => {
                     </div>
                   );
                 } else {
-                  return <p key={lineIndex}>{line}</p>;
+                  return <p key={lineIndex}>{line.trim()}</p>;
                 }
               })}
             </div>
