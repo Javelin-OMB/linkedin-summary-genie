@@ -118,6 +118,7 @@ const SearchBar = () => {
       // Fetch and process the profile
       const data = await fetchLinkedInProfile(url);
       setProfileData(data);
+      console.log('Profile data received:', data); // Add this log
 
       // Update the analysis record with the results
       await supabase
@@ -164,8 +165,8 @@ const SearchBar = () => {
   return (
     <div className="w-full max-w-4xl mx-auto px-4">
       <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
-        <div className="flex items-center space-x-2">
-          <div className="relative flex-1">
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <div className="relative flex-1 w-full">
             <Input
               type="url"
               placeholder="Paste LinkedIn profile URL here..."
@@ -177,7 +178,7 @@ const SearchBar = () => {
           </div>
           <Button 
             type="submit"
-            className="bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
+            className="w-full sm:w-auto bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
             disabled={isLoading}
           >
             <Search className="h-5 w-5" />
@@ -187,7 +188,11 @@ const SearchBar = () => {
 
       <SearchLoadingProgress isLoading={isLoading} />
       
-      {profileData && <LeadInfo data={profileData} />}
+      {profileData && (
+        <div className="mt-8 w-full">
+          <LeadInfo data={profileData} />
+        </div>
+      )}
     </div>
   );
 };
