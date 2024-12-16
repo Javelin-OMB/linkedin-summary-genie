@@ -23,15 +23,22 @@ const SearchBar = () => {
 
   const handleAnalyze = async (url: string) => {
     setIsLoading(true);
+    setProfileData(null); // Reset previous results
+    
     try {
       console.log('Starting analysis for URL:', url);
       
+      // Valideer URL formaat
+      if (!url.includes('linkedin.com/')) {
+        throw new Error('Voer een geldige LinkedIn URL in');
+      }
+
       // Check for existing analysis
       const existingAnalyses = await checkExistingAnalysis(url);
       if (existingAnalyses && existingAnalyses.length > 0) {
         toast({
-          title: "Analysis in Progress",
-          description: "This profile is currently being analyzed. Please try again in a moment.",
+          title: "Analyse in uitvoering",
+          description: "Dit profiel wordt momenteel geanalyseerd. Probeer het over een moment opnieuw.",
           variant: "default",
         });
         return;
@@ -41,8 +48,8 @@ const SearchBar = () => {
       const userData = await getUserCredits(session.user.id);
       if (!userData || userData.credits <= 0) {
         toast({
-          title: "No credits remaining",
-          description: "Please purchase more credits to continue using the service.",
+          title: "Geen credits meer",
+          description: "Koop meer credits om de service te blijven gebruiken.",
           variant: "destructive",
         });
         return;
@@ -55,6 +62,11 @@ const SearchBar = () => {
       console.log('Fetching LinkedIn profile...');
       const data = await fetchLinkedInProfile(url);
       console.log('Profile data received:', data);
+      
+      if (!data) {
+        throw new Error('Kon geen profieldata ophalen');
+      }
+
       setProfileData(data);
 
       // Update analysis with results
@@ -64,8 +76,8 @@ const SearchBar = () => {
       await decrementUserCredits(session.user.id, userData.credits);
 
       toast({
-        title: "Success",
-        description: `Profile analysis complete. You have ${userData.credits - 1} credits remaining.`,
+        title: "Succes",
+        description: `Profiel analyse voltooid. Je hebt nog ${userData.credits - 1} credits over.`,
       });
     } catch (error) {
       console.error('Error in handleAnalyze:', error);
@@ -76,10 +88,10 @@ const SearchBar = () => {
       }
 
       toast({
-        title: "Error",
+        title: "Fout",
         description: error instanceof Error 
           ? error.message 
-          : "Failed to analyze profile. Please try again later.",
+          : "Kon profiel niet analyseren. Probeer het later opnieuw.",
         variant: "destructive",
       });
     } finally {

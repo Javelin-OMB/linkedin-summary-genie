@@ -7,6 +7,7 @@ interface SearchLoadingProgressProps {
 
 const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading }) => {
   const [progress, setProgress] = useState(0);
+  const [loadingMessage, setLoadingMessage] = useState('Initialiseren...');
 
   useEffect(() => {
     if (isLoading) {
@@ -17,20 +18,31 @@ const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading
             clearInterval(interval);
             return 95;
           }
-          // Faster until 65%
-          if (prev < 65) {
-            return prev + 2;
+          // Snellere progressie tot 85%
+          if (prev < 85) {
+            // Update loading message based on progress
+            if (prev < 30) {
+              setLoadingMessage('LinkedIn profiel ophalen...');
+            } else if (prev < 60) {
+              setLoadingMessage('Profiel analyseren...');
+            } else {
+              setLoadingMessage('Afronden...');
+            }
+            return prev + 5; // Snellere toename
           }
-          // Then very slow
+          // Dan langzamer
           return prev + 0.5;
         });
-      }, 250);
+      }, 100); // Kortere interval voor vloeiendere animatie
 
       return () => clearInterval(interval);
     } else if (progress > 0) {
-      // Jump to 100% when loading is complete
       setProgress(100);
-      const timeout = setTimeout(() => setProgress(0), 500);
+      setLoadingMessage('Analyse voltooid!');
+      const timeout = setTimeout(() => {
+        setProgress(0);
+        setLoadingMessage('Initialiseren...');
+      }, 500);
       return () => clearTimeout(timeout);
     }
   }, [isLoading]);
@@ -40,7 +52,7 @@ const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading
   return (
     <div className="w-full mt-4">
       <div className="mb-2 flex justify-between items-center text-sm text-gray-600">
-        <span>Analyzing LinkedIn profile... Please wait while we process your request.</span>
+        <span>{loadingMessage}</span>
         <span>{Math.round(progress)}%</span>
       </div>
       <Progress 
