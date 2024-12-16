@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAdminCheck } from './useAdminCheck';
+import { useUserCredits } from './useUserCredits';
+import { useUserAdmin } from './useUserAdmin';
+import { useUserCreation } from './useUserCreation';
 
 interface UserData {
   id: string;
@@ -16,6 +19,9 @@ export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { checkAdminStatus } = useAdminCheck();
+  const { updateCredits } = useUserCredits();
+  const { toggleAdmin } = useUserAdmin();
+  const { addUser } = useUserCreation();
 
   const fetchUsers = async () => {
     try {
@@ -47,109 +53,27 @@ export const useAdminUsers = () => {
 
   const handleUpdateCredits = async (userId: string, change: number) => {
     try {
-      await checkAdminStatus();
-      
-      const { data: user, error: fetchError } = await supabase
-        .from('users')
-        .select('credits')
-        .eq('id', userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const newCredits = (user.credits || 0) + change;
-      if (newCredits < 0) {
-        throw new Error('Credits cannot be negative');
-      }
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ credits: newCredits })
-        .eq('id', userId);
-
-      if (updateError) throw updateError;
-
-      await fetchUsers(); // Refresh the users list
+      await updateCredits(userId, change);
+      await fetchUsers();
     } catch (error) {
-      console.error('Error updating credits:', error);
-      toast({
-        title: "Fout",
-        description: "Kon credits niet bijwerken",
-        variant: "destructive",
-      });
       throw error;
     }
   };
 
   const handleToggleAdmin = async (userId: string) => {
     try {
-      await checkAdminStatus();
-      
-      const { data: user, error: fetchError } = await supabase
-        .from('users')
-        .select('is_admin')
-        .eq('id', userId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ is_admin: !user.is_admin })
-        .eq('id', userId);
-
-      if (updateError) throw updateError;
-
-      await fetchUsers(); // Refresh the users list
+      await toggleAdmin(userId);
+      await fetchUsers();
     } catch (error) {
-      console.error('Error toggling admin status:', error);
-      toast({
-        title: "Fout",
-        description: "Kon admin status niet wijzigen",
-        variant: "destructive",
-      });
       throw error;
     }
   };
 
   const handleAddUser = async (email: string, initialCredits: number) => {
     try {
-      await checkAdminStatus();
-
-      // First create the auth user
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: email,
-        email_confirm: true,
-        password: Math.random().toString(36).slice(-8), // Generate a random password
-      });
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to create auth user');
-
-      // Then create the user record with the auth user's ID
-      const { error: userError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: email,
-          credits: initialCredits,
-          is_admin: false
-        });
-
-      if (userError) throw userError;
-
-      await fetchUsers(); // Refresh the users list
-      toast({
-        title: "Succes",
-        description: "Nieuwe gebruiker toegevoegd",
-      });
+      await addUser(email, initialCredits);
+      await fetchUsers();
     } catch (error) {
-      console.error('Error adding user:', error);
-      toast({
-        title: "Fout",
-        description: "Kon gebruiker niet toevoegen",
-        variant: "destructive",
-      });
       throw error;
     }
   };
