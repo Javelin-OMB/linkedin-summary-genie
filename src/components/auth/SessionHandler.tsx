@@ -12,23 +12,18 @@ export const SessionHandler = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log('Initializing auth state...');
+    console.log('Initializing auth state...', { session });
     let isSubscribed = true;
     
     const checkSession = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log('Current session:', currentSession?.user?.email);
         
         if (!currentSession?.user?.id) {
-          console.log('No session found in SessionHandler');
-          localStorage.removeItem('supabase.auth.token'); // Clear any stored session data
+          console.log('No active session found');
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/login');
-            toast({
-              title: "Authentication required",
-              description: "Please log in to access this page",
-              variant: "destructive",
-            });
           }
           return;
         }
@@ -43,24 +38,29 @@ export const SessionHandler = () => {
 
         if (userError) {
           console.error('Error fetching user data:', userError);
+          toast({
+            title: "Error",
+            description: "Er is een probleem opgetreden bij het ophalen van je gegevens.",
+            variant: "destructive",
+          });
           return;
         }
 
         if (!isSubscribed) return;
         setIsInitialized(true);
 
-        if (location.pathname === '/login') {
+        if (location.pathname === '/login' && userData) {
           navigate('/');
           toast({
-            title: "Welcome back!",
-            description: "You've been successfully logged in.",
+            title: "Welkom terug!",
+            description: "Je bent succesvol ingelogd.",
           });
         }
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('Session check error:', error);
         toast({
           title: "Error",
-          description: "There was a problem checking your session.",
+          description: "Er is een probleem opgetreden bij het controleren van je sessie.",
           variant: "destructive",
         });
       }
@@ -74,24 +74,20 @@ export const SessionHandler = () => {
       console.log('Auth state changed:', event, session?.user?.email);
 
       if (event === 'SIGNED_IN') {
-        console.log('User signed in successfully:', session?.user?.email);
+        console.log('User signed in:', session?.user?.email);
         setIsInitialized(true);
         navigate('/');
         toast({
-          title: "Welcome!",
-          description: "You've been successfully logged in.",
+          title: "Welkom!",
+          description: "Je bent succesvol ingelogd.",
         });
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsInitialized(false);
-        // Clear all session-related data
-        localStorage.clear();
-        sessionStorage.clear();
-        // Force reload to clear any remaining state
-        window.location.href = '/';
+        navigate('/');
         toast({
-          title: "Signed out",
-          description: "You've been successfully logged out.",
+          title: "Tot ziens!",
+          description: "Je bent succesvol uitgelogd.",
         });
       }
     });
@@ -101,7 +97,7 @@ export const SessionHandler = () => {
       isSubscribed = false;
       subscription.unsubscribe();
     };
-  }, [supabase, navigate, location.pathname, toast]);
+  }, [supabase, navigate, location.pathname, toast, session]);
 
   return null;
 };

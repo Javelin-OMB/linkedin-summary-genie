@@ -46,11 +46,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       });
 
       if (error) {
-        console.error('Supabase auth error:', error);
+        console.error('Login error:', error);
         let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
         
         if (error.message?.includes('Invalid login credentials')) {
-          errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan via de link hieronder.";
+          errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
         } else if (error.message?.includes('Email not confirmed')) {
           errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
         }
@@ -64,9 +64,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
 
       if (data?.user) {
-        console.log('Login successful for user:', data.user.email);
+        console.log('Login successful:', data.user.email);
         
-        // Check if user exists in our users table
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -77,40 +76,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           console.error('Error fetching user data:', userError);
           toast({
             title: "Fout bij ophalen gebruikersgegevens",
-            description: "Er is een fout opgetreden bij het ophalen van je gebruikersgegevens. Probeer het opnieuw.",
+            description: "Er is een fout opgetreden bij het ophalen van je gebruikersgegevens.",
             variant: "destructive",
           });
           return;
         }
 
-        toast({
-          title: "Succesvol ingelogd",
-          description: "Je wordt doorgestuurd naar het dashboard...",
-        });
-        
-        // Close any open dialogs or modals
         onSuccess?.();
         
-        // Use a timeout to ensure the toast is shown and any dialogs are closed
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 100);
+        toast({
+          title: "Succesvol ingelogd",
+          description: "Je wordt doorgestuurd...",
+        });
+        
+        navigate('/');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-      let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
-      
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Account niet gevonden. Controleer of je e-mailadres correct is of maak een nieuw account aan via de link hieronder.";
-      } else if (error.message?.includes('rate limit')) {
-        errorMessage = "Te veel pogingen. Probeer het later opnieuw.";
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
-      }
-      
+      console.error('Unexpected login error:', error);
       toast({
         title: "Inloggen mislukt",
-        description: errorMessage,
+        description: "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.",
         variant: "destructive",
       });
     } finally {
