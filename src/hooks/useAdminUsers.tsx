@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useSession } from '@supabase/auth-helpers-react';
 
 interface UserData {
   id: string;
@@ -13,15 +14,39 @@ export const useAdminUsers = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const session = useSession();
 
   const fetchUsers = async () => {
     try {
+      if (!session?.user?.id) {
+        console.error('No session found when trying to fetch users');
+        throw new Error('Authentication required');
+      }
+
+      // First check if current user is admin
+      const { data: currentUser, error: currentUserError } = await supabase
+        .from('users')
+        .select('is_admin')
+        .eq('id', session.user.id)
+        .single();
+
+      if (currentUserError) {
+        console.error('Error checking admin status:', currentUserError);
+        throw new Error('Failed to verify admin status');
+      }
+
+      if (!currentUser?.is_admin) {
+        console.error('Non-admin user attempted to fetch all users');
+        throw new Error('Unauthorized: Admin access required');
+      }
+
       const { data: allUsers, error } = await supabase
         .from('users')
         .select('*')
         .order('email');
 
       if (error) {
+        console.error('Error fetching users:', error);
         throw new Error('Failed to load users');
       }
 
@@ -31,9 +56,10 @@ export const useAdminUsers = () => {
       console.error('Error loading users:', error);
       toast({
         title: "Fout",
-        description: "Kon gebruikers niet laden",
+        description: error instanceof Error ? error.message : "Kon gebruikers niet laden",
         variant: "destructive",
       });
+      throw error;
     } finally {
       setIsLoading(false);
     }
