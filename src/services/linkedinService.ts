@@ -10,11 +10,24 @@ interface LinkedInProfile {
   recentPosts: string[];
 }
 
+// Cache voor recente analyses
+const profileCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minuten cache
+
 export const fetchLinkedInProfile = async (url: string): Promise<any> => {
   console.log('Starting LinkedIn profile fetch for URL:', url);
   
+  // Check cache first
+  const cachedData = profileCache.get(url);
+  if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
+    console.log('Returning cached profile data');
+    return cachedData.data;
+  }
+
   try {
     console.log('Making API request to Relevance API...');
+    
+    // Optimaliseer de request door alleen essentiële data op te vragen
     const response = await fetch("https://api-d7b62b.stack.tryrelevance.com/latest/studios/cf5e9295-e250-4e58-accb-bafe535dd868/trigger_limited", {
       method: 'POST',
       headers: {
@@ -23,7 +36,8 @@ export const fetchLinkedInProfile = async (url: string): Promise<any> => {
       },
       body: JSON.stringify({
         params: {
-          linkedin_url: url.trim() // Trim any whitespace from the URL
+          linkedin_url: url.trim(),
+          optimize_response: true // Extra parameter voor geoptimaliseerde response
         },
         project: "d607c466-f207-4c47-907f-d928278273e2"
       })
@@ -35,14 +49,14 @@ export const fetchLinkedInProfile = async (url: string): Promise<any> => {
       console.error('API Response error text:', errorText);
       
       if (response.status === 429) {
-        throw new Error('Too many requests. Please try again in a few minutes.');
+        throw new Error('Te veel verzoeken. Probeer het over een paar minuten opnieuw.');
       }
       
       if (response.status === 401 || response.status === 403) {
-        throw new Error('Authentication error with the API. Please contact support.');
+        throw new Error('Authenticatiefout met de API. Neem contact op met support.');
       }
       
-      throw new Error(`API error (${response.status}): ${errorText || 'Unknown error'}`);
+      throw new Error(`API fout (${response.status}): ${errorText || 'Onbekende fout'}`);
     }
 
     const data = await response.json();
@@ -50,26 +64,28 @@ export const fetchLinkedInProfile = async (url: string): Promise<any> => {
     
     if (!data || !data.output) {
       console.error('Invalid API response format:', data);
-      throw new Error('Invalid response format from API');
+      throw new Error('Ongeldig responseformaat van API');
     }
+
+    // Cache the result
+    profileCache.set(url, { data, timestamp: Date.now() });
 
     return data;
   } catch (error) {
     console.error('LinkedIn API Error:', error);
     console.error('Full error details:', {
-      message: error instanceof Error ? error.message : 'Unknown error',
+      message: error instanceof Error ? error.message : 'Onbekende fout',
       stack: error instanceof Error ? error.stack : undefined
     });
     
-    // Provide more user-friendly error messages
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error('Network connection error. Please check your internet connection and try again.');
+      throw new Error('Netwerkverbindingsfout. Controleer je internetverbinding en probeer het opnieuw.');
     }
     
     throw new Error(
       error instanceof Error 
-        ? `Failed to analyze LinkedIn profile: ${error.message}` 
-        : 'Failed to analyze LinkedIn profile. Please try again.'
+        ? `Kon LinkedIn profiel niet analyseren: ${error.message}` 
+        : 'Kon profiel niet analyseren. Probeer het opnieuw.'
     );
   }
 };
