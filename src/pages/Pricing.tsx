@@ -96,24 +96,24 @@ const Pricing = () => {
           
           <div className="grid md:grid-cols-2 gap-8 mt-12">
             {/* Free Plan */}
-            <div className="bg-white p-8 rounded-lg shadow-lg border-2 border-[#0177B5]">
+            <div className="bg-white p-8 rounded-lg shadow-lg border-2 border-brand-primary">
               <h2 className="text-2xl font-semibold mb-4">Free Trial</h2>
-              <p className="text-4xl font-bold text-linkedin-primary mb-4">10 Free Analyses</p>
+              <p className="text-4xl font-bold text-brand-primary mb-4">10 Free Analyses</p>
               <ul className="space-y-3 mb-6 text-gray-600">
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   LinkedIn Profile Analysis
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   Basic Insights
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   Conversation Starters
@@ -121,7 +121,7 @@ const Pricing = () => {
               </ul>
               <Button 
                 onClick={handleFreePlan}
-                className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+                className="w-full bg-brand-primary hover:bg-brand-hover text-black"
               >
                 Start Free Trial
               </Button>
@@ -136,26 +136,26 @@ const Pricing = () => {
               </div>
               <ul className="space-y-3 mb-6 text-gray-600">
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   Unlimited Analyses
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   Advanced Insights
                 </li>
                 <li className="flex items-center">
-                  <svg className="w-5 h-5 text-[#0177B5] mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-brand-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                   Priority Support
                 </li>
               </ul>
               <Button 
-                className="w-full border-2 border-[#0177B5] text-[#0177B5] hover:bg-[#0177B5] hover:text-white"
+                className="w-full border-2 border-brand-primary text-black hover:bg-brand-primary"
                 variant="outline"
                 onClick={() => navigate('/plan')}
               >
