@@ -46,7 +46,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       });
 
       if (error) {
-        console.error('Login error:', error);
+        console.error('Login error details:', error);
         let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
         
         if (error.message?.includes('Invalid login credentials')) {
@@ -64,7 +64,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       }
 
       if (data?.user) {
-        console.log('Login successful:', data.user.email);
+        console.log('Login successful for:', data.user.email);
         
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -82,6 +82,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           return;
         }
 
+        console.log('User data retrieved:', userData);
         onSuccess?.();
         
         toast({
