@@ -14,12 +14,25 @@ export const SessionHandler = () => {
 
   useEffect(() => {
     let isSubscribed = true;
+    let timeoutId: NodeJS.Timeout;
     
     const checkSession = async () => {
       try {
         console.log('Checking session state...');
         
-        // Get current session
+        // Set a timeout to show error if session check takes too long
+        timeoutId = setTimeout(() => {
+          if (isLoading && isSubscribed) {
+            setIsLoading(false);
+            toast({
+              title: "Timeout",
+              description: "Het laden van de sessie duurt te lang. Probeer de pagina te verversen.",
+              variant: "destructive",
+            });
+          }
+        }, 10000); // 10 second timeout
+
+        // Get current session with error handling
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -29,6 +42,7 @@ export const SessionHandler = () => {
 
         console.log('Current session:', currentSession?.user?.email);
         
+        // Check if session exists
         if (!currentSession?.user?.id) {
           console.log('No active session found');
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
@@ -40,22 +54,16 @@ export const SessionHandler = () => {
 
         if (!isSubscribed) return;
 
-        // Verify user data exists
+        // Verify user data exists with optimized query
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('*')
+          .select('id, email')  // Only select needed fields
           .eq('id', currentSession.user.id)
           .single();
 
         if (userError) {
           console.error('Error fetching user data:', userError);
-          toast({
-            title: "Error",
-            description: "Er is een probleem opgetreden bij het ophalen van je gegevens.",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
+          throw userError;
         }
 
         if (!isSubscribed) return;
@@ -72,9 +80,9 @@ export const SessionHandler = () => {
         setIsLoading(false);
       } catch (error) {
         console.error('Session check error:', error);
-        setIsLoading(false);
+        if (!isSubscribed) return;
         
-        // Clear session on error
+        setIsLoading(false);
         await supabase.auth.signOut();
         
         if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
@@ -82,28 +90,23 @@ export const SessionHandler = () => {
         }
         
         toast({
-          title: "Sessie verlopen",
-          description: "Je sessie is verlopen. Log opnieuw in.",
+          title: "Sessie fout",
+          description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
           variant: "destructive",
         });
+      } finally {
+        clearTimeout(timeoutId);
       }
     };
 
-    // Set up auth state change listener
+    // Set up auth state change listener with timeout
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, session?.user?.email);
-      setIsLoading(true);
-
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.email);
         await checkSession();
-        navigate('/');
-        toast({
-          title: "Welkom!",
-          description: "Je bent succesvol ingelogd.",
-        });
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
         setIsLoading(false);
@@ -121,9 +124,10 @@ export const SessionHandler = () => {
     return () => {
       console.log('Cleaning up auth subscriptions');
       isSubscribed = false;
+      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [supabase, navigate, location.pathname, toast]);
+  }, [supabase, navigate, location.pathname, toast, isLoading]);
 
   if (isLoading) {
     return <LoadingSpinner message="Even geduld..." />;
