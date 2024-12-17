@@ -20,14 +20,14 @@ export const SessionHandler = () => {
       try {
         console.log('Starting session check...');
         
-        // Set a shorter timeout (3 seconds)
+        // Set a shorter timeout (2 seconds)
         timeoutId = setTimeout(() => {
           if (isLoading && isSubscribed) {
-            console.log('Session check timeout reached');
+            console.log('Session check timeout');
             setIsLoading(false);
             toast({
               title: "Timeout",
-              description: "Het laden van de sessie duurt te lang. Probeer opnieuw in te loggen.",
+              description: "Het laden van de sessie duurt te lang. Vernieuw de pagina of probeer opnieuw in te loggen.",
               variant: "destructive",
             });
             // Force logout on timeout
@@ -36,9 +36,9 @@ export const SessionHandler = () => {
               navigate('/login');
             }
           }
-        }, 3000);
+        }, 2000);
 
-        // Quick session check
+        // Quick session check without waiting for user data
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (!currentSession?.user?.id) {
@@ -58,27 +58,29 @@ export const SessionHandler = () => {
         console.error('Session check error:', error);
         if (isSubscribed) {
           setIsLoading(false);
-          await supabase.auth.signOut();
-          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-            navigate('/login');
-          }
           toast({
             title: "Sessie fout",
             description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
             variant: "destructive",
           });
+          await supabase.auth.signOut();
+          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+            navigate('/login');
+          }
         }
       } finally {
         clearTimeout(timeoutId);
       }
     };
 
-    const handleAuthChange = (event: string, session: any) => {
+    const handleAuthChange = async (event: string, session: any) => {
       console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN') {
-        checkSession();
+        console.log('User signed in, checking session...');
+        await checkSession();
       } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
         setIsLoading(false);
         if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           navigate('/login');
@@ -86,13 +88,13 @@ export const SessionHandler = () => {
       }
     };
 
+    // Initial session check
+    checkSession();
+
     // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(handleAuthChange);
-
-    // Initial session check
-    checkSession();
 
     return () => {
       console.log('Cleaning up session handler...');
