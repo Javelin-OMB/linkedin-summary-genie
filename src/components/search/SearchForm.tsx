@@ -56,13 +56,13 @@ const SearchForm = ({ onSubmit, isLoading, session, navigate }: SearchFormProps)
             placeholder="Paste LinkedIn profile URL here..."
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-linkedin-primary focus:outline-none focus:border-linkedin-hover"
+            className="w-full pl-4 pr-10 py-3 rounded-full border-2 border-brand-primary focus:outline-none focus:border-brand-hover"
             disabled={isLoading}
           />
         </div>
         <Button 
           type="submit"
-          className="w-full sm:w-auto bg-linkedin-primary hover:bg-linkedin-hover text-white rounded-full px-8 py-3"
+          className="w-full sm:w-auto bg-brand-primary hover:bg-brand-hover text-black rounded-full px-8 py-3"
           disabled={isLoading}
         >
           <Search className="h-5 w-5" />
