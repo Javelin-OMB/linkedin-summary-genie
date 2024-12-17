@@ -15,33 +15,32 @@ export const SessionHandler = () => {
   useEffect(() => {
     let isSubscribed = true;
     let timeoutId: NodeJS.Timeout;
-    
+
     const checkSession = async () => {
       try {
-        console.log('Checking session state...');
+        console.log('Starting session check...');
         
-        // Shorter timeout (5 seconds instead of 10)
+        // Set a shorter timeout (3 seconds)
         timeoutId = setTimeout(() => {
           if (isLoading && isSubscribed) {
-            console.log('Session check timeout');
+            console.log('Session check timeout reached');
             setIsLoading(false);
             toast({
               title: "Timeout",
-              description: "Het laden van de sessie duurt te lang. Probeer de pagina te verversen.",
+              description: "Het laden van de sessie duurt te lang. Probeer opnieuw in te loggen.",
               variant: "destructive",
             });
+            // Force logout on timeout
+            supabase.auth.signOut();
+            if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+              navigate('/login');
+            }
           }
-        }, 5000);
+        }, 3000);
 
-        // Quick session check without waiting for full user data
-        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        // Quick session check
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
         
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-
-        // If no session, handle immediately without further checks
         if (!currentSession?.user?.id) {
           console.log('No active session found');
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
@@ -51,59 +50,39 @@ export const SessionHandler = () => {
           return;
         }
 
-        // Only proceed with user data check if we have a session
-        if (isSubscribed && currentSession?.user?.id) {
-          console.log('Checking user data for:', currentSession.user.email);
-          
-          const { error: userError } = await supabase
-            .from('users')
-            .select('id')
-            .eq('id', currentSession.user.id)
-            .single();
-
-          if (userError) {
-            console.error('Error fetching user data:', userError);
-            throw userError;
-          }
-        }
-
+        console.log('Session found for user:', currentSession.user.email);
         setIsLoading(false);
+        clearTimeout(timeoutId);
         
       } catch (error) {
         console.error('Session check error:', error);
-        if (!isSubscribed) return;
-        
-        setIsLoading(false);
-        await supabase.auth.signOut();
-        
-        if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-          navigate('/login');
+        if (isSubscribed) {
+          setIsLoading(false);
+          await supabase.auth.signOut();
+          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+            navigate('/login');
+          }
+          toast({
+            title: "Sessie fout",
+            description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
+            variant: "destructive",
+          });
         }
-        
-        toast({
-          title: "Sessie fout",
-          description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
-          variant: "destructive",
-        });
       } finally {
         clearTimeout(timeoutId);
       }
     };
 
-    const handleAuthChange = async (event: string, session: any) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+    const handleAuthChange = (event: string, session: any) => {
+      console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user?.email);
-        await checkSession();
+        checkSession();
       } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
         setIsLoading(false);
-        navigate('/');
-        toast({
-          title: "Tot ziens!",
-          description: "Je bent succesvol uitgelogd.",
-        });
+        if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+          navigate('/login');
+        }
       }
     };
 
@@ -116,7 +95,7 @@ export const SessionHandler = () => {
     checkSession();
 
     return () => {
-      console.log('Cleaning up auth subscriptions');
+      console.log('Cleaning up session handler...');
       isSubscribed = false;
       clearTimeout(timeoutId);
       subscription.unsubscribe();
@@ -124,7 +103,7 @@ export const SessionHandler = () => {
   }, [supabase, navigate, location.pathname, toast, isLoading]);
 
   if (isLoading) {
-    return <LoadingSpinner message="Even geduld..." />;
+    return <LoadingSpinner message="Sessie controleren..." />;
   }
 
   return null;
