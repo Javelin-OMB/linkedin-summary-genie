@@ -115,7 +115,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
+        className="w-full bg-brand-primary hover:bg-brand-hover text-black"
         disabled={isLoading}
       >
         {isLoading ? "Bezig met inloggen..." : "Inloggen"}
