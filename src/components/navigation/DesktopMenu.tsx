@@ -36,14 +36,14 @@ const DesktopMenu = ({
           <Button 
             variant="outline" 
             onClick={onLoginClick}
-            className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+            className="flex items-center border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white"
           >
             <User className="h-5 w-5 mr-1" />
             Login
           </Button>
           <Button 
             onClick={() => navigate('/login?mode=signup')}
-            className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
+            className="bg-brand-primary hover:bg-brand-hover text-black"
           >
             Sign Up
           </Button>

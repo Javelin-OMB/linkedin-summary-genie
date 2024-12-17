@@ -84,8 +84,8 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-2">
             <Link to="/" className="flex items-center space-x-2">
-              <Home className="h-6 w-6 text-linkedin-primary" />
-              <span className="text-xl font-semibold text-linkedin-primary">LeadSummary</span>
+              <Home className="h-6 w-6 text-brand-primary" />
+              <span className="text-xl font-semibold text-brand-primary">LeadSummary</span>
             </Link>
           </div>
 

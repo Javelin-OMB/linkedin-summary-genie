@@ -23,6 +23,10 @@ export default {
           primary: "#0077B5",
           hover: "#006399",
         },
+        brand: {
+          primary: "#FEDB01",
+          hover: "#E5C501",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
