@@ -18,27 +18,26 @@ export const SessionHandler = () => {
 
     const checkSession = async () => {
       try {
-        console.log('Starting session check...');
+        console.log('Starting quick session check...');
         
-        // Set a shorter timeout (2 seconds)
+        // Kortere timeout (1.5 seconden)
         timeoutId = setTimeout(() => {
           if (isLoading && isSubscribed) {
-            console.log('Session check timeout');
+            console.log('Quick session check timeout');
             setIsLoading(false);
-            toast({
-              title: "Timeout",
-              description: "Het laden van de sessie duurt te lang. Vernieuw de pagina of probeer opnieuw in te loggen.",
-              variant: "destructive",
-            });
-            // Force logout on timeout
-            supabase.auth.signOut();
-            if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-              navigate('/login');
+            // Alleen een toast tonen als we niet op de login pagina zijn
+            if (location.pathname !== '/login') {
+              toast({
+                title: "Let op",
+                description: "Sessie wordt opnieuw geladen...",
+                variant: "default",
+              });
             }
+            // Geen automatische uitlog meer bij timeout
           }
-        }, 2000);
+        }, 1500);
 
-        // Quick session check without waiting for user data
+        // Snelle sessiecheck zonder extra data
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (!currentSession?.user?.id) {
@@ -58,12 +57,14 @@ export const SessionHandler = () => {
         console.error('Session check error:', error);
         if (isSubscribed) {
           setIsLoading(false);
-          toast({
-            title: "Sessie fout",
-            description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
-            variant: "destructive",
-          });
-          await supabase.auth.signOut();
+          // Alleen een foutmelding tonen als we niet op de login pagina zijn
+          if (location.pathname !== '/login') {
+            toast({
+              title: "Sessie fout",
+              description: "Er is een probleem met je sessie. Je wordt opnieuw ingelogd.",
+              variant: "destructive",
+            });
+          }
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/login');
           }
@@ -88,10 +89,10 @@ export const SessionHandler = () => {
       }
     };
 
-    // Initial session check
+    // Initiële sessiecheck
     checkSession();
 
-    // Set up auth state change listener
+    // Auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(handleAuthChange);
@@ -105,7 +106,7 @@ export const SessionHandler = () => {
   }, [supabase, navigate, location.pathname, toast, isLoading]);
 
   if (isLoading) {
-    return <LoadingSpinner message="Sessie controleren..." />;
+    return <LoadingSpinner message="Even geduld..." />;
   }
 
   return null;
