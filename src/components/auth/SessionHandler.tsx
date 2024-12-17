@@ -18,7 +18,15 @@ export const SessionHandler = () => {
     const checkSession = async () => {
       try {
         console.log('Checking session state...');
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        
+        // Get current session
+        const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('Session error:', sessionError);
+          throw sessionError;
+        }
+
         console.log('Current session:', currentSession?.user?.email);
         
         if (!currentSession?.user?.id) {
@@ -32,6 +40,7 @@ export const SessionHandler = () => {
 
         if (!isSubscribed) return;
 
+        // Verify user data exists
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -51,6 +60,7 @@ export const SessionHandler = () => {
 
         if (!isSubscribed) return;
 
+        // Handle successful login redirect
         if (location.pathname === '/login' && userData) {
           navigate('/');
           toast({
@@ -63,14 +73,23 @@ export const SessionHandler = () => {
       } catch (error) {
         console.error('Session check error:', error);
         setIsLoading(false);
+        
+        // Clear session on error
+        await supabase.auth.signOut();
+        
+        if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+          navigate('/login');
+        }
+        
         toast({
-          title: "Error",
-          description: "Er is een probleem opgetreden bij het controleren van je sessie.",
+          title: "Sessie verlopen",
+          description: "Je sessie is verlopen. Log opnieuw in.",
           variant: "destructive",
         });
       }
     };
 
+    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -96,6 +115,7 @@ export const SessionHandler = () => {
       }
     });
 
+    // Initial session check
     checkSession();
 
     return () => {
