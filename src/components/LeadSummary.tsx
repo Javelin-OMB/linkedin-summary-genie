@@ -40,14 +40,14 @@ const LeadSummary = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Button
               onClick={handleLoginClick}
-              className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white px-8 py-6 text-lg"
+              className="bg-brand-primary hover:bg-brand-hover text-black px-8 py-6 text-lg"
             >
               Start Free Trial
             </Button>
             <Button
               variant="outline"
               onClick={() => navigate('/about')}
-              className="border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white px-8 py-6 text-lg"
+              className="border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-black px-8 py-6 text-lg"
             >
               Learn More
             </Button>
