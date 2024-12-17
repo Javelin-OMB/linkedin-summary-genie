@@ -20,9 +20,10 @@ export const SessionHandler = () => {
       try {
         console.log('Checking session state...');
         
-        // Set a timeout to show error if session check takes too long
+        // Shorter timeout (5 seconds instead of 10)
         timeoutId = setTimeout(() => {
           if (isLoading && isSubscribed) {
+            console.log('Session check timeout');
             setIsLoading(false);
             toast({
               title: "Timeout",
@@ -30,9 +31,9 @@ export const SessionHandler = () => {
               variant: "destructive",
             });
           }
-        }, 10000); // 10 second timeout
+        }, 5000);
 
-        // Get current session with error handling
+        // Quick session check without waiting for full user data
         const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
         
         if (sessionError) {
@@ -40,9 +41,7 @@ export const SessionHandler = () => {
           throw sessionError;
         }
 
-        console.log('Current session:', currentSession?.user?.email);
-        
-        // Check if session exists
+        // If no session, handle immediately without further checks
         if (!currentSession?.user?.id) {
           console.log('No active session found');
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
@@ -52,32 +51,24 @@ export const SessionHandler = () => {
           return;
         }
 
-        if (!isSubscribed) return;
+        // Only proceed with user data check if we have a session
+        if (isSubscribed && currentSession?.user?.id) {
+          console.log('Checking user data for:', currentSession.user.email);
+          
+          const { error: userError } = await supabase
+            .from('users')
+            .select('id')
+            .eq('id', currentSession.user.id)
+            .single();
 
-        // Verify user data exists with optimized query
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('id, email')  // Only select needed fields
-          .eq('id', currentSession.user.id)
-          .single();
-
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-          throw userError;
+          if (userError) {
+            console.error('Error fetching user data:', userError);
+            throw userError;
+          }
         }
 
-        if (!isSubscribed) return;
-
-        // Handle successful login redirect
-        if (location.pathname === '/login' && userData) {
-          navigate('/');
-          toast({
-            title: "Welkom terug!",
-            description: "Je bent succesvol ingelogd.",
-          });
-        }
-        
         setIsLoading(false);
+        
       } catch (error) {
         console.error('Session check error:', error);
         if (!isSubscribed) return;
@@ -99,11 +90,9 @@ export const SessionHandler = () => {
       }
     };
 
-    // Set up auth state change listener with timeout
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const handleAuthChange = async (event: string, session: any) => {
       console.log('Auth state changed:', event, session?.user?.email);
+      
       if (event === 'SIGNED_IN') {
         console.log('User signed in:', session?.user?.email);
         await checkSession();
@@ -116,7 +105,12 @@ export const SessionHandler = () => {
           description: "Je bent succesvol uitgelogd.",
         });
       }
-    });
+    };
+
+    // Set up auth state change listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(handleAuthChange);
 
     // Initial session check
     checkSession();
