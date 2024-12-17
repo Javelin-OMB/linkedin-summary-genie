@@ -14,30 +14,11 @@ export const SessionHandler = () => {
 
   useEffect(() => {
     let isSubscribed = true;
-    let timeoutId: NodeJS.Timeout;
 
     const checkSession = async () => {
       try {
-        console.log('Starting quick session check...');
+        console.log('Checking session status...');
         
-        // Kortere timeout (1.5 seconden)
-        timeoutId = setTimeout(() => {
-          if (isLoading && isSubscribed) {
-            console.log('Quick session check timeout');
-            setIsLoading(false);
-            // Alleen een toast tonen als we niet op de login pagina zijn
-            if (location.pathname !== '/login') {
-              toast({
-                title: "Let op",
-                description: "Sessie wordt opnieuw geladen...",
-                variant: "default",
-              });
-            }
-            // Geen automatische uitlog meer bij timeout
-          }
-        }, 1500);
-
-        // Snelle sessiecheck zonder extra data
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         
         if (!currentSession?.user?.id) {
@@ -49,19 +30,17 @@ export const SessionHandler = () => {
           return;
         }
 
-        console.log('Session found for user:', currentSession.user.email);
+        console.log('Active session found for:', currentSession.user.email);
         setIsLoading(false);
-        clearTimeout(timeoutId);
         
       } catch (error) {
         console.error('Session check error:', error);
         if (isSubscribed) {
           setIsLoading(false);
-          // Alleen een foutmelding tonen als we niet op de login pagina zijn
           if (location.pathname !== '/login') {
             toast({
               title: "Sessie fout",
-              description: "Er is een probleem met je sessie. Je wordt opnieuw ingelogd.",
+              description: "Er is een probleem met je sessie. Je wordt doorgestuurd...",
               variant: "destructive",
             });
           }
@@ -69,8 +48,6 @@ export const SessionHandler = () => {
             navigate('/login');
           }
         }
-      } finally {
-        clearTimeout(timeoutId);
       }
     };
 
@@ -78,7 +55,7 @@ export const SessionHandler = () => {
       console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN') {
-        console.log('User signed in, checking session...');
+        console.log('User signed in, verifying session...');
         await checkSession();
       } else if (event === 'SIGNED_OUT') {
         console.log('User signed out');
@@ -100,10 +77,9 @@ export const SessionHandler = () => {
     return () => {
       console.log('Cleaning up session handler...');
       isSubscribed = false;
-      clearTimeout(timeoutId);
       subscription.unsubscribe();
     };
-  }, [supabase, navigate, location.pathname, toast, isLoading]);
+  }, [supabase, navigate, location.pathname, toast]);
 
   if (isLoading) {
     return <LoadingSpinner message="Even geduld..." />;
