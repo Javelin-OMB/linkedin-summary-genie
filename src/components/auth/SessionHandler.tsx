@@ -26,21 +26,21 @@ export const SessionHandler = () => {
               refresh_token: session.refresh_token,
             });
             
-            // Only redirect if we're on the login page
-            if (location.pathname === '/login') {
-              console.log('Redirecting to home after login');
+            toast({
+              title: "Succesvol ingelogd",
+              description: "Je wordt doorgestuurd naar de hoofdpagina...",
+            });
+
+            // Kleine vertraging om de toast te laten zien
+            setTimeout(() => {
               navigate('/', { replace: true });
-            }
+            }, 1000);
           }
           break;
 
         case 'SIGNED_OUT':
           console.log('User signed out');
-          // Only redirect to login if we're not on a public page
-          if (location.pathname !== '/login' && 
-              location.pathname !== '/' && 
-              location.pathname !== '/about' && 
-              location.pathname !== '/pricing') {
+          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             console.log('Redirecting to login after signout');
             navigate('/login', { replace: true });
           }
@@ -53,10 +53,6 @@ export const SessionHandler = () => {
             await supabase.auth.signOut();
             navigate('/login', { replace: true });
           }
-          break;
-
-        case 'USER_UPDATED':
-          console.log('User updated:', session?.user?.email);
           break;
       }
     });
@@ -71,13 +67,8 @@ export const SessionHandler = () => {
           throw error;
         }
 
-        console.log('Initial session check:', session?.user?.email);
-        
         if (!session && 
-            location.pathname !== '/login' && 
-            location.pathname !== '/' && 
-            location.pathname !== '/about' && 
-            location.pathname !== '/pricing') {
+            !['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           console.log('No initial session, redirecting to login');
           navigate('/login', { replace: true });
         }
