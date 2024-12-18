@@ -11,15 +11,6 @@ export const SessionHandler = () => {
   useEffect(() => {
     console.log('SessionHandler mounted, current path:', location.pathname);
     
-    // Check if we're on the reset password page with a recovery token
-    const isPasswordReset = location.pathname === '/reset-password' && 
-                          window.location.hash.includes('type=recovery');
-    
-    if (isPasswordReset) {
-      console.log('Password reset page detected with recovery token, skipping session handling');
-      return;
-    }
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -48,12 +39,8 @@ export const SessionHandler = () => {
 
             console.log('User admin status:', userData?.is_admin);
             
-            // Navigate to dashboard or stay on current page if it's a protected route
-            if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-              navigate(location.pathname);
-            } else {
-              navigate('/dashboard');
-            }
+            // Navigate to dashboard for authenticated users
+            navigate('/dashboard');
           }
           break;
 
@@ -85,11 +72,6 @@ export const SessionHandler = () => {
 
     // Initial session check
     const checkInitialSession = async () => {
-      if (isPasswordReset) {
-        console.log('Skipping initial session check for password reset page');
-        return;
-      }
-
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log('Initial session check:', session?.user?.email);
@@ -109,6 +91,9 @@ export const SessionHandler = () => {
             access_token: session.access_token,
             refresh_token: session.refresh_token
           });
+          
+          // Navigate to dashboard for authenticated users
+          navigate('/dashboard');
         }
       } catch (error) {
         console.error('Session check error:', error);

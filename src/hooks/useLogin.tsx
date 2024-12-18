@@ -71,10 +71,8 @@ export const useLogin = (onSuccess?: () => void) => {
       // Call success callback if provided
       onSuccess?.();
       
-      // Navigate after a short delay to ensure toast is visible
-      setTimeout(() => {
-        navigate('/dashboard', { replace: true });
-      }, 500);
+      // Navigate to dashboard
+      navigate('/dashboard');
       
     } catch (error: any) {
       console.error('Login error:', error);
