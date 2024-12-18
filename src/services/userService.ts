@@ -30,7 +30,7 @@ export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
 
   const { data, error } = await supabase
     .from('users')
-    .insert([supabaseUser])
+    .insert(supabaseUser)
     .select()
     .single();
 
