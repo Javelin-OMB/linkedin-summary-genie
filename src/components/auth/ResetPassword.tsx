@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -17,9 +19,10 @@ const ResetPassword = () => {
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
+        const type = hashParams.get('type');
         
-        if (!accessToken) {
-          console.error('No access token found in URL');
+        if (!accessToken || type !== 'recovery') {
+          console.error('Invalid or missing recovery token');
           toast({
             title: "Ongeldige link",
             description: "Deze wachtwoord reset link is ongeldig of verlopen.",
@@ -29,13 +32,12 @@ const ResetPassword = () => {
           return;
         }
 
-        // Set the session with the tokens from the URL
-        const { error } = await supabase.auth.setSession({
+        const { data: { session }, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || '',
         });
 
-        if (error) {
+        if (error || !session) {
           console.error('Error setting session:', error);
           toast({
             title: "Sessie fout",
@@ -43,7 +45,10 @@ const ResetPassword = () => {
             variant: "destructive",
           });
           navigate('/login');
+          return;
         }
+
+        setInitializing(false);
       } catch (error) {
         console.error('Error in handlePasswordReset:', error);
         toast({
@@ -71,10 +76,16 @@ const ResetPassword = () => {
 
       toast({
         title: "Wachtwoord gewijzigd",
-        description: "Je wachtwoord is succesvol gewijzigd. Je kunt nu inloggen.",
+        description: "Je wachtwoord is succesvol gewijzigd. Je wordt nu doorgestuurd naar de inlogpagina.",
       });
       
-      navigate('/login');
+      // Sign out the user after password reset
+      await supabase.auth.signOut();
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate('/login');
+      }, 1500);
     } catch (error: any) {
       console.error('Error resetting password:', error);
       toast({
@@ -86,6 +97,14 @@ const ResetPassword = () => {
       setLoading(false);
     }
   };
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner message="Even geduld..." />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -111,7 +130,7 @@ const ResetPassword = () => {
           </div>
           <Button
             type="submit"
-            className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
+            className="w-full bg-brand-primary hover:bg-brand-hover text-black"
             disabled={loading}
           >
             {loading ? "Bezig met wijzigen..." : "Wachtwoord wijzigen"}
