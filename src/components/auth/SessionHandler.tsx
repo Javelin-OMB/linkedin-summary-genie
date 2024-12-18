@@ -24,22 +24,33 @@ export const SessionHandler = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
+      console.log('Auth state changed:', event, 'User:', session?.user?.email);
       
       switch (event) {
         case 'SIGNED_IN':
           if (session?.user && session?.access_token) {
+            console.log('Valid session detected, handling user session...');
             await handleUserSession(supabase, session.user, navigate, toast);
           }
           break;
 
         case 'SIGNED_OUT':
+          console.log('User signed out, checking current path...');
           if (!['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
+            console.log('Redirecting to login page...');
             await handleSignOut(supabase, navigate, toast);
           }
           break;
 
+        case 'PASSWORD_RECOVERY':
+          console.log('Password recovery event detected');
+          if (location.pathname !== '/reset-password') {
+            navigate('/reset-password');
+          }
+          break;
+
         case 'TOKEN_REFRESHED':
+          console.log('Token refreshed, checking session...');
           if (!session && !isPasswordReset) {
             console.log('No session after token refresh, signing out');
             await handleSignOut(supabase, navigate, toast);
@@ -52,11 +63,12 @@ export const SessionHandler = () => {
     const checkInitialSession = async () => {
       if (isPasswordReset) {
         console.log('Skipping initial session check for password reset page');
-        return; // Skip session check for password reset
+        return;
       }
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.email);
         
         if (error) {
           console.error('Error checking session:', error);
