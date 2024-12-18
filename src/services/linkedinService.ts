@@ -12,7 +12,7 @@ interface LinkedInProfile {
 
 // Cache voor recente analyses
 const profileCache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minuten cache
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minuten cache (verhoogd van 5 naar 30 minuten)
 
 export const fetchLinkedInProfile = async (url: string): Promise<any> => {
   console.log('Starting LinkedIn profile fetch for URL:', url);
@@ -37,7 +37,8 @@ export const fetchLinkedInProfile = async (url: string): Promise<any> => {
       body: JSON.stringify({
         params: {
           linkedin_url: url.trim(),
-          optimize_response: true // Extra parameter voor geoptimaliseerde response
+          optimize_response: true, // Extra parameter voor geoptimaliseerde response
+          max_tokens: 1000 // Limiteer de response grootte
         },
         project: "d607c466-f207-4c47-907f-d928278273e2"
       })

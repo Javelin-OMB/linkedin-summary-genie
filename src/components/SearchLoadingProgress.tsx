@@ -14,26 +14,35 @@ const SearchLoadingProgress: React.FC<SearchLoadingProgressProps> = ({ isLoading
       setProgress(0);
       const interval = setInterval(() => {
         setProgress(prev => {
+          // Snellere progressie tot 95%
           if (prev >= 95) {
             clearInterval(interval);
             return 95;
           }
-          // Snellere progressie tot 85%
+          
+          // Update loading message based on progress
+          if (prev < 25) {
+            setLoadingMessage('LinkedIn profiel ophalen...');
+          } else if (prev < 50) {
+            setLoadingMessage('Profiel analyseren...');
+          } else if (prev < 75) {
+            setLoadingMessage('Samenvatting genereren...');
+          } else {
+            setLoadingMessage('Bijna klaar...');
+          }
+          
+          // Snellere toename in het begin
+          if (prev < 60) {
+            return prev + 8; // Veel sneller in het begin
+          }
+          // Dan middelmatig
           if (prev < 85) {
-            // Update loading message based on progress
-            if (prev < 30) {
-              setLoadingMessage('LinkedIn profiel ophalen...');
-            } else if (prev < 60) {
-              setLoadingMessage('Profiel analyseren...');
-            } else {
-              setLoadingMessage('Afronden...');
-            }
-            return prev + 5; // Snellere toename
+            return prev + 4;
           }
           // Dan langzamer
-          return prev + 0.5;
+          return prev + 1;
         });
-      }, 100); // Kortere interval voor vloeiendere animatie
+      }, 150); // Kortere interval voor vloeiendere animatie
 
       return () => clearInterval(interval);
     } else if (progress > 0) {
