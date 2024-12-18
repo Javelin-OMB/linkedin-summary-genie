@@ -1,48 +1,66 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { useAdminCheck } from './useAdminCheck';
-import { useUserCredits } from './useUserCredits';
-import { useUserAdmin } from './useUserAdmin';
-import { useUserCreation } from './useUserCreation';
-
-interface UserData {
-  id: string;
-  email: string;
-  credits: number;
-  is_admin: boolean;
-  trial_start: string;
-}
 
 export const useAdminUsers = () => {
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { checkAdminStatus } = useAdminCheck();
-  const { updateCredits } = useUserCredits();
-  const { toggleAdmin } = useUserAdmin();
-  const { addUser } = useUserCreation();
 
   const fetchUsers = async () => {
     try {
-      await checkAdminStatus();
-
-      const { data: allUsers, error } = await supabase
+      console.log('Fetching users...');
+      const { data: users, error } = await supabase
         .from('users')
         .select('*')
-        .order('email');
+        .order('email', { ascending: true });
 
       if (error) {
         console.error('Error fetching users:', error);
-        throw new Error('Failed to load users');
+        toast({
+          title: "Error",
+          description: "Could not load users. Please try again later.",
+          variant: "destructive",
+        });
+        throw error;
       }
 
-      setUsers(allUsers || []);
+      return users;
     } catch (error) {
       console.error('Error loading users:', error);
+      throw new Error('Failed to load users');
+    }
+  };
+
+  const { data: users, error, refetch } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+    retry: 1,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+
+  const addUser = async (userData: any) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([userData])
+        .select()
+        .single();
+
+      if (error) throw error;
+
       toast({
-        title: "Fout",
-        description: error instanceof Error ? error.message : "Kon gebruikers niet laden",
+        title: "Success",
+        description: "User added successfully",
+      });
+
+      return data;
+    } catch (error: any) {
+      console.error('Error adding user:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Could not add user",
         variant: "destructive",
       });
       throw error;
@@ -51,39 +69,43 @@ export const useAdminUsers = () => {
     }
   };
 
-  const handleUpdateCredits = async (userId: string, change: number) => {
+  const updateUser = async (id: string, updates: any) => {
+    setIsLoading(true);
     try {
-      await updateCredits(userId, change);
-      await fetchUsers();
-    } catch (error) {
-      throw error;
-    }
-  };
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
 
-  const handleToggleAdmin = async (userId: string) => {
-    try {
-      await toggleAdmin(userId);
-      await fetchUsers();
-    } catch (error) {
-      throw error;
-    }
-  };
+      if (error) throw error;
 
-  const handleAddUser = async (email: string, initialCredits: number) => {
-    try {
-      await addUser(email, initialCredits);
-      await fetchUsers();
-    } catch (error) {
+      toast({
+        title: "Success",
+        description: "User updated successfully",
+      });
+
+      return data;
+    } catch (error: any) {
+      console.error('Error updating user:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Could not update user",
+        variant: "destructive",
+      });
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return {
     users,
     isLoading,
-    fetchUsers,
-    handleUpdateCredits,
-    handleToggleAdmin,
-    handleAddUser
+    error,
+    refetch,
+    addUser,
+    updateUser,
   };
 };
