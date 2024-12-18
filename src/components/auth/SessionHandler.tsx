@@ -21,38 +21,57 @@ export const SessionHandler = () => {
           if (session?.user && session?.access_token) {
             console.log('Valid session detected, handling user session...');
             
-            // Store the session
-            await supabase.auth.setSession({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token
-            });
-            
-            // Check admin status
-            const { data: userData } = await supabase
-              .from('users')
-              .select('is_admin')
-              .eq('id', session.user.id)
-              .maybeSingle();
+            try {
+              // Set the session
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token
+              });
+              
+              // Check admin status
+              const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('is_admin')
+                .eq('id', session.user.id)
+                .maybeSingle();
 
-            console.log('User admin status:', userData?.is_admin);
-            
-            // Navigate to dashboard for authenticated users
-            if (location.pathname === '/login' || location.pathname === '/') {
-              navigate('/dashboard');
+              if (userError) {
+                console.error('Error checking admin status:', userError);
+                throw userError;
+              }
+
+              console.log('User admin status:', userData?.is_admin);
+              
+              // Always navigate to dashboard after successful login
+              navigate('/dashboard', { replace: true });
+              
+              toast({
+                title: "Succesvol ingelogd",
+                description: "Welkom terug!",
+              });
+            } catch (error) {
+              console.error('Error handling session:', error);
+              toast({
+                title: "Er ging iets mis",
+                description: "Probeer opnieuw in te loggen",
+                variant: "destructive",
+              });
             }
           }
           break;
 
         case 'SIGNED_OUT':
           console.log('User signed out, clearing session data...');
-          localStorage.removeItem('supabase.auth.token');
-          sessionStorage.clear();
           
           // Clear the session in Supabase
           await supabase.auth.setSession(null);
           
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/', { replace: true });
+            toast({
+              title: "Uitgelogd",
+              description: "Tot ziens!",
+            });
           }
           break;
 
@@ -83,6 +102,11 @@ export const SessionHandler = () => {
             !['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           console.log('No initial session, redirecting to home');
           navigate('/', { replace: true });
+          toast({
+            title: "Sessie verlopen",
+            description: "Log opnieuw in om door te gaan",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Session check error:', error);
