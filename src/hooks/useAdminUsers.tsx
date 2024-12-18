@@ -12,10 +12,12 @@ interface User {
   trial_start: string | null;
 }
 
-type NewUser = {
-  email: string;
-  credits: number;
-}
+// Separate type for new users since ID is auto-generated
+type NewUser = Omit<User, 'id' | 'is_admin' | 'name' | 'trial_start'> & {
+  is_admin?: boolean;
+  name?: string | null;
+  trial_start?: string | null;
+};
 
 export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -58,11 +60,13 @@ export const useAdminUsers = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .insert([{ 
+        .insert({
           email: userData.email,
           credits: userData.credits,
-          is_admin: false // Set default value for new users
-        }])
+          is_admin: false, // Set default value for new users
+          name: userData.name,
+          trial_start: userData.trial_start
+        })
         .select()
         .single();
 
