@@ -4,9 +4,7 @@ export const loginUser = async (email: string, password: string) => {
   console.log('Attempting login with email:', email.trim());
   
   try {
-    const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
-    console.log('Existing user check:', existingUser);
-
+    // First, try to sign in the user
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: password.trim(),
@@ -41,10 +39,12 @@ export const loginUser = async (email: string, password: string) => {
       throw new Error(error.message || "Er is iets misgegaan. Probeer het opnieuw.");
     }
 
-    // After successful login, ensure user record exists
-    if (data.user) {
-      await ensureUserRecord(data.user.id, data.user.email!);
+    if (!data.user) {
+      throw new Error("Er is een fout opgetreden tijdens het inloggen.");
     }
+
+    // After successful login, ensure user record exists
+    await ensureUserRecord(data.user.id, data.user.email!);
 
     return data;
   } catch (error: any) {
@@ -57,43 +57,44 @@ export const ensureUserRecord = async (userId: string, userEmail: string) => {
   try {
     console.log('Checking for existing user record:', userId);
     
-    const { data: userData, error: userError } = await supabase
+    // First check if user record exists
+    const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('*')
       .eq('id', userId)
       .maybeSingle();
 
-    if (userError) {
-      console.error('Error fetching user data:', userError);
-      throw new Error("Er is een fout opgetreden bij het ophalen van je gebruikersgegevens.");
+    if (checkError) {
+      console.error('Error checking user record:', checkError);
+      throw new Error("Er is een fout opgetreden bij het controleren van je gebruikersgegevens.");
     }
 
-    if (!userData) {
-      console.log('Creating new user record in users table...');
-      const { error: createError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: userId,
-            email: userEmail,
-            trial_start: new Date().toISOString(),
-            credits: 10
-          }
-        ]);
-
-      if (createError) {
-        console.error('Error creating user record:', createError);
-        throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel. Probeer het later opnieuw.");
-      }
+    // If user doesn't exist, create new record
+    if (!existingUser) {
+      console.log('Creating new user record...');
       
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          email: userEmail,
+          trial_start: new Date().toISOString(),
+          credits: 10
+        });
+
+      if (insertError) {
+        console.error('Error creating user record:', insertError);
+        throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel.");
+      }
+
       console.log('User record created successfully');
-    } else {
-      console.log('User record already exists');
+      return { id: userId, email: userEmail, credits: 10 };
     }
 
-    return userData;
+    console.log('Existing user record found');
+    return existingUser;
   } catch (error: any) {
     console.error('Error in ensureUserRecord:', error);
-    throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel. Probeer het later opnieuw.");
+    throw error;
   }
 };
