@@ -6,6 +6,7 @@ import LoginFormFields from './auth/LoginFormFields';
 import LoginLinks from './auth/LoginLinks';
 import SignupForm from './auth/SignupForm';
 import { loginUser, ensureUserRecord } from '@/services/authService';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -18,6 +19,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const supabase = useSupabaseClient();
 
   if (mode === 'signup') {
     return <SignupForm onSuccess={onSuccess} />;
@@ -36,36 +38,50 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     }
 
     setIsLoading(true);
-
-    // Toon direct feedback dat we bezig zijn
-    toast({
-      title: "Even geduld",
-      description: "We loggen je in...",
-    });
+    console.log('Starting login process for:', email);
 
     try {
-      const { user } = await loginUser(email, password);
-      
-      if (user) {
-        await ensureUserRecord(user.id, user.email!);
-        
-        onSuccess?.();
-        
-        toast({
-          title: "Succesvol ingelogd",
-          description: "Je wordt doorgestuurd...",
-        });
-        
-        // Snellere redirect
-        setTimeout(() => {
-          navigate('/');
-        }, 500);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
+      });
+
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
       }
+
+      if (!data.user) {
+        throw new Error('No user data returned');
+      }
+
+      console.log('Login successful for user:', data.user.email);
+      
+      // Ensure user record exists in the database
+      await ensureUserRecord(data.user.id, data.user.email!);
+      
+      toast({
+        title: "Succesvol ingelogd",
+        description: "Je wordt doorgestuurd...",
+      });
+      
+      onSuccess?.();
+      navigate('/');
+      
     } catch (error: any) {
       console.error('Login error:', error);
+      
+      let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
+      
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = "Je account is nog niet geactiveerd. Check je inbox voor de activatielink.";
+      }
+      
       toast({
         title: "Inloggen mislukt",
-        description: error.message || "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
