@@ -29,11 +29,20 @@ export const SessionHandler = () => {
         case 'SIGNED_IN':
           if (session?.user && session?.access_token) {
             console.log('Valid session detected, handling user session...');
+            
+            // Store the session
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token
+            });
+            
+            // Store token in localStorage for persistence
             localStorage.setItem('supabase.auth.token', session.access_token);
+            
             if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
               navigate(location.pathname);
             } else {
-              navigate('/');
+              navigate('/dashboard');
             }
           }
           break;
@@ -42,6 +51,10 @@ export const SessionHandler = () => {
           console.log('User signed out, clearing session data...');
           localStorage.removeItem('supabase.auth.token');
           sessionStorage.clear();
+          
+          // Clear the session in Supabase
+          await supabase.auth.setSession(null);
+          
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/', { replace: true });
           }
@@ -50,6 +63,10 @@ export const SessionHandler = () => {
         case 'TOKEN_REFRESHED':
           console.log('Token refreshed, updating session...');
           if (session?.access_token) {
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token
+            });
             localStorage.setItem('supabase.auth.token', session.access_token);
           }
           break;
@@ -76,6 +93,12 @@ export const SessionHandler = () => {
             !['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           console.log('No initial session, redirecting to home');
           navigate('/', { replace: true });
+        } else if (session) {
+          // If we have a session, ensure it's properly set
+          await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token
+          });
         }
       } catch (error) {
         console.error('Session check error:', error);

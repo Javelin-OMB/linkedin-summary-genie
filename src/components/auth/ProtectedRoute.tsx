@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
@@ -19,15 +20,22 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         if (!currentSession) {
           console.log('No session found in ProtectedRoute, redirecting to login');
           toast({
-            title: "Authentication required",
-            description: "Please log in to access this page",
+            title: "Toegang geweigerd",
+            description: "Log in om deze pagina te bekijken",
             variant: "destructive",
           });
-          navigate('/login');
+          navigate('/login', { replace: true });
+          return;
         }
+
+        // Ensure the session is properly set
+        await supabase.auth.setSession({
+          access_token: currentSession.access_token,
+          refresh_token: currentSession.refresh_token
+        });
       } catch (error) {
         console.error('Error checking session:', error);
-        navigate('/login');
+        navigate('/login', { replace: true });
       } finally {
         setIsLoading(false);
       }
@@ -37,7 +45,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   }, [navigate, toast]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner />;
   }
 
   if (!session) {
