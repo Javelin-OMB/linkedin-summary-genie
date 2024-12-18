@@ -1,8 +1,4 @@
 import React, { useEffect } from 'react';
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,6 +9,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useUserCredits } from '@/hooks/useUserCredits';
+import UsageCard from './UsageCard';
+import ProPlanCard from './ProPlanCard';
 
 interface DashboardOverviewProps {
   credits?: number | null;
@@ -22,10 +20,8 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits: propCred
   const { credits: hookCredits, isLoading } = useUserCredits();
   const credits = propCredits ?? hookCredits;
   const maxFreeSearches = 10;
-  const usagePercentage = credits !== null ? ((maxFreeSearches - credits) / maxFreeSearches) * 100 : 0;
   const [showNoCreditsDialog, setShowNoCreditsDialog] = React.useState(credits === 0);
 
-  // Add useEffect to watch credits changes
   useEffect(() => {
     if (credits && credits > 0) {
       setShowNoCreditsDialog(false);
@@ -41,83 +37,12 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ credits: propCred
   return (
     <>
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-6">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Current Usage</h2>
-            <p className="text-gray-600">Free Plan</p>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>LinkedIn Profile Analyses</span>
-                <span>{isLoading ? "Loading..." : `${credits} / ${maxFreeSearches}`}</span>
-              </div>
-              <Progress value={usagePercentage} className="h-2" />
-            </div>
-
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-[#0177B5] font-medium">
-                {isLoading ? "Loading..." : `${credits} analyses remaining`}
-              </p>
-            </div>
-
-            <ul className="space-y-2">
-              <li className="flex items-center text-gray-600">
-                <Check className="w-5 h-5 text-green-500 mr-2" />
-                Basic LinkedIn profile analysis
-              </li>
-              <li className="flex items-center text-gray-600">
-                <Check className="w-5 h-5 text-green-500 mr-2" />
-                Conversation starters
-              </li>
-              <li className="flex items-center text-gray-600">
-                <Check className="w-5 h-5 text-green-500 mr-2" />
-                Basic insights
-              </li>
-            </ul>
-          </div>
-        </Card>
-
-        <Card className="p-6 border-2 border-[#0177B5]">
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-2">Pro Plan</h2>
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold">€29</span>
-              <span className="text-gray-600 ml-1">/month</span>
-            </div>
-          </div>
-
-          <ul className="space-y-3 mb-6">
-            <li className="flex items-center text-gray-600">
-              <Check className="w-5 h-5 text-[#0177B5] mr-2" />
-              Unlimited LinkedIn analyses
-            </li>
-            <li className="flex items-center text-gray-600">
-              <Check className="w-5 h-5 text-[#0177B5] mr-2" />
-              Advanced insights & recommendations
-            </li>
-            <li className="flex items-center text-gray-600">
-              <Check className="w-5 h-5 text-[#0177B5] mr-2" />
-              Priority support
-            </li>
-            <li className="flex items-center text-gray-600">
-              <Check className="w-5 h-5 text-[#0177B5] mr-2" />
-              Download & export options
-            </li>
-          </ul>
-
-          <Button 
-            className="w-full bg-gray-400 hover:bg-gray-500 text-white cursor-not-allowed"
-            disabled
-          >
-            Soon Available
-          </Button>
-          
-          <p className="text-sm text-gray-500 text-center mt-4">
-            Cancel anytime. No commitment required.
-          </p>
-        </Card>
+        <UsageCard 
+          credits={credits}
+          isLoading={isLoading}
+          maxFreeSearches={maxFreeSearches}
+        />
+        <ProPlanCard />
       </div>
 
       <AlertDialog open={showNoCreditsDialog}>

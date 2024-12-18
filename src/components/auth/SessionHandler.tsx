@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { handleAuthEvent } from './SessionEventHandler';
+import { checkInitialSession } from './InitialSessionCheck';
 
 export const SessionHandler = () => {
   const navigate = useNavigate();
@@ -14,116 +16,10 @@ export const SessionHandler = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, 'Session:', session?.user?.email);
-      
-      switch (event) {
-        case 'SIGNED_IN':
-          if (session?.user && session?.access_token) {
-            console.log('Valid session detected, handling user session...');
-            
-            try {
-              // Set the session
-              await supabase.auth.setSession({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token
-              });
-              
-              // Check admin status
-              const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('is_admin')
-                .eq('id', session.user.id)
-                .maybeSingle();
-
-              if (userError) {
-                console.error('Error checking admin status:', userError);
-                throw userError;
-              }
-
-              console.log('User data:', userData);
-              
-              // Navigate to dashboard only if not already there
-              if (location.pathname !== '/dashboard') {
-                navigate('/dashboard', { replace: true });
-                toast({
-                  title: "Succesvol ingelogd",
-                  description: "Welkom terug!",
-                });
-              }
-            } catch (error) {
-              console.error('Error handling session:', error);
-              toast({
-                title: "Er ging iets mis",
-                description: "Probeer opnieuw in te loggen",
-                variant: "destructive",
-              });
-            }
-          }
-          break;
-
-        case 'SIGNED_OUT':
-          console.log('User signed out, clearing session data...');
-          localStorage.removeItem('supabase.auth.token');
-          sessionStorage.clear();
-          
-          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-            navigate('/', { replace: true });
-            toast({
-              title: "Uitgelogd",
-              description: "Tot ziens!",
-            });
-          }
-          break;
-
-        case 'TOKEN_REFRESHED':
-          console.log('Token refreshed, updating session...');
-          if (session?.access_token) {
-            await supabase.auth.setSession({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token
-            });
-          }
-          break;
-      }
+      await handleAuthEvent(event, session, navigate, toast, location.pathname);
     });
 
-    // Initial session check
-    const checkInitialSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.email);
-        
-        if (error) {
-          console.error('Error checking session:', error);
-          throw error;
-        }
-
-        if (session?.user) {
-          // If we have a session and not on dashboard, redirect there
-          if (location.pathname !== '/dashboard') {
-            navigate('/dashboard', { replace: true });
-          }
-        } else if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-          console.log('No session found, redirecting to home');
-          navigate('/', { replace: true });
-          toast({
-            title: "Sessie verlopen",
-            description: "Log opnieuw in om door te gaan",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error('Session check error:', error);
-        toast({
-          title: "Sessie fout",
-          description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
-          variant: "destructive",
-        });
-        navigate('/', { replace: true });
-      }
-    };
-
-    checkInitialSession();
+    checkInitialSession(navigate, toast, location.pathname);
 
     return () => {
       console.log('Cleaning up auth subscription');

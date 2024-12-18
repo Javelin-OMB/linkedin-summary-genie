@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import MobileMenuLinks from './MobileMenuLinks';
 
 interface MobileMenuProps {
   isAuthenticated: boolean;
@@ -35,91 +36,15 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           </Button>
         </SheetTrigger>
         <SheetContent>
-          <nav className="flex flex-col space-y-4 mt-8">
-            <Link 
-              to="/about" 
-              className="text-lg hover:text-brand-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              About
-            </Link>
-            <Link 
-              to="/how-it-works" 
-              className="text-lg hover:text-brand-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              How it Works
-            </Link>
-            <Link 
-              to="/pricing" 
-              className="text-lg hover:text-brand-primary"
-              onClick={() => setIsOpen(false)}
-            >
-              Pricing
-            </Link>
-            
-            {isAuthenticated ? (
-              <>
-                <Link 
-                  to="/dashboard" 
-                  className="text-lg hover:text-brand-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Dashboard {credits !== null && `(${credits} credits)`}
-                </Link>
-                <Link 
-                  to="/settings" 
-                  className="text-lg hover:text-brand-primary"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Settings
-                </Link>
-                {isAdmin && (
-                  <Link 
-                    to="/admin" 
-                    className="text-lg hover:text-brand-primary flex items-center"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    Admin Panel
-                  </Link>
-                )}
-                <Button 
-                  variant="ghost" 
-                  onClick={() => {
-                    setIsOpen(false);
-                    handleLogout();
-                  }}
-                  className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                >
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Uitloggen
-                </Button>
-              </>
-            ) : (
-              <div className="flex flex-col space-y-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    setIsOpen(false);
-                    onLoginClick();
-                  }}
-                  className="w-full justify-center border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-black"
-                >
-                  <User className="w-4 h-4 mr-2" />
-                  Login
-                </Button>
-                <Button 
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate('/login?mode=signup');
-                  }}
-                  className="w-full justify-center bg-brand-primary hover:bg-brand-hover text-black"
-                >
-                  Sign Up
-                </Button>
-              </div>
-            )}
-          </nav>
+          <MobileMenuLinks 
+            isAuthenticated={isAuthenticated}
+            isAdmin={isAdmin}
+            credits={credits}
+            onLoginClick={onLoginClick}
+            handleLogout={handleLogout}
+            onClose={() => setIsOpen(false)}
+            navigate={navigate}
+          />
         </SheetContent>
       </Sheet>
     </div>
