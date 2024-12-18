@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { NewUser, User, SupabaseUser } from "@/types/user";
+import type { NewUser, User, SupabaseUser } from '@/types/user';
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data: users, error } = await supabase
@@ -12,29 +12,28 @@ export const fetchUsers = async (): Promise<User[]> => {
     throw error;
   }
 
-  return users as User[];
+  return users;
 };
 
 export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
-  // Generate a UUID for the new user
-  const id = crypto.randomUUID();
-
-  const supabaseUser: SupabaseUser = {
-    id,
-    email: userData.email,
-    credits: userData.credits,
-    is_admin: userData.is_admin,
-    name: userData.name,
-    trial_start: userData.trial_start
-  };
-
   const { data, error } = await supabase
     .from('users')
-    .insert(supabaseUser)
+    .insert({
+      id: userData.id,
+      email: userData.email,
+      credits: userData.credits,
+      is_admin: userData.is_admin,
+      name: userData.name,
+      trial_start: userData.trial_start
+    })
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error adding user:', error);
+    throw error;
+  }
+
   return data;
 };
 
@@ -46,6 +45,35 @@ export const updateUserInDatabase = async (id: string, updates: Partial<User>): 
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const upsertUsers = async (users: SupabaseUser[]) => {
+  const mappedUsers = users
+    .filter(user => user.id && user.email)
+    .map(user => ({
+      id: user.id!,
+      email: user.email!,
+      name: user.name || null,
+      credits: user.credits,
+      is_admin: user.is_admin,
+      trial_start: user.trial_start
+    }));
+
+  const { data, error } = await supabase
+    .from('users')
+    .upsert(mappedUsers)
+    .select();
+
+  if (error) {
+    console.error('Error upserting users:', error);
+    throw error;
+  }
+
   return data;
 };
