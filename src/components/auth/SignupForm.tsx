@@ -32,7 +32,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
     setIsLoading(true);
 
     try {
-      console.log('Attempting signup with email:', email.trim());
+      console.log('Starting signup process for email:', email.trim());
       
       // 1. First create the auth user
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -41,17 +41,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
       });
 
       if (signUpError) {
-        console.error('Signup error:', signUpError);
+        console.error('Auth signup error:', signUpError);
         throw signUpError;
       }
 
+      console.log('Auth signup response:', authData);
+
       if (!authData.user) {
+        console.error('No user data returned after signup');
         throw new Error('No user data returned after signup');
       }
 
-      console.log('Auth signup successful for:', authData.user.email);
+      console.log('Auth signup successful. User ID:', authData.user.id);
 
       // 2. Create the user record in our users table
+      console.log('Creating user record in users table...');
       const { error: userError } = await supabase
         .from('users')
         .insert([
@@ -77,14 +81,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
       
       toast({
         title: "Account aangemaakt",
-        description: "Je account is succesvol aangemaakt. Je kunt nu inloggen!",
+        description: "Je account is succesvol aangemaakt. Check je email om je account te verifiëren!",
       });
       
       onSuccess?.();
       navigate('/');
       
     } catch (error: any) {
-      console.error('Unexpected signup error:', error);
+      console.error('Signup error details:', error);
       let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
       
       if (error.message?.includes('User already registered')) {
