@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { handleUserSession, handleSignOut } from '@/utils/sessionUtils';
 
 export const SessionHandler = () => {
   const navigate = useNavigate();
@@ -18,81 +19,25 @@ export const SessionHandler = () => {
       
       switch (event) {
         case 'SIGNED_IN':
-          console.log('User signed in:', session?.user?.email);
-          if (session?.access_token) {
-            try {
-              console.log('Setting session with access token');
-              await supabase.auth.setSession({
-                access_token: session.access_token,
-                refresh_token: session.refresh_token,
-              });
-              
-              // Check if user exists in users table
-              const { data: userData, error: userError } = await supabase
-                .from('users')
-                .select('*')
-                .eq('id', session.user.id)
-                .maybeSingle();
-
-              if (userError) {
-                console.error('Error checking user:', userError);
-                throw userError;
-              }
-
-              // If user doesn't exist, create them
-              if (!userData) {
-                console.log('Creating new user record');
-                const { error: insertError } = await supabase
-                  .from('users')
-                  .insert([
-                    {
-                      id: session.user.id,
-                      email: session.user.email,
-                      trial_start: new Date().toISOString(),
-                      credits: 10
-                    }
-                  ]);
-
-                if (insertError) {
-                  console.error('Error creating user record:', insertError);
-                  throw insertError;
-                }
-              }
-              
-              toast({
-                title: "Succesvol ingelogd",
-                description: "Je wordt doorgestuurd naar de hoofdpagina...",
-              });
-
-              // Kleine vertraging om de toast te laten zien
-              setTimeout(() => {
-                navigate('/', { replace: true });
-              }, 1000);
-            } catch (error) {
-              console.error('Session handling error:', error);
-              toast({
-                title: "Er is een fout opgetreden",
-                description: "Probeer het opnieuw of neem contact op met support.",
-                variant: "destructive",
-              });
-            }
+          if (session?.user && session?.access_token) {
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            });
+            await handleUserSession(supabase, session.user, navigate, toast);
           }
           break;
 
         case 'SIGNED_OUT':
-          console.log('User signed out');
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-            console.log('Redirecting to login after signout');
-            navigate('/login', { replace: true });
+            await handleSignOut(supabase, navigate, toast);
           }
           break;
 
         case 'TOKEN_REFRESHED':
-          console.log('Token refreshed');
           if (!session) {
             console.log('No session after token refresh, signing out');
-            await supabase.auth.signOut();
-            navigate('/login', { replace: true });
+            await handleSignOut(supabase, navigate, toast);
           }
           break;
       }
