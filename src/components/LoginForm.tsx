@@ -67,7 +67,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       
       // Set session data
       if (data.session) {
-        await supabase.auth.setSession(data.session);
+        await supabase.auth.setSession({
+          access_token: data.session.access_token,
+          refresh_token: data.session.refresh_token,
+        });
       }
       
       onSuccess?.();

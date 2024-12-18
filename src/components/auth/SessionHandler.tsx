@@ -19,9 +19,18 @@ export const SessionHandler = () => {
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in:', session?.user?.email);
-          if (location.pathname === '/login') {
-            console.log('Redirecting to home after login');
-            navigate('/', { replace: true });
+          // Check if we have a valid session
+          if (session?.access_token) {
+            // Set the session in Supabase
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            });
+            
+            if (location.pathname === '/login') {
+              console.log('Redirecting to home after login');
+              navigate('/', { replace: true });
+            }
           }
           break;
 
@@ -50,6 +59,23 @@ export const SessionHandler = () => {
           break;
       }
     });
+
+    // Initial session check
+    const checkInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Initial session check:', session?.user?.email);
+      
+      if (!session && 
+          location.pathname !== '/login' && 
+          location.pathname !== '/' && 
+          location.pathname !== '/about' && 
+          location.pathname !== '/pricing') {
+        console.log('No initial session, redirecting to login');
+        navigate('/login', { replace: true });
+      }
+    };
+
+    checkInitialSession();
 
     return () => {
       console.log('Cleaning up auth subscription');

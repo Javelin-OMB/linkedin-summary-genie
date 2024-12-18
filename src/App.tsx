@@ -10,22 +10,24 @@ import { AppRoutes } from "@/routes/AppRoutes";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SessionContextProvider 
-      supabaseClient={supabase}
-      initialSession={null}
-    >
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <SessionHandler />
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
-    </SessionContextProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SessionContextProvider 
+        supabaseClient={supabase}
+        initialSession={null}
+      >
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <SessionHandler />
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </SessionContextProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
