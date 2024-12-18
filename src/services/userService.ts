@@ -19,7 +19,6 @@ export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
   const { data, error } = await supabase
     .from('users')
     .insert({
-      id: userData.id,
       email: userData.email,
       credits: userData.credits,
       is_admin: userData.is_admin,
