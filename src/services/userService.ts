@@ -16,7 +16,11 @@ export const fetchUsers = async (): Promise<User[]> => {
 };
 
 export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
+  // Generate a UUID for the new user
+  const id = crypto.randomUUID();
+
   const supabaseUser: SupabaseUser = {
+    id,
     email: userData.email,
     credits: userData.credits,
     is_admin: userData.is_admin,
