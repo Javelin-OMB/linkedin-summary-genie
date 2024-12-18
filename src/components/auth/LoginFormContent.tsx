@@ -27,11 +27,20 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       return;
     }
 
-    await handleLogin(email, password);
+    try {
+      await handleLogin(email, password);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Inloggen mislukt",
+        description: "Controleer je gegevens en probeer het opnieuw",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4 mt-4">
       <LoginFormFields
         email={email}
         setEmail={setEmail}
@@ -41,7 +50,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-brand-primary hover:bg-brand-hover text-black"
+        className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
         disabled={isLoading}
       >
         {isLoading ? "Inloggen..." : "Inloggen"}
