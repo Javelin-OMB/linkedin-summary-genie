@@ -19,14 +19,14 @@ export const SessionHandler = () => {
       switch (event) {
         case 'SIGNED_IN':
           console.log('User signed in:', session?.user?.email);
-          // Check if we have a valid session
           if (session?.access_token) {
-            // Set the session in Supabase
+            console.log('Setting session with access token');
             await supabase.auth.setSession({
               access_token: session.access_token,
               refresh_token: session.refresh_token,
             });
             
+            // Only redirect if we're on the login page
             if (location.pathname === '/login') {
               console.log('Redirecting to home after login');
               navigate('/', { replace: true });
@@ -36,6 +36,7 @@ export const SessionHandler = () => {
 
         case 'SIGNED_OUT':
           console.log('User signed out');
+          // Only redirect to login if we're not on a public page
           if (location.pathname !== '/login' && 
               location.pathname !== '/' && 
               location.pathname !== '/about' && 
@@ -62,15 +63,31 @@ export const SessionHandler = () => {
 
     // Initial session check
     const checkInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log('Initial session check:', session?.user?.email);
-      
-      if (!session && 
-          location.pathname !== '/login' && 
-          location.pathname !== '/' && 
-          location.pathname !== '/about' && 
-          location.pathname !== '/pricing') {
-        console.log('No initial session, redirecting to login');
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error checking session:', error);
+          throw error;
+        }
+
+        console.log('Initial session check:', session?.user?.email);
+        
+        if (!session && 
+            location.pathname !== '/login' && 
+            location.pathname !== '/' && 
+            location.pathname !== '/about' && 
+            location.pathname !== '/pricing') {
+          console.log('No initial session, redirecting to login');
+          navigate('/login', { replace: true });
+        }
+      } catch (error) {
+        console.error('Session check error:', error);
+        toast({
+          title: "Sessie fout",
+          description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
+          variant: "destructive",
+        });
         navigate('/login', { replace: true });
       }
     };

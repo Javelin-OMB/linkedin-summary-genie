@@ -65,8 +65,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         description: "Je wordt doorgestuurd...",
       });
       
-      // Set session data
+      // Explicitly set the session
       if (data.session) {
+        console.log('Setting session after successful login');
         await supabase.auth.setSession({
           access_token: data.session.access_token,
           refresh_token: data.session.refresh_token,
