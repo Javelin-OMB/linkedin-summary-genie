@@ -12,6 +12,11 @@ interface User {
   trial_start: string | null;
 }
 
+type NewUser = {
+  email: string;
+  credits: number;
+}
+
 export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -48,7 +53,7 @@ export const useAdminUsers = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const addUser = async (userData: { email: string; credits: number }) => {
+  const addUser = async (userData: NewUser) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase

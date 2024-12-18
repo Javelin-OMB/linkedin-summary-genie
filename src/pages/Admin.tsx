@@ -18,7 +18,7 @@ const Admin = () => {
   }, [refetch]);
 
   const handleUpdateCredits = async (userId: string, change: number) => {
-    const user = users?.find(u => u.id === userId);
+    const user = users.find(u => u.id === userId);
     if (user) {
       await updateUser(userId, { credits: (user.credits || 0) + change });
       refetch();
@@ -26,7 +26,7 @@ const Admin = () => {
   };
 
   const handleToggleAdmin = async (userId: string) => {
-    const user = users?.find(u => u.id === userId);
+    const user = users.find(u => u.id === userId);
     if (user) {
       await updateUser(userId, { is_admin: !user.is_admin });
       refetch();
@@ -50,7 +50,7 @@ const Admin = () => {
       </div>
 
       <AdminUserTable 
-        users={users || []}
+        users={users}
         onUpdateCredits={handleUpdateCredits}
         onToggleAdmin={handleToggleAdmin}
         onAddUser={handleAddUser}
