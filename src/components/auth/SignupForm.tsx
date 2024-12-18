@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
-import LoginFormFields from './LoginFormFields';
+import SignupFormFields from './SignupFormFields';
+import SignupButton from './SignupButton';
 import LoginLinks from './LoginLinks';
+import useSignupValidation from './SignupValidation';
 import { supabase } from "@/integrations/supabase/client";
 
 interface SignupFormProps {
@@ -16,68 +17,60 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { validateSignup } = useSignupValidation({ email, password });
+
+  const handleSignup = async () => {
+    console.log('Starting signup process for email:', email.trim());
+    
+    const { data: authData, error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: password.trim(),
+    });
+
+    if (signUpError) {
+      console.error('Auth signup error:', signUpError);
+      throw signUpError;
+    }
+
+    console.log('Auth signup response:', authData);
+
+    if (!authData.user) {
+      console.error('No user data returned after signup');
+      throw new Error('No user data returned after signup');
+    }
+
+    console.log('Auth signup successful. User ID:', authData.user.id);
+
+    console.log('Creating user record in users table...');
+    const { error: userError } = await supabase
+      .from('users')
+      .insert([
+        {
+          id: authData.user.id,
+          email: authData.user.email,
+          trial_start: new Date().toISOString(),
+          credits: 10
+        }
+      ]);
+
+    if (userError) {
+      console.error('Error creating user record:', userError);
+      throw userError;
+    }
+
+    console.log('User record created successfully');
+    return authData.user;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email.trim() || !password.trim()) {
-      toast({
-        title: "Validatie fout",
-        description: "Vul zowel je e-mailadres als wachtwoord in",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!validateSignup()) return;
 
     setIsLoading(true);
 
     try {
-      console.log('Starting signup process for email:', email.trim());
-      
-      // 1. First create the auth user
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password: password.trim(),
-      });
-
-      if (signUpError) {
-        console.error('Auth signup error:', signUpError);
-        throw signUpError;
-      }
-
-      console.log('Auth signup response:', authData);
-
-      if (!authData.user) {
-        console.error('No user data returned after signup');
-        throw new Error('No user data returned after signup');
-      }
-
-      console.log('Auth signup successful. User ID:', authData.user.id);
-
-      // 2. Create the user record in our users table
-      console.log('Creating user record in users table...');
-      const { error: userError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: authData.user.id,
-            email: authData.user.email,
-            trial_start: new Date().toISOString(),
-            credits: 10
-          }
-        ]);
-
-      if (userError) {
-        console.error('Error creating user record:', userError);
-        toast({
-          title: "Fout bij aanmaken gebruiker",
-          description: "Er is een probleem opgetreden bij het aanmaken van je account. Probeer het opnieuw.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('User record created successfully');
+      await handleSignup();
       
       toast({
         title: "Account aangemaakt",
@@ -107,20 +100,14 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSuccess }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <LoginFormFields
+      <SignupFormFields
         email={email}
         setEmail={setEmail}
         password={password}
         setPassword={setPassword}
         isLoading={isLoading}
       />
-      <Button 
-        type="submit" 
-        className="w-full bg-brand-primary hover:bg-brand-hover text-black"
-        disabled={isLoading}
-      >
-        {isLoading ? "Account aanmaken..." : "Account aanmaken"}
-      </Button>
+      <SignupButton isLoading={isLoading} />
       <LoginLinks mode="signup" />
     </form>
   );

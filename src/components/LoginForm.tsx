@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 import LoginFormFields from './auth/LoginFormFields';
 import LoginLinks from './auth/LoginLinks';
 import SignupForm from './auth/SignupForm';
