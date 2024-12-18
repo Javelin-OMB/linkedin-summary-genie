@@ -14,26 +14,26 @@ const formatSection = (title: string, content: string) => {
   const lines = content.split('\n').map(line => line.trim()).filter(line => line);
   
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {lines.map((line, index) => {
         if (line.startsWith('-')) {
           return (
-            <div key={index} className="flex items-start">
-              <span className="mr-2">•</span>
-              <span>{line.substring(1).trim()}</span>
+            <div key={index} className="flex items-start space-x-2 pl-4">
+              <span className="text-brand-primary font-bold">•</span>
+              <span className="text-gray-700">{line.substring(1).trim()}</span>
             </div>
           );
         } else if (line.match(/^\d+[\.\:]?/)) {
           let [number, ...rest] = line.split(/[\.\:]\s*/);
           const content = rest.join(': ').trim();
           return (
-            <div key={index}>
-              <span className="font-semibold">{number}. </span>
-              <span>{content}</span>
+            <div key={index} className="pl-4">
+              <span className="font-semibold text-brand-primary">{number}. </span>
+              <span className="text-gray-700">{content}</span>
             </div>
           );
         } else {
-          return <p key={index}>{line}</p>;
+          return <p key={index} className="text-gray-700 leading-relaxed">{line}</p>;
         }
       })}
     </div>
@@ -112,12 +112,14 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
         <AccordionItem value="summary" className="border-none">
           <AccordionTrigger className="hover:no-underline">
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center space-x-4">
-                <span className="font-semibold">{name}</span>
-                <span className="text-gray-600">|</span>
-                <span>{function_title}</span>
-                <span className="text-gray-600">|</span>
-                <span>{company}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                <span className="font-semibold text-lg text-gray-900">{name}</span>
+                <div className="flex items-center space-x-4">
+                  <span className="text-gray-600 hidden sm:inline">|</span>
+                  <span className="text-gray-700">{function_title}</span>
+                  <span className="text-gray-600 hidden sm:inline">|</span>
+                  <span className="text-gray-700">{company}</span>
+                </div>
               </div>
               {data.output.linkedin_url && (
                 <a 
@@ -133,14 +135,14 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
             </div>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="mt-4 space-y-6">
-              {Object.entries(sections).map(([title, content]) => (
-                <div key={title} className="border-t pt-4 first:border-t-0 first:pt-0">
-                  <h3 className="font-semibold text-lg mb-2">{title}</h3>
+            <div className="mt-6 space-y-8">
+              {Object.entries(sections).map(([title, content], index) => (
+                <div key={title} className={`${index !== 0 ? 'border-t pt-6' : ''}`}>
+                  <h3 className="font-semibold text-lg text-gray-900 mb-4">{title}</h3>
                   {formatSection(title, content)}
                 </div>
               ))}
-              <div className="flex justify-center mt-6">
+              <div className="flex justify-center pt-6 border-t">
                 <Button
                   variant="outline"
                   size="sm"
