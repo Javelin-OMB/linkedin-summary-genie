@@ -25,12 +25,13 @@ const Dashboard = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!session?.user?.id) {
-        setIsLoading(false);
-        return;
-      }
+    if (!session?.user) {
+      console.log('No session found, redirecting to login');
+      navigate('/login');
+      return;
+    }
 
+    const fetchUserData = async () => {
       try {
         console.log('Fetching user data for:', session.user.email);
         
@@ -38,7 +39,7 @@ const Dashboard = () => {
           .from('users')
           .select('credits, is_admin')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching user data:', error);
@@ -68,13 +69,17 @@ const Dashboard = () => {
     };
 
     fetchUserData();
-  }, [session, supabase, toast]);
+  }, [session, supabase, toast, navigate]);
+
+  if (!session) {
+    return <LoadingSpinner message="Redirecting to login..." />;
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading user data..." />;
+  }
 
   const renderSection = () => {
-    if (isLoading) {
-      return <LoadingSpinner message="Loading user data..." />;
-    }
-
     switch (activeSection) {
       case 'overview':
         return (
