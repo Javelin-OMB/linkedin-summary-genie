@@ -14,7 +14,6 @@ export const useLogin = (onSuccess?: () => void) => {
     console.log('Starting login process for:', email);
 
     try {
-      // 1. Probeer in te loggen met Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -31,7 +30,7 @@ export const useLogin = (onSuccess?: () => void) => {
 
       console.log('Login successful for user:', data.user.email);
       
-      // 2. Check of de gebruiker al bestaat in onze users tabel
+      // Check if the user exists in our users table
       const { data: existingUser, error: userError } = await supabase
         .from('users')
         .select('*')
@@ -43,7 +42,7 @@ export const useLogin = (onSuccess?: () => void) => {
         throw userError;
       }
 
-      // 3. Als de gebruiker niet bestaat, maak een nieuwe gebruiker aan
+      // If the user doesn't exist, create a new user record
       if (!existingUser) {
         console.log('Creating new user record');
         const { error: insertError } = await supabase
@@ -74,7 +73,7 @@ export const useLogin = (onSuccess?: () => void) => {
       
       // Navigate after a short delay to ensure toast is visible
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/dashboard', { replace: true });
       }, 500);
       
     } catch (error: any) {

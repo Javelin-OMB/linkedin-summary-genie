@@ -48,6 +48,7 @@ export const SessionHandler = () => {
 
             console.log('User admin status:', userData?.is_admin);
             
+            // Navigate to dashboard or stay on current page if it's a protected route
             if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
               navigate(location.pathname);
             } else {
@@ -108,15 +109,6 @@ export const SessionHandler = () => {
             access_token: session.access_token,
             refresh_token: session.refresh_token
           });
-
-          // Check admin status
-          const { data: userData } = await supabase
-            .from('users')
-            .select('is_admin')
-            .eq('id', session.user.id)
-            .single();
-
-          console.log('Initial admin status check:', userData?.is_admin);
         }
       } catch (error) {
         console.error('Session check error:', error);

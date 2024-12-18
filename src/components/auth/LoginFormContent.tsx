@@ -32,7 +32,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       await handleLogin(email, password);
     } catch (error: any) {
       console.error('Login error:', error);
-      // De foutafhandeling gebeurt nu in de useLogin hook
+      // Error handling happens in useLogin hook
     }
   };
 
@@ -47,16 +47,16 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-brand-primary hover:bg-brand-hover text-black font-semibold"
+        className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
         disabled={isLoading}
       >
         {isLoading ? "Inloggen..." : "Inloggen"}
       </Button>
       <div className="text-center space-y-2">
-        <a href="#" className="block text-brand-primary hover:text-brand-hover">
+        <a href="#" className="block text-linkedin-primary hover:text-linkedin-hover">
           Wachtwoord vergeten?
         </a>
-        <a href="#" className="block text-brand-primary hover:text-brand-hover">
+        <a href="#" className="block text-linkedin-primary hover:text-linkedin-hover">
           Nog geen account? Registreer je hier
         </a>
       </div>
