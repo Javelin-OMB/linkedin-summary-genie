@@ -29,7 +29,7 @@ export const loginUser = async (email: string, password: string) => {
       }
       
       if (error.message.includes('Email not confirmed')) {
-        throw new Error("Bevestig eerst je e-mailadres via de link in je inbox.");
+        throw new Error("Je account is nog niet geactiveerd. Check je inbox voor de activatielink.");
       }
       
       if (error.message.includes('Failed to fetch')) {
@@ -47,10 +47,12 @@ export const loginUser = async (email: string, password: string) => {
     await ensureUserRecord(data.user.id, data.user.email!);
     
     // Set session persistence
-    await supabase.auth.setSession({
-      access_token: data.session?.access_token!,
-      refresh_token: data.session?.refresh_token!
-    });
+    if (data.session) {
+      await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+      });
+    }
 
     return data;
   } catch (error: any) {
