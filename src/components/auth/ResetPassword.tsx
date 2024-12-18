@@ -8,6 +8,7 @@ import { usePasswordReset } from '@/hooks/usePasswordReset';
 
 const ResetPassword = () => {
   const [initializing, setInitializing] = useState(true);
+  const [isValidToken, setIsValidToken] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { loading, handlePasswordReset } = usePasswordReset();
@@ -20,6 +21,8 @@ const ResetPassword = () => {
         const refreshToken = hashParams.get('refresh_token');
         const type = hashParams.get('type');
         
+        console.log('Initializing password reset with type:', type);
+        
         if (!accessToken || type !== 'recovery') {
           console.error('Invalid or missing recovery token');
           toast({
@@ -31,12 +34,18 @@ const ResetPassword = () => {
           return;
         }
 
-        await supabase.auth.setSession({
+        const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || '',
         });
 
-        setInitializing(false);
+        if (error) {
+          console.error('Error setting session:', error);
+          throw error;
+        }
+
+        setIsValidToken(true);
+        console.log('Token validated successfully');
       } catch (error) {
         console.error('Error in initializePasswordReset:', error);
         toast({
@@ -45,14 +54,12 @@ const ResetPassword = () => {
           variant: "destructive",
         });
         navigate('/login');
+      } finally {
+        setInitializing(false);
       }
     };
 
     initializePasswordReset();
-
-    return () => {
-      setInitializing(false);
-    };
   }, [navigate, toast]);
 
   if (initializing) {
@@ -61,6 +68,10 @@ const ResetPassword = () => {
         <LoadingSpinner message="Even geduld..." />
       </div>
     );
+  }
+
+  if (!isValidToken) {
+    return null; // The user will be redirected by the useEffect
   }
 
   return (

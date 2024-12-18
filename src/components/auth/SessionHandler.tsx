@@ -17,7 +17,7 @@ export const SessionHandler = () => {
                           window.location.hash.includes('type=recovery');
     
     if (isPasswordReset) {
-      console.log('Password reset page detected with recovery token');
+      console.log('Password reset page detected with recovery token, skipping session handling');
       return; // Skip session handling for password reset
     }
 
@@ -50,11 +50,12 @@ export const SessionHandler = () => {
 
     // Initial session check
     const checkInitialSession = async () => {
-      try {
-        if (isPasswordReset) {
-          return; // Skip session check for password reset
-        }
+      if (isPasswordReset) {
+        console.log('Skipping initial session check for password reset page');
+        return; // Skip session check for password reset
+      }
 
+      try {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
