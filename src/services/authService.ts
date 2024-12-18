@@ -3,40 +3,52 @@ import { supabase } from "@/integrations/supabase/client";
 export const loginUser = async (email: string, password: string) => {
   console.log('Attempting login with email:', email.trim());
   
-  const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
-  console.log('Existing user check:', existingUser);
+  try {
+    const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
+    console.log('Existing user check:', existingUser);
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: email.trim(),
-    password: password.trim(),
-  });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password: password.trim(),
+    });
 
-  if (error) {
-    console.error('Login error details:', error);
-    let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
-    
-    if (error.message?.includes('Invalid login credentials')) {
-      const { data: userCheck } = await supabase
-        .from('users')
-        .select('email')
-        .eq('email', email.trim())
-        .single();
+    if (error) {
+      console.error('Login error details:', error);
+      
+      if (error.message.includes('Invalid login credentials')) {
+        // Check if the user exists to provide a more specific error message
+        const { data: userCheck } = await supabase
+          .from('users')
+          .select('email')
+          .eq('email', email.trim())
+          .maybeSingle();
 
-      if (userCheck) {
-        errorMessage = "Onjuist wachtwoord. Probeer het opnieuw.";
-      } else {
-        errorMessage = "Dit e-mailadres is niet bij ons bekend. Maak eerst een account aan.";
+        if (userCheck) {
+          throw new Error("Onjuist wachtwoord. Probeer het opnieuw.");
+        } else {
+          throw new Error("Dit e-mailadres is niet bij ons bekend. Maak eerst een account aan.");
+        }
       }
-    } else if (error.message?.includes('Email not confirmed')) {
-      errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
-    } else if (error.message?.includes('Failed to fetch')) {
-      errorMessage = "Kan geen verbinding maken met de server. Controleer je internetverbinding.";
+      
+      // Handle other specific error cases
+      if (error.message.includes('Email not confirmed')) {
+        throw new Error("Bevestig eerst je e-mailadres via de link in je inbox.");
+      }
+      
+      // Generic error for network or other issues
+      if (error.message.includes('Failed to fetch')) {
+        throw new Error("Kan geen verbinding maken met de server. Controleer je internetverbinding.");
+      }
+      
+      // Fallback error message
+      throw new Error(error.message || "Er is iets misgegaan. Probeer het opnieuw.");
     }
-    
-    throw new Error(errorMessage);
-  }
 
-  return data;
+    return data;
+  } catch (error: any) {
+    console.error('Login error:', error);
+    throw error;
+  }
 };
 
 export const ensureUserRecord = async (userId: string, userEmail: string) => {
