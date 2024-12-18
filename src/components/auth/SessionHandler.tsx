@@ -9,7 +9,7 @@ export const SessionHandler = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    console.log('SessionHandler mounted');
+    console.log('SessionHandler mounted, current path:', location.pathname);
     
     const {
       data: { subscription },
@@ -20,6 +20,7 @@ export const SessionHandler = () => {
         case 'SIGNED_IN':
           console.log('User signed in:', session?.user?.email);
           if (location.pathname === '/login') {
+            console.log('Redirecting to home after login');
             navigate('/', { replace: true });
           }
           break;
@@ -30,6 +31,7 @@ export const SessionHandler = () => {
               location.pathname !== '/' && 
               location.pathname !== '/about' && 
               location.pathname !== '/pricing') {
+            console.log('Redirecting to login after signout');
             navigate('/login', { replace: true });
           }
           break;
@@ -41,6 +43,10 @@ export const SessionHandler = () => {
             await supabase.auth.signOut();
             navigate('/login', { replace: true });
           }
+          break;
+
+        case 'USER_UPDATED':
+          console.log('User updated:', session?.user?.email);
           break;
       }
     });

@@ -65,8 +65,13 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         description: "Je wordt doorgestuurd...",
       });
       
+      // Set session data
+      if (data.session) {
+        await supabase.auth.setSession(data.session);
+      }
+      
       onSuccess?.();
-      navigate('/');
+      navigate('/', { replace: true });
       
     } catch (error: any) {
       console.error('Login error:', error);
