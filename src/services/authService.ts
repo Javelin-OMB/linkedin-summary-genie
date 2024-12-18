@@ -45,6 +45,12 @@ export const loginUser = async (email: string, password: string) => {
 
     // After successful login, ensure user record exists
     await ensureUserRecord(data.user.id, data.user.email!);
+    
+    // Set session persistence
+    await supabase.auth.setSession({
+      access_token: data.session?.access_token!,
+      refresh_token: data.session?.refresh_token!
+    });
 
     return data;
   } catch (error: any) {

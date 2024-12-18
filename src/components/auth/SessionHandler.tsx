@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { SessionChecker } from './SessionChecker';
-import { SessionStateListener } from './SessionStateListener';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
 export const SessionHandler = () => {
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -12,20 +12,29 @@ export const SessionHandler = () => {
       console.log('Session refresh failed, clearing session...');
       supabase.auth.signOut();
       toast({
-        title: "Session expired",
-        description: "Please log in again",
+        title: "Sessie verlopen",
+        description: "Log opnieuw in om door te gaan",
         variant: "destructive",
       });
+      navigate('/login');
     };
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'TOKEN_REFRESHED') {
+      console.log('Auth state changed:', event, session?.user?.email);
+      
+      if (event === 'TOKEN_REFRESHED' && session) {
         console.log('Token refreshed successfully');
+        toast({
+          title: "Sessie vernieuwd",
+          description: "Je sessie is succesvol vernieuwd",
+        });
       }
+      
       if (event === 'SIGNED_OUT') {
         console.log('User signed out');
+        navigate('/login');
       }
     });
 
@@ -39,12 +48,7 @@ export const SessionHandler = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, [navigate, toast]);
 
-  return (
-    <>
-      <SessionChecker onSessionChecked={() => {}} />
-      <SessionStateListener onStateChange={() => {}} />
-    </>
-  );
+  return null;
 };
