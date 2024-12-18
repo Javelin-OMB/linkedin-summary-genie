@@ -32,7 +32,9 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
     
     try {
       await handleLogin(email, password);
+      console.log('Login successful, navigating to dashboard...');
       navigate('/dashboard', { replace: true });
+      onSuccess?.();
     } catch (error: any) {
       console.error('Login error:', error);
       // Error handling happens in useLogin hook

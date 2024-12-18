@@ -72,7 +72,7 @@ export const useLogin = (onSuccess?: () => void) => {
       onSuccess?.();
       
       // Navigate to dashboard
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
       
     } catch (error: any) {
       console.error('Login error:', error);
