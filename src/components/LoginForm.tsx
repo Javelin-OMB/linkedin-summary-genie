@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import LoginFormFields from './auth/LoginFormFields';
 import LoginLinks from './auth/LoginLinks';
 import SignupForm from './auth/SignupForm';
-import { loginUser, ensureUserRecord } from '@/services/authService';
+import { ensureUserRecord } from '@/services/authService';
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 interface LoginFormProps {
@@ -60,25 +60,25 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       // Ensure user record exists in the database
       await ensureUserRecord(data.user.id, data.user.email!);
       
+      // Set loading to false before showing success message
+      setIsLoading(false);
+      
       toast({
         title: "Succesvol ingelogd",
         description: "Je wordt doorgestuurd...",
       });
       
-      // Explicitly set the session
-      if (data.session) {
-        console.log('Setting session after successful login');
-        await supabase.auth.setSession({
-          access_token: data.session.access_token,
-          refresh_token: data.session.refresh_token,
-        });
-      }
-      
+      // Call onSuccess before navigation
       onSuccess?.();
-      navigate('/', { replace: true });
+      
+      // Navigate after a short delay to ensure toast is visible
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 500);
       
     } catch (error: any) {
       console.error('Login error:', error);
+      setIsLoading(false);
       
       let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
       
@@ -93,8 +93,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         description: errorMessage,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
