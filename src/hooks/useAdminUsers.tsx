@@ -58,7 +58,11 @@ export const useAdminUsers = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .insert([userData])
+        .insert([{ 
+          email: userData.email,
+          credits: userData.credits,
+          is_admin: false // Set default value for new users
+        }])
         .select()
         .single();
 
