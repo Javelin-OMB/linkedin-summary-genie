@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { NewUser, User, SupabaseUser } from '@/types/user';
+import type { NewUser, User } from '@/types/user';
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data: users, error } = await supabase
@@ -16,9 +16,13 @@ export const fetchUsers = async (): Promise<User[]> => {
 };
 
 export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
+  // Generate a UUID for the new user
+  const newUserId = crypto.randomUUID();
+  
   const { data, error } = await supabase
     .from('users')
     .insert({
+      id: newUserId,
       email: userData.email,
       credits: userData.credits,
       is_admin: userData.is_admin,
@@ -52,21 +56,10 @@ export const updateUserInDatabase = async (id: string, updates: Partial<User>): 
   return data;
 };
 
-export const upsertUsers = async (users: SupabaseUser[]) => {
-  const mappedUsers = users
-    .filter(user => user.id && user.email)
-    .map(user => ({
-      id: user.id!,
-      email: user.email!,
-      name: user.name || null,
-      credits: user.credits,
-      is_admin: user.is_admin,
-      trial_start: user.trial_start
-    }));
-
+export const upsertUsers = async (users: User[]) => {
   const { data, error } = await supabase
     .from('users')
-    .upsert(mappedUsers)
+    .upsert(users)
     .select();
 
   if (error) {
