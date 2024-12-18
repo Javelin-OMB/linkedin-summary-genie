@@ -12,7 +12,10 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <SessionContextProvider supabaseClient={supabase}>
+    <SessionContextProvider 
+      supabaseClient={supabase}
+      initialSession={null}
+    >
       <TooltipProvider>
         <Toaster />
         <Sonner />
