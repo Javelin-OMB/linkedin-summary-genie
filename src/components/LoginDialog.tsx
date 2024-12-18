@@ -24,12 +24,22 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
     onOpenChange(false);
   };
 
+  const dialogId = mode === 'login' ? 'login-dialog' : 'signup-dialog';
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent 
+        className="sm:max-w-[425px]"
+        aria-labelledby={`${dialogId}-title`}
+        aria-describedby={`${dialogId}-description`}
+      >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle id={`${dialogId}-title`}>
+            {title}
+          </DialogTitle>
+          <DialogDescription id={`${dialogId}-description`}>
+            {description}
+          </DialogDescription>
         </DialogHeader>
         <LoginForm onSuccess={handleSuccess} mode={mode} />
       </DialogContent>

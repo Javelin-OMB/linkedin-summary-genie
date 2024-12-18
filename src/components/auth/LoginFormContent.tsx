@@ -27,13 +27,24 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       return;
     }
 
+    console.log('Starting login process for:', email);
+    
     try {
       await handleLogin(email, password);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
+      
+      let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
+      
+      if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
+      } else if (error.message?.includes('Email not confirmed')) {
+        errorMessage = "Je account is nog niet geactiveerd. Check je inbox voor de activatielink.";
+      }
+      
       toast({
         title: "Inloggen mislukt",
-        description: "Controleer je gegevens en probeer het opnieuw",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -50,7 +61,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
+        className="w-full bg-brand-primary hover:bg-brand-hover text-black"
         disabled={isLoading}
       >
         {isLoading ? "Inloggen..." : "Inloggen"}

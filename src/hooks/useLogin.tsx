@@ -48,22 +48,9 @@ export const useLogin = (onSuccess?: () => void) => {
         navigate('/', { replace: true });
       }, 500);
       
-    } catch (error: any) {
+    } catch (error) {
       console.error('Login error:', error);
-      
-      let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
-      
-      if (error.message.includes('Invalid login credentials')) {
-        errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
-      } else if (error.message.includes('Email not confirmed')) {
-        errorMessage = "Je account is nog niet geactiveerd. Check je inbox voor de activatielink.";
-      }
-      
-      toast({
-        title: "Inloggen mislukt",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      throw error;
     } finally {
       setIsLoading(false);
     }
