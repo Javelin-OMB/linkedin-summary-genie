@@ -30,18 +30,20 @@ export const loginUser = async (email: string, password: string) => {
         }
       }
       
-      // Handle other specific error cases
       if (error.message.includes('Email not confirmed')) {
         throw new Error("Bevestig eerst je e-mailadres via de link in je inbox.");
       }
       
-      // Generic error for network or other issues
       if (error.message.includes('Failed to fetch')) {
         throw new Error("Kan geen verbinding maken met de server. Controleer je internetverbinding.");
       }
       
-      // Fallback error message
       throw new Error(error.message || "Er is iets misgegaan. Probeer het opnieuw.");
+    }
+
+    // After successful login, ensure user record exists
+    if (data.user) {
+      await ensureUserRecord(data.user.id, data.user.email!);
     }
 
     return data;
@@ -52,35 +54,46 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 export const ensureUserRecord = async (userId: string, userEmail: string) => {
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (userError) {
-    console.error('Error fetching user data:', userError);
-    throw new Error("Er is een fout opgetreden bij het ophalen van je gebruikersgegevens.");
-  }
-
-  if (!userData) {
-    console.log('Creating user record in users table...');
-    const { error: createError } = await supabase
+  try {
+    console.log('Checking for existing user record:', userId);
+    
+    const { data: userData, error: userError } = await supabase
       .from('users')
-      .insert([
-        {
-          id: userId,
-          email: userEmail,
-          trial_start: new Date().toISOString(),
-          credits: 10
-        }
-      ]);
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
 
-    if (createError) {
-      console.error('Error creating user record:', createError);
-      throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel.");
+    if (userError) {
+      console.error('Error fetching user data:', userError);
+      throw new Error("Er is een fout opgetreden bij het ophalen van je gebruikersgegevens.");
     }
-  }
 
-  return userData;
+    if (!userData) {
+      console.log('Creating new user record in users table...');
+      const { error: createError } = await supabase
+        .from('users')
+        .insert([
+          {
+            id: userId,
+            email: userEmail,
+            trial_start: new Date().toISOString(),
+            credits: 10
+          }
+        ]);
+
+      if (createError) {
+        console.error('Error creating user record:', createError);
+        throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel. Probeer het later opnieuw.");
+      }
+      
+      console.log('User record created successfully');
+    } else {
+      console.log('User record already exists');
+    }
+
+    return userData;
+  } catch (error: any) {
+    console.error('Error in ensureUserRecord:', error);
+    throw new Error("Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel. Probeer het later opnieuw.");
+  }
 };
