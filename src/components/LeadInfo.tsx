@@ -53,14 +53,10 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
   const [copying, setCopying] = useState(false);
   const { toast } = useToast();
 
-  console.log("LeadInfo received data:", data);
-
   if (!data?.output?.profile_data) {
-    console.log("No profile data found in LeadInfo:", data);
     return null;
   }
 
-  // Split the profile data into sections
   const sections = data.output.profile_data.split('\n').reduce((acc: Record<string, string>, line: string) => {
     if (line.trim()) {
       const firstDash = line.indexOf('-');
@@ -76,7 +72,6 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
     return acc;
   }, {});
 
-  // Extract profile information from the first section
   const firstSectionContent = Object.values(sections)[0] || '';
   const profileLines = firstSectionContent.split('\n');
   const name = profileLines[0]?.replace('- ', '') || '-';
@@ -138,7 +133,7 @@ const LeadInfo = ({ data }: LeadInfoProps) => {
             <div className="mt-6 space-y-8">
               {Object.entries(sections).map(([title, content], index) => (
                 <div key={title} className={`${index !== 0 ? 'border-t pt-6' : ''}`}>
-                  <h3 className="font-semibold text-lg text-gray-900 mb-4">{title}</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">{title}</h3>
                   {formatSection(title, content)}
                 </div>
               ))}
