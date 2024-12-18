@@ -20,62 +20,62 @@ export const SessionHandler = () => {
         case 'SIGNED_IN':
           console.log('User signed in:', session?.user?.email);
           if (session?.access_token) {
-            console.log('Setting session with access token');
-            await supabase.auth.setSession({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-            });
-            
-            // Check if user exists in users table
-            const { data: userData, error: userError } = await supabase
-              .from('users')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
+            try {
+              console.log('Setting session with access token');
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+              });
+              
+              // Check if user exists in users table
+              const { data: userData, error: userError } = await supabase
+                .from('users')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
 
-            if (userError && userError.code !== 'PGRST116') {
-              console.error('Error checking user:', userError);
+              if (userError) {
+                console.error('Error checking user:', userError);
+                throw userError;
+              }
+
+              // If user doesn't exist, create them
+              if (!userData) {
+                console.log('Creating new user record');
+                const { error: insertError } = await supabase
+                  .from('users')
+                  .insert([
+                    {
+                      id: session.user.id,
+                      email: session.user.email,
+                      trial_start: new Date().toISOString(),
+                      credits: 10
+                    }
+                  ]);
+
+                if (insertError) {
+                  console.error('Error creating user record:', insertError);
+                  throw insertError;
+                }
+              }
+              
               toast({
-                title: "Error",
-                description: "Er is een probleem opgetreden bij het ophalen van je gebruikersgegevens.",
+                title: "Succesvol ingelogd",
+                description: "Je wordt doorgestuurd naar de hoofdpagina...",
+              });
+
+              // Kleine vertraging om de toast te laten zien
+              setTimeout(() => {
+                navigate('/', { replace: true });
+              }, 1000);
+            } catch (error) {
+              console.error('Session handling error:', error);
+              toast({
+                title: "Er is een fout opgetreden",
+                description: "Probeer het opnieuw of neem contact op met support.",
                 variant: "destructive",
               });
-              return;
             }
-
-            // If user doesn't exist, create them
-            if (!userData) {
-              const { error: insertError } = await supabase
-                .from('users')
-                .insert([
-                  {
-                    id: session.user.id,
-                    email: session.user.email,
-                    trial_start: new Date().toISOString(),
-                    credits: 10
-                  }
-                ]);
-
-              if (insertError) {
-                console.error('Error creating user:', insertError);
-                toast({
-                  title: "Error",
-                  description: "Er is een probleem opgetreden bij het aanmaken van je gebruikersprofiel.",
-                  variant: "destructive",
-                });
-                return;
-              }
-            }
-            
-            toast({
-              title: "Succesvol ingelogd",
-              description: "Je wordt doorgestuurd naar de hoofdpagina...",
-            });
-
-            // Kleine vertraging om de toast te laten zien
-            setTimeout(() => {
-              navigate('/', { replace: true });
-            }, 1000);
           }
           break;
 
