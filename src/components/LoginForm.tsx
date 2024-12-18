@@ -40,6 +40,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
     try {
       console.log('Attempting login with email:', email.trim());
       
+      // First check if the user exists in auth.users
+      const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser();
+      console.log('Existing user check:', existingUser);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -50,7 +54,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         let errorMessage = "Er is iets misgegaan. Probeer het opnieuw.";
         
         if (error.message?.includes('Invalid login credentials')) {
-          errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
+          // Check if user exists but credentials are wrong
+          const { data: userCheck } = await supabase
+            .from('users')
+            .select('email')
+            .eq('email', email.trim())
+            .single();
+
+          if (userCheck) {
+            errorMessage = "Onjuist wachtwoord. Probeer het opnieuw.";
+          } else {
+            errorMessage = "Dit e-mailadres is niet bij ons bekend. Maak eerst een account aan.";
+          }
         } else if (error.message?.includes('Email not confirmed')) {
           errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
         } else if (error.message?.includes('Failed to fetch')) {
@@ -69,6 +84,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
       if (data?.user) {
         console.log('Login successful for:', data.user.email);
         
+        // Check if user exists in our users table
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
@@ -83,6 +99,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
             variant: "destructive",
           });
           return;
+        }
+
+        // If user doesn't exist in users table, create them
+        if (!userData) {
+          console.log('Creating user record in users table...');
+          const { error: createError } = await supabase
+            .from('users')
+            .insert([
+              {
+                id: data.user.id,
+                email: data.user.email,
+                trial_start: new Date().toISOString(),
+                credits: 10
+              }
+            ]);
+
+          if (createError) {
+            console.error('Error creating user record:', createError);
+            toast({
+              title: "Fout bij aanmaken gebruiker",
+              description: "Er is een fout opgetreden bij het aanmaken van je gebruikersprofiel.",
+              variant: "destructive",
+            });
+            return;
+          }
         }
 
         console.log('User data retrieved:', userData);
