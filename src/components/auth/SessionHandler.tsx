@@ -43,9 +43,7 @@ export const SessionHandler = () => {
               console.log('User admin status:', userData?.is_admin);
               
               // Always navigate to dashboard after successful login
-              if (location.pathname === '/') {
-                navigate('/dashboard', { replace: true });
-              }
+              navigate('/dashboard', { replace: true });
               
               toast({
                 title: "Succesvol ingelogd",
@@ -101,10 +99,8 @@ export const SessionHandler = () => {
         }
 
         if (session?.user) {
-          // If we have a session and we're on the home page, redirect to dashboard
-          if (location.pathname === '/') {
-            navigate('/dashboard', { replace: true });
-          }
+          // If we have a session, redirect to dashboard
+          navigate('/dashboard', { replace: true });
         } else if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           console.log('No initial session, redirecting to home');
           navigate('/', { replace: true });

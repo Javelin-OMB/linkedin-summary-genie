@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
 export const useLogin = (onSuccess?: () => void) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
   const supabase = useSupabaseClient();
 
   const handleLogin = async (email: string, password: string) => {
@@ -70,9 +68,6 @@ export const useLogin = (onSuccess?: () => void) => {
       
       // Call success callback if provided
       onSuccess?.();
-      
-      // Navigate to dashboard
-      navigate('/dashboard', { replace: true });
       
     } catch (error: any) {
       console.error('Login error:', error);

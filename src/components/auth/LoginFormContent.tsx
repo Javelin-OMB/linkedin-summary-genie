@@ -12,7 +12,7 @@ interface LoginFormContentProps {
 const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { handleLogin, isLoading } = useLogin(onSuccess);
+  const { handleLogin, isLoading } = useLogin();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -32,12 +32,16 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
     
     try {
       await handleLogin(email, password);
-      console.log('Login successful, navigating to dashboard...');
-      navigate('/dashboard', { replace: true });
+      console.log('Login successful, closing dialog and navigating...');
       onSuccess?.();
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Login error:', error);
-      // Error handling happens in useLogin hook
+      toast({
+        title: "Login mislukt",
+        description: error.message || "Er ging iets mis tijdens het inloggen",
+        variant: "destructive",
+      });
     }
   };
 
