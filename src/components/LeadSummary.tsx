@@ -31,7 +31,7 @@ const LeadSummary = () => {
     <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 pt-8 pb-8">
       <div className="max-w-3xl text-center space-y-6">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-          Transform LinkedIn Profiles into Actionable Sales Insights
+          Transform LinkedIn Profiles into Actionable Sales/Candidates Insights
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           Get instant, AI-powered summaries of LinkedIn profiles to identify sales opportunities and personalize your outreach.
