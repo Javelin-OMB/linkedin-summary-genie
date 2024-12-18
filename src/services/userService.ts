@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { NewUser, User } from '@/types/user';
+import type { NewUser, User, SupabaseUser } from '@/types/user';
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data: users, error } = await supabase
@@ -56,10 +56,21 @@ export const updateUserInDatabase = async (id: string, updates: Partial<User>): 
   return data;
 };
 
-export const upsertUsers = async (users: User[]) => {
+export const upsertUsers = async (users: SupabaseUser[]) => {
+  const mappedUsers = users
+    .filter(user => user.id && user.email)
+    .map(user => ({
+      id: user.id,
+      email: user.email,
+      name: user.name || null,
+      credits: user.credits,
+      is_admin: user.is_admin,
+      trial_start: user.trial_start
+    }));
+
   const { data, error } = await supabase
     .from('users')
-    .upsert(users)
+    .upsert(mappedUsers)
     .select();
 
   if (error) {
