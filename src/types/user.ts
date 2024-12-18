@@ -17,7 +17,7 @@ export type NewUser = {
 
 // This type matches exactly what Supabase expects for the users table
 export type SupabaseUser = {
-  id?: string;
+  id: string;  // Changed from optional to required
   email: string;
   credits?: number;
   is_admin?: boolean;
