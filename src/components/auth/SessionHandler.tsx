@@ -14,7 +14,7 @@ export const SessionHandler = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, 'User:', session?.user?.email);
+      console.log('Auth state changed:', event, 'Session:', session?.user?.email);
       
       switch (event) {
         case 'SIGNED_IN':
@@ -40,15 +40,16 @@ export const SessionHandler = () => {
                 throw userError;
               }
 
-              console.log('User admin status:', userData?.is_admin);
+              console.log('User data:', userData);
               
-              // Always navigate to dashboard after successful login
-              navigate('/dashboard', { replace: true });
-              
-              toast({
-                title: "Succesvol ingelogd",
-                description: "Welkom terug!",
-              });
+              // Navigate to dashboard only if not already there
+              if (location.pathname !== '/dashboard') {
+                navigate('/dashboard', { replace: true });
+                toast({
+                  title: "Succesvol ingelogd",
+                  description: "Welkom terug!",
+                });
+              }
             } catch (error) {
               console.error('Error handling session:', error);
               toast({
@@ -62,9 +63,8 @@ export const SessionHandler = () => {
 
         case 'SIGNED_OUT':
           console.log('User signed out, clearing session data...');
-          
-          // Clear the session in Supabase
-          await supabase.auth.setSession(null);
+          localStorage.removeItem('supabase.auth.token');
+          sessionStorage.clear();
           
           if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/', { replace: true });
@@ -99,10 +99,12 @@ export const SessionHandler = () => {
         }
 
         if (session?.user) {
-          // If we have a session, redirect to dashboard
-          navigate('/dashboard', { replace: true });
+          // If we have a session and not on dashboard, redirect there
+          if (location.pathname !== '/dashboard') {
+            navigate('/dashboard', { replace: true });
+          }
         } else if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
-          console.log('No initial session, redirecting to home');
+          console.log('No session found, redirecting to home');
           navigate('/', { replace: true });
           toast({
             title: "Sessie verlopen",

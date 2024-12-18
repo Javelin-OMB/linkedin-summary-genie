@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useSupabaseClient } from '@supabase/auth-helpers-react';
 
-export const useLogin = (onSuccess?: () => void) => {
+export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const supabase = useSupabaseClient();
@@ -60,14 +60,7 @@ export const useLogin = (onSuccess?: () => void) => {
         }
       }
       
-      // Show success message
-      toast({
-        title: "Succesvol ingelogd",
-        description: "Je wordt doorgestuurd...",
-      });
-      
-      // Call success callback if provided
-      onSuccess?.();
+      return data.user;
       
     } catch (error: any) {
       console.error('Login error:', error);
@@ -86,7 +79,7 @@ export const useLogin = (onSuccess?: () => void) => {
         variant: "destructive",
       });
       
-      throw error;
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }

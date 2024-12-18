@@ -24,32 +24,44 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             description: "Log in om deze pagina te bekijken",
             variant: "destructive",
           });
-          navigate('/login', { replace: true });
+          navigate('/', { replace: true });
           return;
         }
 
         // Check if user exists in the users table
         const { data: userData, error: userError } = await supabase
           .from('users')
-          .select('is_admin')
+          .select('*')
           .eq('id', currentSession.user.id)
           .single();
 
-        if (userError) {
+        if (userError && userError.code !== 'PGRST116') {
           console.error('Error fetching user data:', userError);
           throw userError;
         }
 
-        console.log('User admin status in ProtectedRoute:', userData?.is_admin);
+        // If user doesn't exist in the users table, create them
+        if (!userData) {
+          console.log('Creating new user record in ProtectedRoute');
+          const { error: insertError } = await supabase
+            .from('users')
+            .insert([{
+              id: currentSession.user.id,
+              email: currentSession.user.email,
+              trial_start: new Date().toISOString(),
+              credits: 10
+            }]);
 
-        // Ensure the session is properly set
-        await supabase.auth.setSession({
-          access_token: currentSession.access_token,
-          refresh_token: currentSession.refresh_token
-        });
+          if (insertError) {
+            console.error('Error creating user record:', insertError);
+            throw insertError;
+          }
+        }
+
+        console.log('Session valid, user can access protected route');
       } catch (error) {
         console.error('Error checking session:', error);
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
       } finally {
         setIsLoading(false);
       }

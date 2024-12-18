@@ -31,9 +31,22 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
     console.log('Starting login process for:', email);
     
     try {
-      await handleLogin(email, password);
-      console.log('Login successful, closing dialog and navigating...');
+      const result = await handleLogin(email, password);
+      console.log('Login successful:', result);
+      
       onSuccess?.();
+      
+      // Clear form
+      setEmail('');
+      setPassword('');
+      
+      // Show success message
+      toast({
+        title: "Succesvol ingelogd",
+        description: "Je wordt doorgestuurd naar het dashboard...",
+      });
+      
+      // Navigate to dashboard
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Login error:', error);
