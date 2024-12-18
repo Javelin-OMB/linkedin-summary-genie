@@ -1,12 +1,12 @@
-import { SupabaseClient, User } from '@supabase/supabase-js';
 import { NavigateFunction } from 'react-router-dom';
-import { Toast } from '@/components/ui/use-toast';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { toast } from "@/components/ui/use-toast";
 
 export const handleUserSession = async (
   supabase: SupabaseClient,
-  user: User,
+  user: any,
   navigate: NavigateFunction,
-  toast: Toast
+  toastFn: typeof toast
 ) => {
   try {
     console.log('Setting session for user:', user.email);
@@ -41,7 +41,7 @@ export const handleUserSession = async (
       }
     }
 
-    toast({
+    toastFn({
       title: "Succesvol ingelogd",
       description: "Je wordt doorgestuurd naar de hoofdpagina...",
     });
@@ -52,7 +52,7 @@ export const handleUserSession = async (
     }, 1000);
   } catch (error) {
     console.error('Session handling error:', error);
-    toast({
+    toastFn({
       title: "Er is een fout opgetreden",
       description: "Probeer het opnieuw of neem contact op met support.",
       variant: "destructive",
@@ -63,7 +63,7 @@ export const handleUserSession = async (
 export const handleSignOut = async (
   supabase: SupabaseClient,
   navigate: NavigateFunction,
-  toast: Toast
+  toastFn: typeof toast
 ) => {
   try {
     console.log('Starting logout process...');
@@ -75,7 +75,7 @@ export const handleSignOut = async (
     navigate('/login', { replace: true });
   } catch (error) {
     console.error('Sign out error:', error);
-    toast({
+    toastFn({
       title: "Uitloggen mislukt",
       description: "Er is een fout opgetreden tijdens het uitloggen.",
       variant: "destructive",
