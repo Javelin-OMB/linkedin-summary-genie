@@ -67,12 +67,24 @@ export const handleSignOut = async (
 ) => {
   try {
     console.log('Starting logout process...');
+    
+    // Clear any stored session data
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
+    
     const { error } = await supabase.auth.signOut();
     
     if (error) throw error;
     
-    console.log('User signed out');
-    navigate('/login', { replace: true });
+    console.log('User signed out successfully');
+    
+    toastFn({
+      title: "Uitgelogd",
+      description: "Je bent succesvol uitgelogd.",
+    });
+    
+    // Redirect to home page after logout
+    navigate('/', { replace: true });
   } catch (error) {
     console.error('Sign out error:', error);
     toastFn({

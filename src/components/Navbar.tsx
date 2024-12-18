@@ -58,6 +58,11 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       console.log('Starting logout process...');
+      
+      // Clear any stored session data
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -75,7 +80,7 @@ const Navbar = () => {
         title: "Uitgelogd",
         description: "Je bent succesvol uitgelogd.",
       });
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error) {
       console.error('Unexpected logout error:', error);
       toast({

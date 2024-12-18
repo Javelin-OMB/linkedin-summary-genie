@@ -36,16 +36,10 @@ export const SessionHandler = () => {
 
         case 'SIGNED_OUT':
           console.log('User signed out, checking current path...');
+          localStorage.removeItem('supabase.auth.token'); // Clear any stored tokens
           if (!['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
-            console.log('Redirecting to login page...');
-            await handleSignOut(supabase, navigate, toast);
-          }
-          break;
-
-        case 'PASSWORD_RECOVERY':
-          console.log('Password recovery event detected');
-          if (location.pathname !== '/reset-password') {
-            navigate('/reset-password');
+            console.log('Redirecting to home page after logout...');
+            navigate('/', { replace: true });
           }
           break;
 
@@ -77,8 +71,8 @@ export const SessionHandler = () => {
 
         if (!session && 
             !['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
-          console.log('No initial session, redirecting to login');
-          navigate('/login', { replace: true });
+          console.log('No initial session, redirecting to home');
+          navigate('/', { replace: true });
         }
       } catch (error) {
         console.error('Session check error:', error);
@@ -87,7 +81,7 @@ export const SessionHandler = () => {
           description: "Er is een probleem met je sessie. Probeer opnieuw in te loggen.",
           variant: "destructive",
         });
-        navigate('/login', { replace: true });
+        navigate('/', { replace: true });
       }
     };
 
