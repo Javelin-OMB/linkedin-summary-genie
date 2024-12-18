@@ -30,7 +30,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
     <div className="md:hidden">
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="text-linkedin-primary">
+          <Button variant="ghost" size="icon" className="text-brand-primary">
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
@@ -38,21 +38,21 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           <nav className="flex flex-col space-y-4 mt-8">
             <Link 
               to="/about" 
-              className="text-lg hover:text-linkedin-primary"
+              className="text-lg hover:text-brand-primary"
               onClick={() => setIsOpen(false)}
             >
               About
             </Link>
             <Link 
               to="/how-it-works" 
-              className="text-lg hover:text-linkedin-primary"
+              className="text-lg hover:text-brand-primary"
               onClick={() => setIsOpen(false)}
             >
               How it Works
             </Link>
             <Link 
               to="/pricing" 
-              className="text-lg hover:text-linkedin-primary"
+              className="text-lg hover:text-brand-primary"
               onClick={() => setIsOpen(false)}
             >
               Pricing
@@ -62,14 +62,14 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               <>
                 <Link 
                   to="/dashboard" 
-                  className="text-lg hover:text-linkedin-primary"
+                  className="text-lg hover:text-brand-primary"
                   onClick={() => setIsOpen(false)}
                 >
                   Dashboard {credits !== null && `(${credits} credits)`}
                 </Link>
                 <Link 
                   to="/settings" 
-                  className="text-lg hover:text-linkedin-primary"
+                  className="text-lg hover:text-brand-primary"
                   onClick={() => setIsOpen(false)}
                 >
                   Settings
@@ -77,7 +77,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 {isAdmin && (
                   <Link 
                     to="/admin" 
-                    className="text-lg hover:text-linkedin-primary flex items-center"
+                    className="text-lg hover:text-brand-primary flex items-center"
                     onClick={() => setIsOpen(false)}
                   >
                     Admin Panel
@@ -103,7 +103,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     setIsOpen(false);
                     onLoginClick();
                   }}
-                  className="w-full justify-center"
+                  className="w-full justify-center border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-black"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Login
@@ -113,7 +113,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     setIsOpen(false);
                     navigate('/login?mode=signup');
                   }}
-                  className="w-full justify-center bg-linkedin-primary hover:bg-linkedin-hover text-white"
+                  className="w-full justify-center bg-brand-primary hover:bg-brand-hover text-black"
                 >
                   Sign Up
                 </Button>
