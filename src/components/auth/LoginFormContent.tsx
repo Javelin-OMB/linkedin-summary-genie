@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import LoginFormFields from './LoginFormFields';
 import { useLogin } from '@/hooks/useLogin';
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormContentProps {
   onSuccess?: () => void;
@@ -13,6 +14,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const { handleLogin, isLoading } = useLogin(onSuccess);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +32,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
     
     try {
       await handleLogin(email, password);
+      navigate('/dashboard', { replace: true });
     } catch (error: any) {
       console.error('Login error:', error);
       // Error handling happens in useLogin hook
