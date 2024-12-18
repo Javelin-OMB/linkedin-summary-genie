@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import LoginFormFields from './LoginFormFields';
-import LoginLinks from './LoginLinks';
 import { useLogin } from '@/hooks/useLogin';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -33,20 +32,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       await handleLogin(email, password);
     } catch (error: any) {
       console.error('Login error:', error);
-      
-      let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
-      
-      if (error.message?.includes('Invalid login credentials')) {
-        errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
-      } else if (error.message?.includes('Email not confirmed')) {
-        errorMessage = "Je account is nog niet geactiveerd. Check je inbox voor de activatielink.";
-      }
-      
-      toast({
-        title: "Inloggen mislukt",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      // De foutafhandeling gebeurt nu in de useLogin hook
     }
   };
 
@@ -61,16 +47,16 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-yellow-300 hover:bg-yellow-400 text-black font-semibold"
+        className="w-full bg-brand-primary hover:bg-brand-hover text-black font-semibold"
         disabled={isLoading}
       >
         {isLoading ? "Inloggen..." : "Inloggen"}
       </Button>
       <div className="text-center space-y-2">
-        <a href="#" className="block text-yellow-500 hover:text-yellow-600">
+        <a href="#" className="block text-brand-primary hover:text-brand-hover">
           Wachtwoord vergeten?
         </a>
-        <a href="#" className="block text-yellow-500 hover:text-yellow-600">
+        <a href="#" className="block text-brand-primary hover:text-brand-hover">
           Nog geen account? Registreer je hier
         </a>
       </div>
