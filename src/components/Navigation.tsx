@@ -31,6 +31,11 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
         
         if (error) {
           console.error('Error checking admin status:', error);
+          toast({
+            title: "Error",
+            description: "Could not verify admin status",
+            variant: "destructive",
+          });
           return;
         }
         
@@ -46,7 +51,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
     };
 
     fetchUserData();
-  }, [session, supabase]);
+  }, [session, supabase, toast]);
 
   const handleLogout = async () => {
     try {

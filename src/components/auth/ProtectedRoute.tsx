@@ -28,6 +28,20 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           return;
         }
 
+        // Check if user exists in the users table
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', currentSession.user.id)
+          .single();
+
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          throw userError;
+        }
+
+        console.log('User admin status in ProtectedRoute:', userData?.is_admin);
+
         // Ensure the session is properly set
         await supabase.auth.setSession({
           access_token: currentSession.access_token,
