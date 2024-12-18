@@ -34,6 +34,7 @@ const ResetPassword = () => {
           return;
         }
 
+        // Set the session with the recovery token
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || '',
