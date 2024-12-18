@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import LoginFormFields from './LoginFormFields';
 import LoginLinks from './LoginLinks';
 import { useLogin } from '@/hooks/useLogin';
+import { useToast } from "@/components/ui/use-toast";
 
 interface LoginFormContentProps {
   onSuccess?: () => void;
@@ -12,9 +13,20 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { handleLogin, isLoading } = useLogin(onSuccess);
+  const { toast } = useToast();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Vul alle velden in",
+        description: "Email en wachtwoord zijn verplicht",
+        variant: "destructive",
+      });
+      return;
+    }
+
     await handleLogin(email, password);
   };
 

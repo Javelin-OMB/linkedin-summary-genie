@@ -11,15 +11,6 @@ export const useLogin = (onSuccess?: () => void) => {
   const supabase = useSupabaseClient();
 
   const handleLogin = async (email: string, password: string) => {
-    if (!email.trim() || !password.trim()) {
-      toast({
-        title: "Validatie fout",
-        description: "Vul zowel je e-mailadres als wachtwoord in",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     console.log('Starting login process for:', email);
 
@@ -40,24 +31,25 @@ export const useLogin = (onSuccess?: () => void) => {
 
       console.log('Login successful for user:', data.user.email);
       
+      // Ensure user record exists in our database
       await ensureUserRecord(data.user.id, data.user.email!);
       
-      setIsLoading(false);
-      
+      // Show success message
       toast({
         title: "Succesvol ingelogd",
         description: "Je wordt doorgestuurd...",
       });
       
+      // Call success callback if provided
       onSuccess?.();
       
+      // Navigate after a short delay to ensure toast is visible
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 500);
       
     } catch (error: any) {
       console.error('Login error:', error);
-      setIsLoading(false);
       
       let errorMessage = "Er is een onverwachte fout opgetreden. Probeer het later opnieuw.";
       
@@ -72,6 +64,8 @@ export const useLogin = (onSuccess?: () => void) => {
         description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 

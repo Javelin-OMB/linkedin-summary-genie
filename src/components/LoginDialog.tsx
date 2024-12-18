@@ -28,14 +28,14 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent 
         className="sm:max-w-[425px]"
-        aria-labelledby="dialog-title"
-        aria-describedby="dialog-description"
+        aria-labelledby="login-dialog-title"
+        aria-describedby="login-dialog-description"
       >
         <DialogHeader>
-          <DialogTitle id="dialog-title" className="text-2xl font-bold text-center">
+          <DialogTitle id="login-dialog-title" className="text-2xl font-bold text-center">
             {title}
           </DialogTitle>
-          <DialogDescription id="dialog-description" className="text-center text-gray-500">
+          <DialogDescription id="login-dialog-description" className="text-center text-gray-500">
             {description}
           </DialogDescription>
         </DialogHeader>
