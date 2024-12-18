@@ -7,7 +7,9 @@ export interface User {
   trial_start: string | null;
 }
 
-export type NewUser = Omit<User, 'id'> & {
+export type NewUser = {
+  email: string;
+  credits: number;
   is_admin?: boolean;
   name?: string | null;
   trial_start?: string | null;

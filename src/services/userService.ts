@@ -15,10 +15,10 @@ export const fetchUsers = async (): Promise<User[]> => {
   return users as User[];
 };
 
-export const addUserToDatabase = async (userData: NewUser) => {
+export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
   const { data, error } = await supabase
     .from('users')
-    .insert(userData)
+    .insert([userData])
     .select()
     .single();
 
@@ -26,7 +26,7 @@ export const addUserToDatabase = async (userData: NewUser) => {
   return data;
 };
 
-export const updateUserInDatabase = async (id: string, updates: Partial<User>) => {
+export const updateUserInDatabase = async (id: string, updates: Partial<User>): Promise<User> => {
   const { data, error } = await supabase
     .from('users')
     .update(updates)

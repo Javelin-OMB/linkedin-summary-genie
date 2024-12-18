@@ -34,7 +34,11 @@ const Admin = () => {
   };
 
   const handleAddUser = async (email: string, initialCredits: number) => {
-    await addUser({ email, credits: initialCredits });
+    await addUser({ 
+      email, 
+      credits: initialCredits,
+      is_admin: false 
+    });
     refetch();
   };
 
