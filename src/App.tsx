@@ -8,7 +8,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { SessionHandler } from "@/components/auth/SessionHandler";
 import { AppRoutes } from "@/routes/AppRoutes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 const App = () => {
   return (

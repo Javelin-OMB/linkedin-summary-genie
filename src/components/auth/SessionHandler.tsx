@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { handleUserSession, handleSignOut } from '@/utils/sessionUtils';
 
 export const SessionHandler = () => {
   const navigate = useNavigate();
@@ -18,7 +17,7 @@ export const SessionHandler = () => {
     
     if (isPasswordReset) {
       console.log('Password reset page detected with recovery token, skipping session handling');
-      return; // Skip session handling for password reset
+      return;
     }
 
     const {
@@ -30,24 +29,28 @@ export const SessionHandler = () => {
         case 'SIGNED_IN':
           if (session?.user && session?.access_token) {
             console.log('Valid session detected, handling user session...');
-            await handleUserSession(supabase, session.user, navigate, toast);
+            localStorage.setItem('supabase.auth.token', session.access_token);
+            if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+              navigate(location.pathname);
+            } else {
+              navigate('/');
+            }
           }
           break;
 
         case 'SIGNED_OUT':
-          console.log('User signed out, checking current path...');
-          localStorage.removeItem('supabase.auth.token'); // Clear any stored tokens
-          if (!['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
-            console.log('Redirecting to home page after logout...');
+          console.log('User signed out, clearing session data...');
+          localStorage.removeItem('supabase.auth.token');
+          sessionStorage.clear();
+          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
             navigate('/', { replace: true });
           }
           break;
 
         case 'TOKEN_REFRESHED':
-          console.log('Token refreshed, checking session...');
-          if (!session && !isPasswordReset) {
-            console.log('No session after token refresh, signing out');
-            await handleSignOut(supabase, navigate, toast);
+          console.log('Token refreshed, updating session...');
+          if (session?.access_token) {
+            localStorage.setItem('supabase.auth.token', session.access_token);
           }
           break;
       }
@@ -70,7 +73,7 @@ export const SessionHandler = () => {
         }
 
         if (!session && 
-            !['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
+            !['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
           console.log('No initial session, redirecting to home');
           navigate('/', { replace: true });
         }

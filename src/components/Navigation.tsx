@@ -51,6 +51,11 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const handleLogout = async () => {
     try {
       console.log('Starting logout process...');
+      
+      // Clear all session data
+      localStorage.removeItem('supabase.auth.token');
+      sessionStorage.clear();
+      
       const { error } = await supabase.auth.signOut();
       
       if (error) {
@@ -62,6 +67,10 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
         });
         return;
       }
+
+      // Reset state
+      setIsAdmin(false);
+      setCredits(null);
 
       console.log('Logout successful');
       toast({
