@@ -29,7 +29,7 @@ export const SessionHandler = () => {
           break;
 
         case 'SIGNED_OUT':
-          if (!['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+          if (!['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
             await handleSignOut(supabase, navigate, toast);
           }
           break;
@@ -54,7 +54,7 @@ export const SessionHandler = () => {
         }
 
         if (!session && 
-            !['/', '/login', '/about', '/pricing'].includes(location.pathname)) {
+            !['/', '/login', '/about', '/pricing', '/reset-password'].includes(location.pathname)) {
           console.log('No initial session, redirecting to login');
           navigate('/login', { replace: true });
         }
