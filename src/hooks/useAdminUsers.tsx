@@ -3,6 +3,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
+interface User {
+  id: string;
+  email: string;
+  credits: number;
+  is_admin: boolean;
+  name: string | null;
+  trial_start: string | null;
+}
+
 export const useAdminUsers = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -25,7 +34,7 @@ export const useAdminUsers = () => {
         throw error;
       }
 
-      return users;
+      return users as User[];
     } catch (error) {
       console.error('Error loading users:', error);
       throw new Error('Failed to load users');
@@ -39,7 +48,7 @@ export const useAdminUsers = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  const addUser = async (userData: any) => {
+  const addUser = async (userData: { email: string; credits: number }) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -69,7 +78,7 @@ export const useAdminUsers = () => {
     }
   };
 
-  const updateUser = async (id: string, updates: any) => {
+  const updateUser = async (id: string, updates: Partial<User>) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
@@ -101,7 +110,7 @@ export const useAdminUsers = () => {
   };
 
   return {
-    users,
+    users: users || [],
     isLoading,
     error,
     refetch,
