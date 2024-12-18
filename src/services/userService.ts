@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { NewUser, User } from "@/types/user";
+import { NewUser, User, SupabaseUser } from "@/types/user";
 
 export const fetchUsers = async (): Promise<User[]> => {
   const { data: users, error } = await supabase
@@ -16,9 +16,17 @@ export const fetchUsers = async (): Promise<User[]> => {
 };
 
 export const addUserToDatabase = async (userData: NewUser): Promise<User> => {
+  const supabaseUser: SupabaseUser = {
+    email: userData.email,
+    credits: userData.credits,
+    is_admin: userData.is_admin,
+    name: userData.name,
+    trial_start: userData.trial_start
+  };
+
   const { data, error } = await supabase
     .from('users')
-    .insert([userData])
+    .insert([supabaseUser])
     .select()
     .single();
 
