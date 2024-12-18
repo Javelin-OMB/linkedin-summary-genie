@@ -21,6 +21,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
     : "Maak een nieuw account aan";
 
   const handleSuccess = () => {
+    console.log('Login successful, closing dialog...');
     onOpenChange(false);
   };
 
