@@ -37,6 +37,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
 
     setIsLoading(true);
 
+    // Toon direct feedback dat we bezig zijn
+    toast({
+      title: "Even geduld",
+      description: "We loggen je in...",
+    });
+
     try {
       const { user } = await loginUser(email, password);
       
@@ -50,7 +56,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           description: "Je wordt doorgestuurd...",
         });
         
-        navigate('/');
+        // Snellere redirect
+        setTimeout(() => {
+          navigate('/');
+        }, 500);
       }
     } catch (error: any) {
       console.error('Login error:', error);
@@ -78,7 +87,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
         className="w-full bg-brand-primary hover:bg-brand-hover text-black"
         disabled={isLoading}
       >
-        {isLoading ? "Bezig met inloggen..." : "Inloggen"}
+        {isLoading ? "Inloggen..." : "Inloggen"}
       </Button>
       <LoginLinks mode="login" />
     </form>
