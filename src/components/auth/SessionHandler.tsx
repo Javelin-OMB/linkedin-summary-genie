@@ -16,6 +16,11 @@ export const SessionHandler = () => {
     const isPasswordReset = location.pathname === '/reset-password' && 
                           window.location.hash.includes('type=recovery');
     
+    if (isPasswordReset) {
+      console.log('Password reset page detected with recovery token');
+      return; // Skip session handling for password reset
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -23,7 +28,7 @@ export const SessionHandler = () => {
       
       switch (event) {
         case 'SIGNED_IN':
-          if (session?.user && session?.access_token && !isPasswordReset) {
+          if (session?.user && session?.access_token) {
             await handleUserSession(supabase, session.user, navigate, toast);
           }
           break;
@@ -46,9 +51,8 @@ export const SessionHandler = () => {
     // Initial session check
     const checkInitialSession = async () => {
       try {
-        // Skip session check for password reset page with recovery token
         if (isPasswordReset) {
-          return;
+          return; // Skip session check for password reset
         }
 
         const { data: { session }, error } = await supabase.auth.getSession();

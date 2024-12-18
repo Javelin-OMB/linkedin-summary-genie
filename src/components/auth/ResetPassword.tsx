@@ -32,21 +32,11 @@ const ResetPassword = () => {
           return;
         }
 
-        const { data: { session }, error } = await supabase.auth.setSession({
+        // Set the session with the recovery tokens
+        await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken || '',
         });
-
-        if (error || !session) {
-          console.error('Error setting session:', error);
-          toast({
-            title: "Sessie fout",
-            description: "Er is een fout opgetreden bij het verifiëren van je reset link.",
-            variant: "destructive",
-          });
-          navigate('/login');
-          return;
-        }
 
         setInitializing(false);
       } catch (error) {
@@ -61,6 +51,11 @@ const ResetPassword = () => {
     };
 
     handlePasswordReset();
+
+    // Cleanup function
+    return () => {
+      setInitializing(false);
+    };
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,10 +74,9 @@ const ResetPassword = () => {
         description: "Je wachtwoord is succesvol gewijzigd. Je wordt nu doorgestuurd naar de inlogpagina.",
       });
       
-      // Sign out the user after password reset
+      // Sign out and redirect to login
       await supabase.auth.signOut();
       
-      // Redirect to login page after a short delay
       setTimeout(() => {
         navigate('/login');
       }, 1500);
