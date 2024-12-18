@@ -10,6 +10,7 @@ import Login from "@/pages/Login";
 import Admin from "@/pages/Admin";
 import RecentAnalyses from "@/pages/RecentAnalyses";
 import HowItWorks from "@/pages/HowItWorks";
+import ResetPassword from "@/components/auth/ResetPassword";
 
 export const AppRoutes = () => (
   <Routes>
@@ -19,6 +20,7 @@ export const AppRoutes = () => (
     <Route path="/how-it-works" element={<HowItWorks />} />
     <Route path="/pricing" element={<Pricing />} />
     <Route path="/login" element={<Login />} />
+    <Route path="/reset-password" element={<ResetPassword />} />
     
     {/* Protected routes */}
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
