@@ -53,6 +53,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           errorMessage = "Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.";
         } else if (error.message?.includes('Email not confirmed')) {
           errorMessage = "Bevestig eerst je e-mailadres via de link in je inbox.";
+        } else if (error.message?.includes('Failed to fetch')) {
+          errorMessage = "Kan geen verbinding maken met de server. Controleer je internetverbinding.";
+          console.log('Network error during login:', error);
         }
         
         toast({
@@ -70,7 +73,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, mode = 'login' }) => {
           .from('users')
           .select('*')
           .eq('id', data.user.id)
-          .single();
+          .maybeSingle();
 
         if (userError) {
           console.error('Error fetching user data:', userError);
