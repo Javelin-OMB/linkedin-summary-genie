@@ -26,6 +26,47 @@ export const SessionHandler = () => {
               refresh_token: session.refresh_token,
             });
             
+            // Check if user exists in users table
+            const { data: userData, error: userError } = await supabase
+              .from('users')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+
+            if (userError && userError.code !== 'PGRST116') {
+              console.error('Error checking user:', userError);
+              toast({
+                title: "Error",
+                description: "Er is een probleem opgetreden bij het ophalen van je gebruikersgegevens.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            // If user doesn't exist, create them
+            if (!userData) {
+              const { error: insertError } = await supabase
+                .from('users')
+                .insert([
+                  {
+                    id: session.user.id,
+                    email: session.user.email,
+                    trial_start: new Date().toISOString(),
+                    credits: 10
+                  }
+                ]);
+
+              if (insertError) {
+                console.error('Error creating user:', insertError);
+                toast({
+                  title: "Error",
+                  description: "Er is een probleem opgetreden bij het aanmaken van je gebruikersprofiel.",
+                  variant: "destructive",
+                });
+                return;
+              }
+            }
+            
             toast({
               title: "Succesvol ingelogd",
               description: "Je wordt doorgestuurd naar de hoofdpagina...",
