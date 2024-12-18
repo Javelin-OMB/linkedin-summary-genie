@@ -50,16 +50,16 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       />
       <Button 
         type="submit" 
-        className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+        className="w-full bg-[#FEDB01] hover:bg-[#FEDB01]/90 text-black"
         disabled={isLoading}
       >
         {isLoading ? "Inloggen..." : "Inloggen"}
       </Button>
       <div className="text-center space-y-2">
-        <a href="#" className="block text-[#0177B5] hover:text-[#0177B5]/90">
+        <a href="#" className="block text-[#FEDB01] hover:text-[#FEDB01]/90">
           Wachtwoord vergeten?
         </a>
-        <a href="#" className="block text-[#0177B5] hover:text-[#0177B5]/90">
+        <a href="#" className="block text-[#FEDB01] hover:text-[#FEDB01]/90">
           Nog geen account? Registreer je hier
         </a>
       </div>

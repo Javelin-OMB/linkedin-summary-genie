@@ -29,7 +29,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ isOpen, onOpenChange, mode = 
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#0177B5]">
+          <DialogTitle className="text-xl font-semibold text-[#FEDB01]">
             {title}
           </DialogTitle>
           <DialogDescription className="text-gray-600">
