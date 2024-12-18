@@ -17,36 +17,56 @@ export const handleAuthEvent = async (
         console.log('Valid session detected, handling user session...');
         
         try {
+          // Update session
           await supabase.auth.setSession({
             access_token: session.access_token,
             refresh_token: session.refresh_token
           });
           
+          // Verify user exists in users table
           const { data: userData, error: userError } = await supabase
             .from('users')
-            .select('is_admin')
+            .select('*')
             .eq('id', session.user.id)
-            .maybeSingle();
+            .single();
 
-          if (userError) {
-            console.error('Error checking admin status:', userError);
+          if (userError && userError.code !== 'PGRST116') {
+            console.error('Error checking user:', userError);
             throw userError;
           }
 
-          console.log('User data:', userData);
-          
+          // Create user record if it doesn't exist
+          if (!userData) {
+            console.log('Creating new user record...');
+            const { error: insertError } = await supabase
+              .from('users')
+              .insert([{
+                id: session.user.id,
+                email: session.user.email,
+                trial_start: new Date().toISOString(),
+                credits: 10
+              }]);
+
+            if (insertError) {
+              console.error('Error creating user record:', insertError);
+              throw insertError;
+            }
+          }
+
+          // Only redirect to dashboard if not already there
           if (currentPath !== '/dashboard') {
+            console.log('Redirecting to dashboard...');
             navigate('/dashboard', { replace: true });
             toast({
-              title: "Succesvol ingelogd",
-              description: "Welkom terug!",
+              title: "Successfully logged in",
+              description: "Welcome back!",
             });
           }
         } catch (error) {
           console.error('Error handling session:', error);
           toast({
-            title: "Er ging iets mis",
-            description: "Probeer opnieuw in te loggen",
+            title: "Something went wrong",
+            description: "Please try logging in again",
             variant: "destructive",
           });
         }
@@ -58,11 +78,12 @@ export const handleAuthEvent = async (
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.clear();
       
+      // Only redirect to home if on a protected route
       if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
         navigate('/', { replace: true });
         toast({
-          title: "Uitgelogd",
-          description: "Tot ziens!",
+          title: "Logged out",
+          description: "See you soon!",
         });
       }
       break;

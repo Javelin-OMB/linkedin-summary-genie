@@ -13,14 +13,18 @@ export const SessionHandler = () => {
   useEffect(() => {
     console.log('SessionHandler mounted, current path:', location.pathname);
     
+    // Check initial session when component mounts
+    checkInitialSession(navigate, toast, location.pathname);
+    
+    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, 'Session:', session?.user?.email);
       await handleAuthEvent(event, session, navigate, toast, location.pathname);
     });
 
-    checkInitialSession(navigate, toast, location.pathname);
-
+    // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up auth subscription');
       subscription.unsubscribe();
