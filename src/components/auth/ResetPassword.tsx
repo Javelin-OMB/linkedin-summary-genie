@@ -12,16 +12,50 @@ const ResetPassword = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if we have an access token in the URL
-    const hash = window.location.hash;
-    if (!hash || !hash.includes('access_token=')) {
-      toast({
-        title: "Ongeldige link",
-        description: "Deze wachtwoord reset link is ongeldig of verlopen.",
-        variant: "destructive",
-      });
-      navigate('/login');
-    }
+    const handlePasswordReset = async () => {
+      try {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        
+        if (!accessToken) {
+          console.error('No access token found in URL');
+          toast({
+            title: "Ongeldige link",
+            description: "Deze wachtwoord reset link is ongeldig of verlopen.",
+            variant: "destructive",
+          });
+          navigate('/login');
+          return;
+        }
+
+        // Set the session with the tokens from the URL
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || '',
+        });
+
+        if (error) {
+          console.error('Error setting session:', error);
+          toast({
+            title: "Sessie fout",
+            description: "Er is een fout opgetreden bij het verifiëren van je reset link.",
+            variant: "destructive",
+          });
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error('Error in handlePasswordReset:', error);
+        toast({
+          title: "Fout",
+          description: "Er is een fout opgetreden. Probeer het opnieuw.",
+          variant: "destructive",
+        });
+        navigate('/login');
+      }
+    };
+
+    handlePasswordReset();
   }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,7 +111,7 @@ const ResetPassword = () => {
           </div>
           <Button
             type="submit"
-            className="w-full bg-brand-primary hover:bg-brand-hover text-white"
+            className="w-full bg-linkedin-primary hover:bg-linkedin-hover text-white"
             disabled={loading}
           >
             {loading ? "Bezig met wijzigen..." : "Wachtwoord wijzigen"}
