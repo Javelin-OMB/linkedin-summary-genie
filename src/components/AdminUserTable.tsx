@@ -1,19 +1,9 @@
-import { User } from "lucide-react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import UserActions from "./admin/UserActions";
-import UserRoleBadge from "./admin/UserRoleBadge";
 import AddUserDialog from "./admin/AddUserDialog";
 import LoadingSpinner from "./LoadingSpinner";
+import UserTableContent from "./admin/UserTableContent";
 
 interface UserData {
   id: string;
@@ -92,44 +82,12 @@ const AdminUserTable = ({
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
-        {isUpdating ? (
-          <div className="p-4">
-            <LoadingSpinner message="Bezig met bijwerken..." />
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Gebruiker</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Credits</TableHead>
-                <TableHead>Acties</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {localUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    {user.email}
-                  </TableCell>
-                  <TableCell>
-                    <UserRoleBadge isAdmin={user.is_admin} />
-                  </TableCell>
-                  <TableCell>{user.credits}</TableCell>
-                  <TableCell>
-                    <UserActions
-                      userId={user.id}
-                      isAdmin={user.is_admin}
-                      onUpdateCredits={handleUpdateCredits}
-                      onToggleAdmin={onToggleAdmin}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        <UserTableContent
+          users={localUsers}
+          isUpdating={isUpdating}
+          onUpdateCredits={handleUpdateCredits}
+          onToggleAdmin={onToggleAdmin}
+        />
       </div>
     </div>
   );
