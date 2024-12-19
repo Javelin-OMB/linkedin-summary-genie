@@ -11,8 +11,8 @@ const Login = () => {
 
   useEffect(() => {
     if (session) {
-      console.log('User is already logged in, redirecting to homepage...');
-      navigate('/', { replace: true });
+      console.log('User is already logged in, redirecting to dashboard...');
+      navigate('/dashboard', { replace: true });
     }
   }, [session, navigate]);
 

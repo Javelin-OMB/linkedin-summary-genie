@@ -19,7 +19,6 @@ export const SessionHandler = () => {
     toast
   } = useSessionState();
 
-  // Add origin validation for postMessage
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (!ALLOWED_ORIGINS.includes(event.origin)) {
@@ -42,11 +41,11 @@ export const SessionHandler = () => {
       initialized.current = true;
 
       console.log('SessionHandler mounted, current path:', location.pathname);
-      await checkInitialSession(navigate, location.pathname, toast);
+      await checkInitialSession(navigate, location.pathname);
     };
 
     initializeSession();
-  }, [navigate, location.pathname, toast]);
+  }, [navigate, location.pathname]);
 
   return (
     <>
