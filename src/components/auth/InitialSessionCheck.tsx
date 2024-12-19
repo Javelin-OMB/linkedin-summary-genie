@@ -4,19 +4,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
 import { LOADING_TIMEOUT } from '@/utils/constants';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, SupabaseClient } from '@supabase/supabase-js';
+
+// Type definitions for session handling
+type AuthSession = {
+  session: Session | null;
+  user: User | null;
+};
+
+type SessionCheckResult = {
+  data: AuthSession;
+  error: Error | null;
+};
 
 // Type guard to ensure session is valid
 const isValidSession = (session: Session | null): session is Session => {
   return session !== null && typeof session === 'object' && 'user' in session;
-};
-
-// Type for session response
-type SessionResponse = {
-  data: {
-    session: Session | null;
-  };
-  error: Error | null;
 };
 
 export const checkInitialSession = async (
@@ -40,7 +43,7 @@ export const checkInitialSession = async (
     const sessionResult = await Promise.race([
       supabase.auth.getSession(),
       timeoutPromise
-    ]) as SessionResponse;
+    ]) as SessionCheckResult;
 
     clearTimeout(timeoutId);
 
