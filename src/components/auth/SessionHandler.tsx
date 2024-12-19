@@ -38,6 +38,7 @@ export const SessionHandler = () => {
       <SessionInitializer
         setIsLoading={setIsLoading}
         setSessionChecked={setSessionChecked}
+        sessionChecked={sessionChecked}
         initialized={initialized}
         navigate={navigate}
         toast={toast}

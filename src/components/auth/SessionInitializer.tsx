@@ -6,6 +6,7 @@ import { checkInitialSession } from './InitialSessionCheck';
 interface SessionInitializerProps {
   setIsLoading: (loading: boolean) => void;
   setSessionChecked: (checked: boolean) => void;
+  sessionChecked: boolean;  // Added this prop
   initialized: { current: boolean };
   navigate: NavigateFunction;
   toast: any;
@@ -15,6 +16,7 @@ interface SessionInitializerProps {
 export const SessionInitializer = ({
   setIsLoading,
   setSessionChecked,
+  sessionChecked,  // Added this prop
   initialized,
   navigate,
   toast,
