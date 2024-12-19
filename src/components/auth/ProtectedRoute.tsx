@@ -14,11 +14,12 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const checkSession = async () => {
       try {
+        console.log('ProtectedRoute - Starting session check');
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log('Protected Route - Current session:', currentSession?.user?.email);
+        console.log('ProtectedRoute - Current session:', currentSession?.user?.email);
         
         if (!currentSession) {
-          console.log('No session found in ProtectedRoute, redirecting to login');
+          console.log('ProtectedRoute - No session found, redirecting to login');
           toast({
             title: "Toegang geweigerd",
             description: "Log in om deze pagina te bekijken",
@@ -36,13 +37,13 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           .single();
 
         if (userError && userError.code !== 'PGRST116') {
-          console.error('Error fetching user data:', userError);
+          console.error('ProtectedRoute - Error fetching user data:', userError);
           throw userError;
         }
 
         // If user doesn't exist in the users table, create them
         if (!userData) {
-          console.log('Creating new user record in ProtectedRoute');
+          console.log('ProtectedRoute - Creating new user record');
           const { error: insertError } = await supabase
             .from('users')
             .insert([{
@@ -53,30 +54,40 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             }]);
 
           if (insertError) {
-            console.error('Error creating user record:', insertError);
+            console.error('ProtectedRoute - Error creating user record:', insertError);
             throw insertError;
           }
         }
 
-        console.log('Session valid, user can access protected route');
+        console.log('ProtectedRoute - Session valid, proceeding to render protected content');
       } catch (error) {
-        console.error('Error checking session:', error);
+        console.error('ProtectedRoute - Error checking session:', error);
+        toast({
+          title: "Er is een fout opgetreden",
+          description: "Probeer opnieuw in te loggen",
+          variant: "destructive",
+        });
         navigate('/', { replace: true });
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkSession();
-  }, [navigate, toast]);
+    if (isLoading) {
+      checkSession();
+    }
+  }, [navigate, toast, isLoading]);
 
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!session) {
+  // Add immediate check for session to prevent unnecessary loading
+  if (!session && !isLoading) {
+    console.log('ProtectedRoute - No session found after loading');
     return null;
   }
 
+  if (isLoading) {
+    return <LoadingSpinner message="Bezig met laden..." />;
+  }
+
+  console.log('ProtectedRoute - Rendering protected content');
   return <>{children}</>;
 };
