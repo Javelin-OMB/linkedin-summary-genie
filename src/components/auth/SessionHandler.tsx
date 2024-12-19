@@ -10,6 +10,7 @@ export const SessionHandler = () => {
   const location = useLocation();
   const { toast } = useToast();
   const initialized = useRef(false);
+  const authSubscription = useRef<any>(null);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -28,10 +29,15 @@ export const SessionHandler = () => {
       await handleAuthEvent(event, session, navigate, toast, location.pathname);
     });
 
+    // Store subscription reference
+    authSubscription.current = subscription;
+
     // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up auth subscription');
-      subscription.unsubscribe();
+      if (authSubscription.current) {
+        authSubscription.current.unsubscribe();
+      }
     };
   }, [navigate, location.pathname, toast]);
 

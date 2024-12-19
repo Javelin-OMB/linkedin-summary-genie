@@ -11,10 +11,10 @@ export const useLogin = () => {
   const handleLogin = async (email: string, password: string) => {
     if (isLoading) return; // Prevent multiple simultaneous login attempts
     
-    setIsLoading(true);
-    console.log('Starting login process for:', email);
-
     try {
+      setIsLoading(true);
+      console.log('Starting login process for:', email);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password: password.trim(),
@@ -69,10 +69,10 @@ export const useLogin = () => {
         description: "Je wordt doorgestuurd naar het dashboard...",
       });
 
-      navigate('/dashboard');
+      // Use replace to prevent back navigation to login
+      navigate('/dashboard', { replace: true });
       
       return data.user;
-      
     } catch (error: any) {
       console.error('Login error:', error);
       
@@ -83,12 +83,6 @@ export const useLogin = () => {
       } else if (error.message?.includes('Email not confirmed')) {
         errorMessage = "Je account is nog niet geactiveerd. Check je inbox voor de activatielink.";
       }
-      
-      toast({
-        title: "Inloggen mislukt",
-        description: errorMessage,
-        variant: "destructive",
-      });
       
       throw new Error(errorMessage);
     } finally {

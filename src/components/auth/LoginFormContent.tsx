@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import LoginFormFields from './LoginFormFields';
 import { useLogin } from '@/hooks/useLogin';
 import { useToast } from "@/components/ui/use-toast";
-import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface LoginFormContentProps {
@@ -15,7 +14,6 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
   const [password, setPassword] = useState('');
   const { handleLogin, isLoading } = useLogin();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,8 +30,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
     console.log('Starting login process for:', email);
     
     try {
-      const result = await handleLogin(email, password);
-      console.log('Login successful:', result);
+      await handleLogin(email, password);
       
       // Clear form
       setEmail('');
