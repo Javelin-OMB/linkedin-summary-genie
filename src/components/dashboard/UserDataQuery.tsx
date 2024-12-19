@@ -53,8 +53,9 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
     staleTime: 30000,
     retry: 2,
     retryDelay: 1000,
+    gcTime: 0,
     meta: {
-      errorHandler: (error: any) => {
+      errorHandler: (error: unknown) => {
         console.error('Query error:', error);
         setQueryAttempts(prev => prev + 1);
         if (queryAttempts >= 2) {
