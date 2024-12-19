@@ -3,6 +3,7 @@ import debounce from 'lodash/debounce';
 import { useToast } from "@/components/ui/use-toast";
 import { useLogin } from '@/hooks/useLogin';
 import { useLoadingTimeout } from '@/hooks/useLoadingTimeout';
+import { supabase } from "@/integrations/supabase/client";
 
 interface LoginSubmitHandlerProps {
   email: string;
