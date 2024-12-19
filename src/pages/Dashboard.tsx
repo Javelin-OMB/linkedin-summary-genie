@@ -5,17 +5,24 @@ import Navigation from "@/components/Navigation";
 import SessionHandler from '@/components/dashboard/SessionHandler';
 import UserDataQuery from '@/components/dashboard/UserDataQuery';
 import DashboardContent from '@/components/dashboard/DashboardContent';
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
   const [loadingTimeout, setLoadingTimeout] = useState<boolean>(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoadingTimeout(true);
-    }, 5000);
+      toast({
+        title: "Laden duurt langer dan verwacht",
+        description: "Probeer de pagina te verversen als dit blijft duren",
+        variant: "destructive",
+      });
+    }, 5000); // 5 seconds timeout
 
     return () => clearTimeout(timeout);
-  }, []);
+  }, [toast]);
 
   return (
     <SidebarProvider>

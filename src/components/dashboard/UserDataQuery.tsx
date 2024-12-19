@@ -2,6 +2,8 @@ import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 interface UserDataQueryProps {
   loadingTimeout: boolean;
@@ -12,6 +14,20 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
   const session = useSession();
   const supabase = useSupabaseClient();
   const { toast } = useToast();
+  const navigate = useNavigate();
+
+  // Redirect if no session
+  useEffect(() => {
+    if (!session && loadingTimeout) {
+      console.log('No session found after timeout, redirecting to login');
+      navigate('/login');
+      toast({
+        title: "Sessie verlopen",
+        description: "Log opnieuw in om door te gaan",
+        variant: "destructive",
+      });
+    }
+  }, [session, loadingTimeout, navigate, toast]);
 
   const { data: userData, isLoading, error } = useQuery({
     queryKey: ['userData', session?.user?.id],
@@ -40,18 +56,23 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
       return data;
     },
     enabled: !!session?.user?.id,
-    staleTime: 30000,
+    staleTime: 30000, // Cache for 30 seconds
     retry: 1,
     retryDelay: 1000
   });
 
-  if (isLoading) {
+  if (isLoading && !loadingTimeout) {
     return (
       <LoadingSpinner 
-        message={loadingTimeout ? 
-          "Het laden duurt langer dan verwacht. Ververs de pagina als dit blijft duren." : 
-          "Dashboard laden..."
-        } 
+        message="Dashboard laden..." 
+      />
+    );
+  }
+
+  if (isLoading && loadingTimeout) {
+    return (
+      <LoadingSpinner 
+        message="Het laden duurt langer dan verwacht. Ververs de pagina als dit blijft duren." 
       />
     );
   }
