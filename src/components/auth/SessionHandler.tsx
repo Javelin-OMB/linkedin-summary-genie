@@ -25,19 +25,20 @@ export const SessionHandler = () => {
   useEffect(() => {
     if (initializationAttempted.current) return;
     
-    initializationAttempted.current = true;
     const timeoutId = setTimeout(() => {
       if (!initializationComplete) {
-        console.log('Forcing session completion after timeout');
+        console.log('Session initialization completed by timeout');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
-        initialized.current = true;
       }
-    }, 1500); // Reduced timeout to 1.5 seconds
+    }, 1000); // Reduced to 1 second
 
-    return () => clearTimeout(timeoutId);
-  }, [initializationComplete, setIsLoading, setSessionChecked, initialized]);
+    return () => {
+      clearTimeout(timeoutId);
+      initializationAttempted.current = false;
+    };
+  }, [initializationComplete, setIsLoading, setSessionChecked]);
 
   // Only show loading state briefly
   if (isLoading && !initializationComplete && !sessionChecked) {

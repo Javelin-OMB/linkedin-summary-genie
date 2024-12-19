@@ -34,33 +34,33 @@ export const AuthStateManager = ({
       
       console.log('Auth state changed:', event);
       
-      if (event === 'SIGNED_IN' && session) {
-        try {
-          setIsLoading(false);
-          setSessionChecked(true);
-          initialized.current = true;
-          
-          if (location.pathname !== '/dashboard') {
-            await navigate('/dashboard');
+      switch (event) {
+        case 'SIGNED_IN':
+          if (session?.user) {
+            setIsLoading(false);
+            setSessionChecked(true);
+            initialized.current = true;
+            
+            if (location.pathname !== '/dashboard') {
+              await navigate('/dashboard');
+            }
           }
-        } catch (error) {
-          console.error('Session handling error:', error);
+          break;
+          
+        case 'SIGNED_OUT':
           setIsLoading(false);
           setSessionChecked(false);
-          toast({
-            title: "Er ging iets mis",
-            description: "Probeer het opnieuw",
-            variant: "destructive",
-          });
-        }
-      } else if (event === 'SIGNED_OUT') {
-        setIsLoading(false);
-        setSessionChecked(false);
-        initialized.current = false;
-        
-        if (location.pathname !== '/') {
-          await navigate('/');
-        }
+          initialized.current = false;
+          
+          if (location.pathname !== '/') {
+            await navigate('/');
+          }
+          break;
+          
+        default:
+          setIsLoading(false);
+          setSessionChecked(true);
+          break;
       }
     };
 
@@ -74,7 +74,7 @@ export const AuthStateManager = ({
         authSubscription.current.unsubscribe();
       }
     };
-  }, [setIsLoading, setSessionChecked, initialized, authSubscription, navigate, toast, location]);
+  }, [setIsLoading, setSessionChecked, initialized, authSubscription, navigate, location]);
 
   return null;
 };

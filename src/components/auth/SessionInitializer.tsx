@@ -31,9 +31,7 @@ export const SessionInitializer = ({
     initializationAttempted.current = true;
 
     const initializeSession = async () => {
-      if (initialized.current || sessionChecked) {
-        return;
-      }
+      if (initialized.current || sessionChecked) return;
 
       try {
         console.log('Starting session initialization...');
@@ -41,14 +39,14 @@ export const SessionInitializer = ({
         
         if (!isMounted) return;
 
-        setIsLoading(false);
-        setSessionChecked(true);
-        initialized.current = true;
-
         if (session) {
           console.log('Session found for:', session.user?.email);
           await checkInitialSession(navigate, location.pathname, toast);
         }
+        
+        setIsLoading(false);
+        setSessionChecked(true);
+        initialized.current = true;
       } catch (error) {
         console.error('Session initialization error:', error);
         if (isMounted) {
@@ -59,9 +57,7 @@ export const SessionInitializer = ({
       }
     };
 
-    if (!sessionChecked && !initialized.current) {
-      initializeSession();
-    }
+    initializeSession();
 
     return () => {
       isMounted = false;
