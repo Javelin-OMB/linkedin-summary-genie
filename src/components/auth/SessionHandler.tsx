@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -9,8 +9,12 @@ export const SessionHandler = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     console.log('SessionHandler mounted, current path:', location.pathname);
     
     // Check initial session when component mounts

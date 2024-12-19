@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from 'react-router-dom';
 
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogin = async (email: string, password: string) => {
+    if (isLoading) return; // Prevent multiple simultaneous login attempts
+    
     setIsLoading(true);
     console.log('Starting login process for:', email);
 
@@ -58,6 +62,14 @@ export const useLogin = () => {
           throw insertError;
         }
       }
+
+      // Show success message and navigate
+      toast({
+        title: "Succesvol ingelogd",
+        description: "Je wordt doorgestuurd naar het dashboard...",
+      });
+
+      navigate('/dashboard');
       
       return data.user;
       

@@ -56,11 +56,7 @@ export const handleAuthEvent = async (
           // Only redirect to dashboard if not already there
           if (currentPath !== '/dashboard') {
             console.log('Redirecting to dashboard...');
-            navigate('/dashboard');
-            toast({
-              title: "Successfully logged in",
-              description: "Welcome back!",
-            });
+            navigate('/dashboard', { replace: true });
           }
         } catch (error) {
           console.error('Error handling session:', error);
