@@ -29,8 +29,13 @@ export const SessionStateHandler = ({
       try {
         switch (event) {
           case 'SIGNED_IN':
-            if (session?.user && currentPath === '/') {
-              console.log('User signed in, navigating to dashboard...');
+            if (session?.user) {
+              console.log('User signed in, persisting session...');
+              // Ensure session is persisted
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token
+              });
               await handleSignInEvent(session, navigate, currentPath);
             }
             break;
@@ -40,7 +45,22 @@ export const SessionStateHandler = ({
             setIsLoading(true);
             break;
           case 'TOKEN_REFRESHED':
-            await handleTokenRefresh(session);
+            if (session) {
+              console.log('Token refreshed, updating session...');
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token
+              });
+            }
+            break;
+          case 'INITIAL_SESSION':
+            if (session) {
+              console.log('Initial session detected, ensuring persistence...');
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token
+              });
+            }
             break;
         }
       } catch (error) {

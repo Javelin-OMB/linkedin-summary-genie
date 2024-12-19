@@ -20,8 +20,15 @@ export const handleSignInEvent = async (
         refresh_token: session.refresh_token
       });
       
+      // Initialize user session and handle navigation
       await initializeUserSession(session.user.id, session.user.email);
-      await handleSessionNavigation(navigate, currentPath);
+      
+      // Only navigate to dashboard if we're on a public route
+      const publicRoutes = ['/', '/login', '/about', '/pricing'];
+      if (publicRoutes.includes(currentPath)) {
+        console.log('On public route, navigating to dashboard...');
+        await safeNavigate(navigate, '/dashboard', { replace: true });
+      }
     } catch (error) {
       console.error('Session handling error:', error);
       throw error;
@@ -38,7 +45,8 @@ export const handleSignOutEvent = async (
   localStorage.removeItem('supabase.auth.token');
   sessionStorage.clear();
   
-  if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
+  const publicRoutes = ['/', '/login', '/about', '/pricing'];
+  if (!publicRoutes.includes(currentPath)) {
     await safeNavigate(navigate, '/', { replace: true });
     showToast({
       title: "Uitgelogd",

@@ -5,6 +5,7 @@ import { SessionInitializer } from './SessionInitializer';
 import { SessionStateHandler } from './SessionStateHandler';
 import { checkInitialSession } from './InitialSessionCheck';
 import { ALLOWED_ORIGINS } from '@/utils/constants';
+import { supabase } from "@/integrations/supabase/client";
 
 export const SessionHandler = () => {
   const location = useLocation();
@@ -35,13 +36,28 @@ export const SessionHandler = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
+  // Initialize session on mount
   useEffect(() => {
     const initializeSession = async () => {
       if (initialized.current) return;
       initialized.current = true;
 
-      console.log('SessionHandler mounted, current path:', location.pathname);
-      await checkInitialSession(navigate, location.pathname, toast);
+      try {
+        console.log('SessionHandler mounted, checking session state');
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log('Existing session found, refreshing...');
+          await supabase.auth.setSession({
+            access_token: session.access_token,
+            refresh_token: session.refresh_token
+          });
+        }
+        
+        await checkInitialSession(navigate, location.pathname, toast);
+      } catch (error) {
+        console.error('Session initialization error:', error);
+      }
     };
 
     if (!sessionChecked) {
