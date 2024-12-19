@@ -13,7 +13,9 @@ type AuthSession = {
 };
 
 type SessionCheckResult = {
-  data: AuthSession;
+  data: {
+    session: Session | null;
+  };
   error: Error | null;
 };
 
@@ -40,20 +42,18 @@ export const checkInitialSession = async (
     });
 
     // Race between the session check and timeout
-    const sessionResult = await Promise.race([
+    const { data: { session }, error } = await Promise.race([
       supabase.auth.getSession(),
       timeoutPromise
     ]) as SessionCheckResult;
 
     clearTimeout(timeoutId);
 
-    if ('error' in sessionResult) {
-      console.error('Error checking session:', sessionResult.error);
-      throw sessionResult.error;
+    if (error) {
+      console.error('Error checking session:', error);
+      throw error;
     }
 
-    const { data: { session } } = sessionResult;
-    
     if (isValidSession(session)) {
       console.log('Valid session found for user:', session.user.email);
       
