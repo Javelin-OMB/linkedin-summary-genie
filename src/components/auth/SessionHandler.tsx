@@ -22,13 +22,11 @@ export const SessionHandler = () => {
   // Add origin validation for postMessage
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Validate origin
       if (!ALLOWED_ORIGINS.includes(event.origin)) {
         console.error('Invalid origin:', event.origin);
         return;
       }
       
-      // Handle the message
       if (event.data?.type === 'AUTH_STATE_CHANGE') {
         console.log('Received auth state change:', event.data);
       }

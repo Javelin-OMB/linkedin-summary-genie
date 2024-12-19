@@ -29,8 +29,8 @@ export const checkInitialSession = async (
       }
 
       // Handle navigation for authenticated users
-      if (currentPath === '/') {
-        console.log('Authenticated user on home page, redirecting to dashboard...');
+      if (currentPath === '/login' || currentPath === '/') {
+        console.log('Authenticated user on login/home page, redirecting to dashboard...');
         await safeNavigate(navigate, '/dashboard', { replace: true });
       }
     } else {
