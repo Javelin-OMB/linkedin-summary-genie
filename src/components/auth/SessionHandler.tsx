@@ -18,15 +18,35 @@ export const SessionHandler = () => {
 
     console.log('SessionHandler mounted, current path:', location.pathname);
     
-    // Check initial session when component mounts
-    checkInitialSession(navigate, toast, location.pathname);
+    const initializeSession = async () => {
+      try {
+        console.log('Initializing session...');
+        await checkInitialSession(navigate, toast, location.pathname);
+      } catch (error) {
+        console.error('Session initialization error:', error);
+        // Use window.location as fallback
+        window.location.href = '/';
+      }
+    };
+
+    initializeSession();
     
     // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, 'Session:', session?.user?.email);
-      await handleAuthEvent(event, session, navigate, toast, location.pathname);
+      try {
+        await handleAuthEvent(event, session, navigate, toast, location.pathname);
+      } catch (error) {
+        console.error('Auth event handling error:', error);
+        // Use window.location as fallback
+        if (event === 'SIGNED_OUT') {
+          window.location.href = '/';
+        } else if (event === 'SIGNED_IN') {
+          window.location.href = '/dashboard';
+        }
+      }
     });
 
     // Store subscription reference

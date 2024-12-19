@@ -25,16 +25,22 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             description: "Log in om deze pagina te bekijken",
             variant: "destructive",
           });
-          navigate('/', { replace: true });
+          try {
+            await navigate('/', { replace: true });
+          } catch (navError) {
+            console.error('Navigation failed, using fallback:', navError);
+            window.location.href = '/';
+          }
           return;
         }
 
-        // Check if user exists in the users table
+        // Verify user exists in the users table
+        console.log('ProtectedRoute - Verifying user record');
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('*')
           .eq('id', currentSession.user.id)
-          .single();
+          .maybeSingle();
 
         if (userError && userError.code !== 'PGRST116') {
           console.error('ProtectedRoute - Error fetching user data:', userError);
@@ -67,7 +73,12 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           description: "Probeer opnieuw in te loggen",
           variant: "destructive",
         });
-        navigate('/', { replace: true });
+        try {
+          await navigate('/', { replace: true });
+        } catch (navError) {
+          console.error('Navigation failed, using fallback:', navError);
+          window.location.href = '/';
+        }
       } finally {
         setIsLoading(false);
       }

@@ -29,11 +29,18 @@ export const useLoginSubmitHandler = ({
       
       try {
         startLoadingTimeout();
-        await handleLogin(email, password);
+        const user = await handleLogin(email, password);
+        console.log('Login successful, user:', user?.email);
         
         // Clear form
         setEmail('');
         setPassword('');
+        
+        // Show success message
+        toast({
+          title: "Succesvol ingelogd",
+          description: "Je wordt doorgestuurd naar het dashboard...",
+        });
         
         onSuccess?.();
       } catch (error: any) {
