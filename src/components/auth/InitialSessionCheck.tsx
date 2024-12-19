@@ -1,5 +1,5 @@
 import { NavigateFunction } from 'react-router-dom';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
