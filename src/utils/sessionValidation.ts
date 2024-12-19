@@ -1,4 +1,4 @@
-import { Session } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase } from "@/integrations/supabase/client";
 import { LOADING_TIMEOUT } from '@/utils/constants';
 
