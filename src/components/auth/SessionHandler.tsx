@@ -41,11 +41,11 @@ export const SessionHandler = () => {
       initialized.current = true;
 
       console.log('SessionHandler mounted, current path:', location.pathname);
-      await checkInitialSession(navigate, location.pathname);
+      await checkInitialSession(navigate, location.pathname, toast);
     };
 
     initializeSession();
-  }, [navigate, location.pathname]);
+  }, [navigate, location.pathname, toast]);
 
   return (
     <>

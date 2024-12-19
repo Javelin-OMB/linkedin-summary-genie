@@ -14,6 +14,7 @@ export const checkInitialSession = async (
     const { data: { session }, error } = await checkSession();
 
     if (error) {
+      console.error('Session check error:', error);
       throw error;
     }
 
@@ -29,15 +30,15 @@ export const checkInitialSession = async (
       }
 
       // Handle navigation for authenticated users
-      const publicPaths = ['/', '/login'];
-      if (publicPaths.includes(currentPath)) {
-        console.log('Authenticated user on public page, redirecting to dashboard...');
+      const publicRoutes = ['/', '/login', '/about', '/pricing', '/how-it-works'];
+      if (publicRoutes.includes(currentPath)) {
+        console.log('Authenticated user on public route, redirecting to dashboard...');
         await safeNavigate(navigate, '/dashboard', { replace: true });
       }
     } else {
       // Handle navigation for unauthenticated users
-      const publicRoutes = ['/', '/login', '/about', '/pricing', '/how-it-works'];
-      if (!publicRoutes.includes(currentPath)) {
+      const protectedRoutes = ['/dashboard', '/settings', '/analyses', '/admin'];
+      if (protectedRoutes.includes(currentPath)) {
         console.log('Unauthenticated user on protected route, redirecting to home...');
         showToast({
           title: "Toegang geweigerd",
@@ -47,7 +48,6 @@ export const checkInitialSession = async (
         await safeNavigate(navigate, '/', { replace: true });
       }
     }
-
   } catch (error) {
     console.error('Session handling error:', error);
     showToast({

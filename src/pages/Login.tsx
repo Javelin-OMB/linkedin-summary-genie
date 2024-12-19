@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSession } from '@supabase/auth-helpers-react';
 import LoginForm from '@/components/LoginForm';
+import { safeNavigate } from '@/utils/navigationUtils';
 
 const Login = () => {
   const session = useSession();
@@ -12,7 +13,7 @@ const Login = () => {
   useEffect(() => {
     if (session) {
       console.log('User is already logged in, redirecting to dashboard...');
-      navigate('/dashboard', { replace: true });
+      safeNavigate(navigate, '/dashboard', { replace: true });
     }
   }, [session, navigate]);
 
