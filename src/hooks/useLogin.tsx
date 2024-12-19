@@ -72,6 +72,17 @@ export const useLogin = () => {
         description: "Je wordt doorgestuurd naar het dashboard...",
       });
 
+      // Explicit navigation with logging
+      console.log('Attempting navigation to dashboard...');
+      try {
+        await navigate('/dashboard', { replace: true });
+        console.log('Navigation to dashboard completed');
+      } catch (navError) {
+        console.error('Navigation error:', navError);
+        // Fallback navigation
+        window.location.href = '/dashboard';
+      }
+
       return data.user;
     } catch (error: any) {
       console.error('Login error:', error);

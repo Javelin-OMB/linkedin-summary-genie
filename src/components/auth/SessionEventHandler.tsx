@@ -60,6 +60,7 @@ export const handleAuthEvent = async (
             console.log('Attempting navigation to dashboard...');
             try {
               navigate('/dashboard', { replace: true });
+              console.log('Navigation to dashboard completed');
             } catch (navError) {
               console.error('Navigation failed, using fallback:', navError);
               window.location.href = '/dashboard';
