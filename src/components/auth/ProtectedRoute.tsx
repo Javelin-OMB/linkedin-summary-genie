@@ -4,6 +4,8 @@ import { useSession } from '@supabase/auth-helpers-react';
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { initializeUserSession } from '@/utils/sessionInitializer';
+import { safeNavigate } from '@/utils/navigationUtils';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
@@ -25,46 +27,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
             description: "Log in om deze pagina te bekijken",
             variant: "destructive",
           });
-          try {
-            await navigate('/', { replace: true });
-          } catch (navError) {
-            console.error('Navigation failed, using fallback:', navError);
-            window.location.href = '/';
-          }
+          await safeNavigate(navigate, '/', { replace: true });
           return;
         }
 
-        // Verify user exists in the users table
-        console.log('ProtectedRoute - Verifying user record');
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', currentSession.user.id)
-          .maybeSingle();
-
-        if (userError && userError.code !== 'PGRST116') {
-          console.error('ProtectedRoute - Error fetching user data:', userError);
-          throw userError;
-        }
-
-        // If user doesn't exist in the users table, create them
-        if (!userData) {
-          console.log('ProtectedRoute - Creating new user record');
-          const { error: insertError } = await supabase
-            .from('users')
-            .insert([{
-              id: currentSession.user.id,
-              email: currentSession.user.email,
-              trial_start: new Date().toISOString(),
-              credits: 10
-            }]);
-
-          if (insertError) {
-            console.error('ProtectedRoute - Error creating user record:', insertError);
-            throw insertError;
-          }
-        }
-
+        await initializeUserSession(currentSession.user.id, currentSession.user.email);
         console.log('ProtectedRoute - Session valid, proceeding to render protected content');
       } catch (error) {
         console.error('ProtectedRoute - Error checking session:', error);
@@ -73,12 +40,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           description: "Probeer opnieuw in te loggen",
           variant: "destructive",
         });
-        try {
-          await navigate('/', { replace: true });
-        } catch (navError) {
-          console.error('Navigation failed, using fallback:', navError);
-          window.location.href = '/';
-        }
+        await safeNavigate(navigate, '/', { replace: true });
       } finally {
         setIsLoading(false);
       }

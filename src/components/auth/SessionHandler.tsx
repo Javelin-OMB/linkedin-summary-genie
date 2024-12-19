@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { handleAuthEvent } from './SessionEventHandler';
+import { handleSignInEvent, handleSignOutEvent, handleTokenRefresh } from '@/utils/sessionEventHandlers';
 import { checkInitialSession } from './InitialSessionCheck';
+import { safeNavigate } from '@/utils/navigationUtils';
 
 export const SessionHandler = () => {
   const navigate = useNavigate();
@@ -24,8 +25,7 @@ export const SessionHandler = () => {
         await checkInitialSession(navigate, toast, location.pathname);
       } catch (error) {
         console.error('Session initialization error:', error);
-        // Use window.location as fallback
-        window.location.href = '/';
+        await safeNavigate(navigate, '/', { replace: true });
       }
     };
 
@@ -37,14 +37,23 @@ export const SessionHandler = () => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, 'Session:', session?.user?.email);
       try {
-        await handleAuthEvent(event, session, navigate, toast, location.pathname);
+        switch (event) {
+          case 'SIGNED_IN':
+            await handleSignInEvent(session, navigate, location.pathname);
+            break;
+          case 'SIGNED_OUT':
+            await handleSignOutEvent(navigate, location.pathname, toast);
+            break;
+          case 'TOKEN_REFRESHED':
+            await handleTokenRefresh(session);
+            break;
+        }
       } catch (error) {
         console.error('Auth event handling error:', error);
-        // Use window.location as fallback
         if (event === 'SIGNED_OUT') {
-          window.location.href = '/';
+          await safeNavigate(navigate, '/', { replace: true });
         } else if (event === 'SIGNED_IN') {
-          window.location.href = '/dashboard';
+          await safeNavigate(navigate, '/dashboard', { replace: true });
         }
       }
     });
