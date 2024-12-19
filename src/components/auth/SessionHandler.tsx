@@ -32,6 +32,59 @@ export const SessionHandler = () => {
     });
   }, [location.pathname, isLoading, sessionChecked]);
 
+  // Refined auth state management
+  useEffect(() => {
+    const handleAuthStateChange = async (event: string, session: any) => {
+      console.log('Auth state change:', event, 'Session:', session?.user?.email);
+      
+      if (event === 'SIGNED_IN' && session) {
+        try {
+          // Update states first
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
+          
+          // Check current location
+          console.log('Current path:', location.pathname);
+          
+          // Only navigate if we're not already on dashboard
+          if (location.pathname !== '/dashboard') {
+            console.log('Navigating to dashboard...');
+            await navigate('/dashboard');
+          }
+        } catch (error) {
+          console.error('Session handling error:', error);
+          // Reset states on error
+          setIsLoading(false);
+          setSessionChecked(false);
+          toast({
+            title: "Er ging iets mis",
+            description: "Probeer het opnieuw",
+            variant: "destructive",
+          });
+        }
+      } else if (event === 'SIGNED_OUT') {
+        console.log('User signed out, resetting states...');
+        setIsLoading(false);
+        setSessionChecked(false);
+        initialized.current = false;
+        
+        if (location.pathname !== '/') {
+          await navigate('/');
+        }
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
+    authSubscription.current = subscription;
+
+    return () => {
+      if (authSubscription.current) {
+        authSubscription.current.unsubscribe();
+      }
+    };
+  }, [navigate, location.pathname, setIsLoading, setSessionChecked, initialized, toast]);
+
   // Add timeout handling
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -45,30 +98,6 @@ export const SessionHandler = () => {
 
     return () => clearTimeout(timeoutId);
   }, [isLoading, setIsLoading, setSessionChecked]);
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      console.log('Received message from origin:', event.origin);
-      
-      const currentOrigin = window.location.origin;
-      console.log('Current origin:', currentOrigin);
-      
-      if (event.origin !== currentOrigin) {
-        console.warn('Origin mismatch:', { 
-          received: event.origin, 
-          expected: currentOrigin 
-        });
-        return;
-      }
-      
-      if (event.data?.type === 'AUTH_STATE_CHANGE') {
-        console.log('Auth state change event received:', event.data);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
 
   // Initialize session on mount with improved state management
   useEffect(() => {
