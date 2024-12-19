@@ -15,22 +15,27 @@ const SessionHandler = ({ loadingTimeout }: SessionHandlerProps) => {
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
 
-    if (!session && loadingTimeout) {
-      console.log('No session found after timeout, redirecting to login');
-      timeoutId = setTimeout(() => {
+    const checkSession = () => {
+      if (!session && loadingTimeout) {
+        console.log('No session found, redirecting to login');
         navigate('/login');
         toast({
           title: "Sessie verlopen",
           description: "Log opnieuw in om door te gaan",
           variant: "destructive",
         });
-      }, 100); // Small delay to prevent immediate redirect
-    }
+      }
+    };
+
+    // Initial check
+    checkSession();
+
+    // Set up periodic checks
+    const intervalId = setInterval(checkSession, 5000);
 
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      clearInterval(intervalId);
+      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [session, loadingTimeout, navigate, toast]);
 

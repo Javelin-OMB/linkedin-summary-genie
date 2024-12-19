@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useToast } from "@/components/ui/use-toast";
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface UserDataQueryProps {
   loadingTimeout: boolean;
@@ -15,22 +15,16 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
   const supabase = useSupabaseClient();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [queryAttempts, setQueryAttempts] = useState(0);
 
-  // Redirect if no session
   useEffect(() => {
     if (!session && loadingTimeout) {
-      console.log('No session found after timeout, redirecting to login');
       navigate('/login');
-      toast({
-        title: "Sessie verlopen",
-        description: "Log opnieuw in om door te gaan",
-        variant: "destructive",
-      });
     }
-  }, [session, loadingTimeout, navigate, toast]);
+  }, [session, loadingTimeout, navigate]);
 
   const { data: userData, isLoading, error } = useQuery({
-    queryKey: ['userData', session?.user?.id],
+    queryKey: ['userData', session?.user?.id, queryAttempts],
     queryFn: async () => {
       if (!session?.user?.id) {
         throw new Error('No session found');
@@ -56,35 +50,37 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
       return data;
     },
     enabled: !!session?.user?.id,
-    staleTime: 30000, // Cache for 30 seconds
-    retry: 1,
-    retryDelay: 1000
+    staleTime: 30000,
+    retry: 2,
+    retryDelay: 1000,
+    onError: (error) => {
+      console.error('Query error:', error);
+      setQueryAttempts(prev => prev + 1);
+      if (queryAttempts >= 2) {
+        toast({
+          title: "Fout bij laden",
+          description: "Er ging iets mis bij het laden van je gegevens. Probeer de pagina te verversen.",
+          variant: "destructive",
+        });
+      }
+    }
   });
 
+  if (error) {
+    console.error('Dashboard error:', error);
+    return null;
+  }
+
   if (isLoading && !loadingTimeout) {
-    return (
-      <LoadingSpinner 
-        message="Dashboard laden..." 
-      />
-    );
+    return <LoadingSpinner message="Dashboard laden..." />;
   }
 
   if (isLoading && loadingTimeout) {
     return (
       <LoadingSpinner 
-        message="Het laden duurt langer dan verwacht. Ververs de pagina als dit blijft duren." 
+        message="Het laden duurt langer dan verwacht. Probeer de pagina te verversen." 
       />
     );
-  }
-
-  if (error) {
-    console.error('Dashboard error:', error);
-    toast({
-      title: "Error",
-      description: "Er ging iets mis bij het laden van je gegevens. Probeer de pagina te verversen.",
-      variant: "destructive",
-    });
-    return null;
   }
 
   if (!session && loadingTimeout) {

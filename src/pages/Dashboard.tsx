@@ -12,16 +12,16 @@ const Dashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    const timeout = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       setLoadingTimeout(true);
       toast({
         title: "Laden duurt langer dan verwacht",
         description: "Probeer de pagina te verversen als dit blijft duren",
         variant: "destructive",
       });
-    }, 5000); // 5 seconds timeout
+    }, 3000); // Reduced to 3 seconds for better UX
 
-    return () => clearTimeout(timeout);
+    return () => clearTimeout(timeoutId);
   }, [toast]);
 
   return (
