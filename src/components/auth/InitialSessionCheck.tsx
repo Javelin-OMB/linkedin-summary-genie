@@ -6,6 +6,19 @@ import { safeNavigate } from '@/utils/navigationUtils';
 import { LOADING_TIMEOUT } from '@/utils/constants';
 import { Session, User } from '@supabase/supabase-js';
 
+// Type guard to ensure session is valid
+const isValidSession = (session: Session | null): session is Session => {
+  return session !== null && typeof session === 'object' && 'user' in session;
+};
+
+// Type for session response
+type SessionResponse = {
+  data: {
+    session: Session | null;
+  };
+  error: Error | null;
+};
+
 export const checkInitialSession = async (
   navigate: NavigateFunction,
   showToast: typeof toast,
@@ -24,13 +37,6 @@ export const checkInitialSession = async (
     });
 
     // Race between the session check and timeout
-    type SessionResponse = {
-      data: {
-        session: Session | null;
-      };
-      error: Error | null;
-    };
-
     const sessionResult = await Promise.race([
       supabase.auth.getSession(),
       timeoutPromise
@@ -45,7 +51,7 @@ export const checkInitialSession = async (
 
     const { data: { session } } = sessionResult;
     
-    if (session?.user) {
+    if (isValidSession(session)) {
       console.log('Valid session found for user:', session.user.email);
       
       // Refresh the session token
