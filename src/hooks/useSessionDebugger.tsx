@@ -1,17 +1,18 @@
 import { useEffect } from 'react';
+import { Location } from 'react-router-dom';
 
 export const useSessionDebugger = (
-  location: { pathname: string },
+  location: Location,
   isLoading: boolean,
   sessionChecked: boolean,
   initialized: { current: boolean }
 ) => {
   useEffect(() => {
-    console.log('SessionHandler - Current Path:', location.pathname);
-    console.log('SessionHandler - Session State:', { 
-      isLoading, 
-      sessionChecked, 
-      initialized: initialized.current 
+    console.log('Session state:', {
+      path: location.pathname,
+      isLoading,
+      sessionChecked,
+      initialized: initialized.current
     });
-  }, [location.pathname, isLoading, sessionChecked, initialized]);
+  }, [location, isLoading, sessionChecked, initialized]);
 };
