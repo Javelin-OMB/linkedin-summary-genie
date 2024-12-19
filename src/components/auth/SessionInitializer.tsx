@@ -23,9 +23,10 @@ export const SessionInitializer = ({
   location
 }: SessionInitializerProps) => {
   useEffect(() => {
+    let isMounted = true;
+
     const initializeSession = async () => {
       if (initialized.current || sessionChecked) {
-        console.log('Session already initialized, skipping...');
         return;
       }
 
@@ -33,7 +34,8 @@ export const SessionInitializer = ({
         console.log('Starting session initialization...');
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Immediately update states
+        if (!isMounted) return;
+
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
@@ -41,20 +43,24 @@ export const SessionInitializer = ({
         if (session) {
           console.log('Session found for:', session.user?.email);
           await checkInitialSession(navigate, location.pathname, toast);
-        } else {
-          console.log('No session found, proceeding as guest');
         }
       } catch (error) {
         console.error('Session initialization error:', error);
-        setIsLoading(false);
-        setSessionChecked(true);
-        initialized.current = true;
+        if (isMounted) {
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
+        }
       }
     };
 
     if (!sessionChecked && !initialized.current) {
       initializeSession();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [setIsLoading, setSessionChecked, initialized, navigate, toast, location.pathname, sessionChecked]);
 
   return null;

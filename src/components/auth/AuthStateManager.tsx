@@ -22,8 +22,10 @@ export const AuthStateManager = ({
   location
 }: AuthStateManagerProps) => {
   useEffect(() => {
+    let isMounted = true;
+
     const handleAuthStateChange = async (event: string, session: any) => {
-      console.log('Auth state change:', event);
+      if (!isMounted) return;
       
       if (event === 'SIGNED_IN' && session) {
         try {
@@ -59,6 +61,7 @@ export const AuthStateManager = ({
     authSubscription.current = subscription;
 
     return () => {
+      isMounted = false;
       if (authSubscription.current) {
         authSubscription.current.unsubscribe();
       }

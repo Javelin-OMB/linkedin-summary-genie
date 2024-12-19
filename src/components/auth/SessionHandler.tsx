@@ -1,7 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSessionState } from '@/hooks/useSessionState';
-import { useSessionDebugger } from '@/hooks/useSessionDebugger';
 import { AuthStateManager } from './AuthStateManager';
 import { SessionInitializer } from './SessionInitializer';
 import LoadingSpinner from '../LoadingSpinner';
@@ -21,16 +20,17 @@ export const SessionHandler = () => {
     navigate,
   } = useSessionState();
 
+  // Simplified initialization timeout
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!initializationComplete) {
-        console.log('Forcing session initialization completion');
+        console.log('Session initialization timeout reached');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
       }
-    }, 1000); // Reduced to 1 second
+    }, 2000);
 
     return () => clearTimeout(timeoutId);
   }, [initializationComplete, setIsLoading, setSessionChecked, initialized]);
