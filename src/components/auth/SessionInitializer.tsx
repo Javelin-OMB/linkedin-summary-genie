@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 import { checkInitialSession } from './InitialSessionCheck';
@@ -22,8 +22,13 @@ export const SessionInitializer = ({
   toast,
   location
 }: SessionInitializerProps) => {
+  const initializationAttempted = useRef(false);
+
   useEffect(() => {
+    if (initializationAttempted.current) return;
+    
     let isMounted = true;
+    initializationAttempted.current = true;
 
     const initializeSession = async () => {
       if (initialized.current || sessionChecked) {
@@ -60,6 +65,7 @@ export const SessionInitializer = ({
 
     return () => {
       isMounted = false;
+      initializationAttempted.current = false;
     };
   }, [setIsLoading, setSessionChecked, initialized, navigate, toast, location.pathname, sessionChecked]);
 

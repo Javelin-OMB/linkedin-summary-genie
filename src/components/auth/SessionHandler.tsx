@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useSessionState } from '@/hooks/useSessionState';
 import { AuthStateManager } from './AuthStateManager';
 import { SessionInitializer } from './SessionInitializer';
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 export const SessionHandler = () => {
   const location = useLocation();
   const [initializationComplete, setInitializationComplete] = useState(false);
+  const initializationAttempted = useRef(false);
   const { toast } = useToast();
   const {
     isLoading,
@@ -20,17 +21,20 @@ export const SessionHandler = () => {
     navigate,
   } = useSessionState();
 
-  // Simplified initialization timeout
+  // Single initialization attempt with shorter timeout
   useEffect(() => {
+    if (initializationAttempted.current) return;
+    
+    initializationAttempted.current = true;
     const timeoutId = setTimeout(() => {
       if (!initializationComplete) {
-        console.log('Session initialization timeout reached');
+        console.log('Forcing session completion after timeout');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
       }
-    }, 2000);
+    }, 1500); // Reduced timeout to 1.5 seconds
 
     return () => clearTimeout(timeoutId);
   }, [initializationComplete, setIsLoading, setSessionChecked, initialized]);

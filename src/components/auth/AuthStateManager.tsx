@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { NavigateFunction } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -21,11 +21,18 @@ export const AuthStateManager = ({
   toast,
   location
 }: AuthStateManagerProps) => {
+  const hasSubscribed = useRef(false);
+
   useEffect(() => {
+    if (hasSubscribed.current) return;
+    
     let isMounted = true;
+    hasSubscribed.current = true;
 
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!isMounted) return;
+      
+      console.log('Auth state changed:', event);
       
       if (event === 'SIGNED_IN' && session) {
         try {
@@ -62,6 +69,7 @@ export const AuthStateManager = ({
 
     return () => {
       isMounted = false;
+      hasSubscribed.current = false;
       if (authSubscription.current) {
         authSubscription.current.unsubscribe();
       }
