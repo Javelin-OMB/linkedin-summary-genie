@@ -22,7 +22,14 @@ export const SessionHandler = () => {
     const initializeSession = async () => {
       try {
         console.log('Initializing session...');
-        await checkInitialSession(navigate, toast, location.pathname);
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          console.log('Valid session found, initializing...', session.user.email);
+          await checkInitialSession(navigate, toast, location.pathname);
+        } else {
+          console.log('No active session found');
+        }
       } catch (error) {
         console.error('Session initialization error:', error);
         await safeNavigate(navigate, '/', { replace: true });
@@ -31,7 +38,6 @@ export const SessionHandler = () => {
 
     initializeSession();
     
-    // Set up auth state change listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -39,7 +45,10 @@ export const SessionHandler = () => {
       try {
         switch (event) {
           case 'SIGNED_IN':
-            await handleSignInEvent(session, navigate, location.pathname);
+            if (session?.user && location.pathname === '/') {
+              console.log('User signed in, navigating to dashboard...');
+              await handleSignInEvent(session, navigate, location.pathname);
+            }
             break;
           case 'SIGNED_OUT':
             await handleSignOutEvent(navigate, location.pathname, toast);
@@ -52,16 +61,12 @@ export const SessionHandler = () => {
         console.error('Auth event handling error:', error);
         if (event === 'SIGNED_OUT') {
           await safeNavigate(navigate, '/', { replace: true });
-        } else if (event === 'SIGNED_IN') {
-          await safeNavigate(navigate, '/dashboard', { replace: true });
         }
       }
     });
 
-    // Store subscription reference
     authSubscription.current = subscription;
 
-    // Cleanup subscription on unmount
     return () => {
       console.log('Cleaning up auth subscription');
       if (authSubscription.current) {

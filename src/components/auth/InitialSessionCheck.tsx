@@ -22,16 +22,14 @@ export const checkInitialSession = async (
       console.log('Valid session found for user:', session.user.email);
       await initializeUserSession(session.user.id, session.user.email);
       
-      // Only redirect to dashboard if not already there
       if (currentPath === '/') {
-        console.log('Redirecting to dashboard...');
+        console.log('On home page with valid session, navigating to dashboard...');
         await safeNavigate(navigate, '/dashboard', { replace: true });
       }
     } else {
       console.log('No active session found');
-      // Only redirect to home if on a protected route
       if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/about' && currentPath !== '/pricing') {
-        console.log('Redirecting to home...');
+        console.log('On protected route without session, redirecting to home...');
         await safeNavigate(navigate, '/', { replace: true });
         showToast({
           title: "Sessie verlopen",
