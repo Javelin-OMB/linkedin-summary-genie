@@ -9,21 +9,23 @@ export const handleAuthEvent = async (
   toast: ReturnType<typeof useToast>['toast'],
   currentPath: string
 ) => {
-  console.log('Auth event:', event, 'Session:', session?.user?.email);
+  console.log('Auth state transition:', { event, user: session?.user?.email, currentPath });
 
   switch (event) {
     case 'SIGNED_IN':
       if (session?.user && session?.access_token) {
-        console.log('Valid session detected, handling user session...');
+        console.log('Valid session detected, starting session handling...');
         
         try {
           // Update session
+          console.log('Updating session tokens...');
           await supabase.auth.setSession({
             access_token: session.access_token,
             refresh_token: session.refresh_token
           });
           
           // Verify user exists in users table
+          console.log('Verifying user record...');
           const { data: userData, error: userError } = await supabase
             .from('users')
             .select('*')
@@ -53,31 +55,41 @@ export const handleAuthEvent = async (
             }
           }
 
-          // Only redirect if not already on dashboard
+          // Navigation logic with fallback
           if (currentPath !== '/dashboard') {
-            console.log('Redirecting to dashboard...');
-            // Use replace to prevent back navigation
-            navigate('/dashboard', { replace: true });
+            console.log('Attempting navigation to dashboard...');
+            try {
+              navigate('/dashboard', { replace: true });
+            } catch (navError) {
+              console.error('Navigation failed, using fallback:', navError);
+              window.location.href = '/dashboard';
+            }
           }
         } catch (error) {
-          console.error('Error handling session:', error);
+          console.error('Session handling error:', error);
           toast({
             title: "Er ging iets mis",
             description: "Probeer het opnieuw",
             variant: "destructive",
           });
+          // Fallback navigation on error
+          window.location.href = '/';
         }
       }
       break;
 
     case 'SIGNED_OUT':
-      console.log('User signed out, clearing session data...');
+      console.log('User signed out, cleaning up session data...');
       localStorage.removeItem('supabase.auth.token');
       sessionStorage.clear();
       
-      // Only redirect to home if on a protected route
       if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
-        navigate('/', { replace: true });
+        try {
+          navigate('/', { replace: true });
+        } catch (navError) {
+          console.error('Navigation failed, using fallback:', navError);
+          window.location.href = '/';
+        }
         toast({
           title: "Uitgelogd",
           description: "Tot ziens!",
@@ -86,7 +98,7 @@ export const handleAuthEvent = async (
       break;
 
     case 'TOKEN_REFRESHED':
-      console.log('Token refreshed, updating session...');
+      console.log('Token refresh detected, updating session...');
       if (session?.access_token) {
         await supabase.auth.setSession({
           access_token: session.access_token,
