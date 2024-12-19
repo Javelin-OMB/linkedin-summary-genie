@@ -1,0 +1,70 @@
+import { useCallback } from 'react';
+import debounce from 'lodash/debounce';
+import { useToast } from "@/components/ui/use-toast";
+import { useLogin } from '@/hooks/useLogin';
+import { useLoadingTimeout } from '@/hooks/useLoadingTimeout';
+
+interface LoginSubmitHandlerProps {
+  email: string;
+  password: string;
+  onSuccess?: () => void;
+  setEmail: (email: string) => void;
+  setPassword: (password: string) => void;
+}
+
+export const useLoginSubmitHandler = ({
+  email,
+  password,
+  onSuccess,
+  setEmail,
+  setPassword,
+}: LoginSubmitHandlerProps) => {
+  const { handleLogin, isLoading } = useLogin();
+  const { toast } = useToast();
+  const { startLoadingTimeout, clearLoadingTimeout } = useLoadingTimeout();
+
+  const debouncedSubmit = useCallback(
+    debounce(async (email: string, password: string) => {
+      console.log('Starting login process for:', email);
+      
+      try {
+        startLoadingTimeout();
+        await handleLogin(email, password);
+        
+        // Clear form
+        setEmail('');
+        setPassword('');
+        
+        onSuccess?.();
+      } catch (error: any) {
+        console.error('Login error:', error);
+        toast({
+          title: "Login mislukt",
+          description: error.message || "Er ging iets mis tijdens het inloggen",
+          variant: "destructive",
+        });
+      } finally {
+        clearLoadingTimeout();
+      }
+    }, 300),
+    [handleLogin, toast, onSuccess, startLoadingTimeout, clearLoadingTimeout]
+  );
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      toast({
+        title: "Vul alle velden in",
+        description: "Email en wachtwoord zijn verplicht",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Form submitted, triggering debounced login...');
+    debouncedSubmit(email, password);
+  };
+
+  return { onSubmit, isLoading };
+};
