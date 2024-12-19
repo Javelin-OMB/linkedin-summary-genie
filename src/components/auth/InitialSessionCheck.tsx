@@ -6,16 +6,14 @@ import { checkSession, isValidSession } from '@/utils/sessionValidation';
 
 export const checkInitialSession = async (
   navigate: NavigateFunction,
-  showToast: typeof toast,
-  currentPath: string
+  currentPath: string,
+  showToast = toast
 ) => {
   try {
-    console.log('Starting initial session check:', { currentPath });
-    
+    console.log('Checking initial session...');
     const { data: { session }, error } = await checkSession();
 
     if (error) {
-      console.error('Session check error:', error);
       throw error;
     }
 
@@ -37,10 +35,8 @@ export const checkInitialSession = async (
       }
     } else {
       // Handle navigation for unauthenticated users
-      if (currentPath !== '/' && 
-          currentPath !== '/login' && 
-          currentPath !== '/about' && 
-          currentPath !== '/pricing') {
+      const publicRoutes = ['/', '/login', '/about', '/pricing', '/how-it-works'];
+      if (!publicRoutes.includes(currentPath)) {
         console.log('Unauthenticated user on protected route, redirecting to home...');
         showToast({
           title: "Toegang geweigerd",
