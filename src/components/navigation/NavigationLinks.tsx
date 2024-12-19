@@ -1,18 +1,23 @@
+import { Info, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const NavigationLinks = () => {
   return (
-    <div className="hidden md:flex items-center space-x-8">
-      <Link to="/about" className="text-gray-600 hover:text-linkedin-primary">
-        About
+    <>
+      <Link to="/about">
+        <Button variant="ghost" className="flex items-center">
+          <Info className="h-5 w-5 mr-1" />
+          About
+        </Button>
       </Link>
-      <Link to="/how-it-works" className="text-gray-600 hover:text-linkedin-primary">
-        How it Works
+      <Link to="/pricing">
+        <Button variant="ghost" className="flex items-center">
+          <DollarSign className="h-5 w-5 mr-1" />
+          Pricing
+        </Button>
       </Link>
-      <Link to="/pricing" className="text-gray-600 hover:text-linkedin-primary">
-        Pricing
-      </Link>
-    </div>
+    </>
   );
 };
 
