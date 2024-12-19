@@ -21,8 +21,31 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const [loadingTimeout, setLoadingTimeout] = useState<boolean>(false);
 
-  // Use React Query for data fetching
+  useEffect(() => {
+    // Set a timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      setLoadingTimeout(true);
+    }, 5000); // 5 seconds timeout
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // Redirect if no session
+  useEffect(() => {
+    if (!session && loadingTimeout) {
+      console.log('No session found after timeout, redirecting to login');
+      navigate('/login');
+      toast({
+        title: "Sessie verlopen",
+        description: "Log opnieuw in om door te gaan",
+        variant: "destructive",
+      });
+    }
+  }, [session, loadingTimeout, navigate, toast]);
+
+  // Use React Query for data fetching with better error handling
   const { data: userData, isLoading, error } = useQuery({
     queryKey: ['userData', session?.user?.id],
     queryFn: async () => {
@@ -37,35 +60,49 @@ const Dashboard = () => {
         .eq('id', session.user.id)
         .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user data:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('No user data found');
+        throw new Error('User data not found');
+      }
+
       return data;
     },
     enabled: !!session?.user?.id,
     staleTime: 30000, // Consider data fresh for 30 seconds
-    retry: 1
+    retry: 1,
+    retryDelay: 1000
   });
 
-  useEffect(() => {
-    if (!session?.user) {
-      console.log('No session found, redirecting to login');
-      navigate('/login');
-    }
-  }, [session, navigate]);
-
-  if (!session) {
-    return <LoadingSpinner message="Redirecting to login..." />;
-  }
-
+  // Show loading state with timeout message
   if (isLoading) {
-    return <LoadingSpinner message="Loading user data..." />;
+    return (
+      <LoadingSpinner 
+        message={loadingTimeout ? 
+          "Het laden duurt langer dan verwacht. Ververs de pagina als dit blijft duren." : 
+          "Dashboard laden..."
+        } 
+      />
+    );
   }
 
+  // Show error state
   if (error) {
+    console.error('Dashboard error:', error);
     toast({
       title: "Error",
-      description: "Could not load user data. Please try refreshing the page.",
+      description: "Er ging iets mis bij het laden van je gegevens. Probeer de pagina te verversen.",
       variant: "destructive",
     });
+    return null;
+  }
+
+  // If no session and timeout reached, return null (useEffect will handle redirect)
+  if (!session && loadingTimeout) {
     return null;
   }
 
