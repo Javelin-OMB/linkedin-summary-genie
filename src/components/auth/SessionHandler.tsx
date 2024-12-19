@@ -26,25 +26,22 @@ export const SessionHandler = () => {
   useSessionTimeout(isLoading, setIsLoading, setSessionChecked, initialized);
 
   useEffect(() => {
+    // Verkort de timeout naar 1.5 seconden
     const timeoutId = setTimeout(() => {
       if (isLoading && !initializationComplete) {
-        console.log('Session initialization timeout reached');
+        console.log('Session initialization timeout reached, forcing completion');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
-        toast({
-          title: "Sessie timeout",
-          description: "Probeer de pagina te verversen",
-          variant: "destructive",
-        });
       }
-    }, 3000);
+    }, 1500); // Verlaagd van 3000 naar 1500ms
 
     return () => clearTimeout(timeoutId);
   }, [isLoading, initializationComplete, setIsLoading, setSessionChecked, initialized, toast]);
 
-  if (isLoading && !initializationComplete) {
+  // Toon de loading spinner alleen als we echt aan het laden zijn en nog niet geïnitialiseerd zijn
+  if (isLoading && !initializationComplete && !sessionChecked) {
     return <LoadingSpinner message="Even geduld..." />;
   }
 

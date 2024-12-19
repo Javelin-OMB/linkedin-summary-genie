@@ -27,22 +27,16 @@ export const AuthStateManager = ({
       
       if (event === 'SIGNED_IN' && session) {
         try {
-          // Update states first
           setIsLoading(false);
           setSessionChecked(true);
           initialized.current = true;
           
-          // Check current location
-          console.log('Current path:', location.pathname);
-          
-          // Only navigate if we're not already on dashboard
           if (location.pathname !== '/dashboard') {
             console.log('Navigating to dashboard...');
             await navigate('/dashboard');
           }
         } catch (error) {
           console.error('Session handling error:', error);
-          // Reset states on error
           setIsLoading(false);
           setSessionChecked(false);
           toast({
@@ -66,8 +60,10 @@ export const AuthStateManager = ({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
     authSubscription.current = subscription;
 
+    // Cleanup subscription on unmount
     return () => {
       if (authSubscription.current) {
+        console.log('Cleaning up auth subscription');
         authSubscription.current.unsubscribe();
       }
     };

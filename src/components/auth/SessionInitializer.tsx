@@ -33,16 +33,15 @@ export const SessionInitializer = ({
         console.log('Starting session initialization...');
         const { data: { session } } = await supabase.auth.getSession();
         
+        // Zet direct de states om loading te stoppen
+        setIsLoading(false);
+        setSessionChecked(true);
+        initialized.current = true;
+
         if (session) {
-          console.log('Setting session state...');
-          setIsLoading(false);
-          setSessionChecked(true);
-          initialized.current = true;
+          console.log('Valid session found:', session.user.email);
         } else {
-          console.log('No session found, resetting state...');
-          setIsLoading(false);
-          setSessionChecked(true);
-          initialized.current = true;
+          console.log('No session found, proceeding as guest');
         }
         
         await checkInitialSession(navigate, location.pathname, toast);
