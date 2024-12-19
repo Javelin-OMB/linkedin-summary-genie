@@ -1,5 +1,5 @@
 import { NavigateFunction } from 'react-router-dom';
-import { Toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession, handleSessionNavigation } from './sessionInitializer';
 import { safeNavigate } from './navigationUtils';
@@ -32,7 +32,7 @@ export const handleSignInEvent = async (
 export const handleSignOutEvent = async (
   navigate: NavigateFunction,
   currentPath: string,
-  toast: Toast
+  showToast: typeof toast
 ) => {
   console.log('User signed out, cleaning up session data...');
   localStorage.removeItem('supabase.auth.token');
@@ -40,7 +40,7 @@ export const handleSignOutEvent = async (
   
   if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
     await safeNavigate(navigate, '/', { replace: true });
-    toast({
+    showToast({
       title: "Uitgelogd",
       description: "Tot ziens!",
     });

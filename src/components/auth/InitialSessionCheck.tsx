@@ -1,12 +1,12 @@
 import { NavigateFunction } from 'react-router-dom';
-import { Toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
 
 export const checkInitialSession = async (
   navigate: NavigateFunction,
-  toast: Toast,
+  showToast: typeof toast,
   currentPath: string
 ) => {
   try {
@@ -33,7 +33,7 @@ export const checkInitialSession = async (
       if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/about' && currentPath !== '/pricing') {
         console.log('Redirecting to home...');
         await safeNavigate(navigate, '/', { replace: true });
-        toast({
+        showToast({
           title: "Sessie verlopen",
           description: "Log opnieuw in om door te gaan",
           variant: "destructive",
@@ -42,7 +42,7 @@ export const checkInitialSession = async (
     }
   } catch (error) {
     console.error('Session check error:', error);
-    toast({
+    showToast({
       title: "Sessie fout",
       description: "Er was een probleem met je sessie. Probeer opnieuw in te loggen.",
       variant: "destructive",
