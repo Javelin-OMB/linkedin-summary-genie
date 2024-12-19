@@ -53,15 +53,17 @@ const UserDataQuery = ({ loadingTimeout, children }: UserDataQueryProps) => {
     staleTime: 30000,
     retry: 2,
     retryDelay: 1000,
-    onError: (error) => {
-      console.error('Query error:', error);
-      setQueryAttempts(prev => prev + 1);
-      if (queryAttempts >= 2) {
-        toast({
-          title: "Fout bij laden",
-          description: "Er ging iets mis bij het laden van je gegevens. Probeer de pagina te verversen.",
-          variant: "destructive",
-        });
+    meta: {
+      errorHandler: (error: any) => {
+        console.error('Query error:', error);
+        setQueryAttempts(prev => prev + 1);
+        if (queryAttempts >= 2) {
+          toast({
+            title: "Fout bij laden",
+            description: "Er ging iets mis bij het laden van je gegevens. Probeer de pagina te verversen.",
+            variant: "destructive",
+          });
+        }
       }
     }
   });
