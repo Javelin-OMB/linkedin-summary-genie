@@ -25,7 +25,7 @@ export const SessionInitializer = ({
   useEffect(() => {
     const initializeSession = async () => {
       if (initialized.current || sessionChecked) {
-        console.log('Session already initialized or checked, skipping...');
+        console.log('Session already initialized, skipping...');
         return;
       }
 
@@ -33,28 +33,22 @@ export const SessionInitializer = ({
         console.log('Starting session initialization...');
         const { data: { session } } = await supabase.auth.getSession();
         
-        // Zet direct de states om loading te stoppen
+        // Immediately update states
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
 
         if (session) {
-          console.log('Valid session found:', session.user.email);
+          console.log('Session found for:', session.user?.email);
+          await checkInitialSession(navigate, location.pathname, toast);
         } else {
           console.log('No session found, proceeding as guest');
         }
-        
-        await checkInitialSession(navigate, location.pathname, toast);
       } catch (error) {
         console.error('Session initialization error:', error);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
-        toast({
-          title: "Er is een fout opgetreden",
-          description: "Probeer opnieuw in te loggen",
-          variant: "destructive",
-        });
       }
     };
 

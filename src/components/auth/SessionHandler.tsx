@@ -2,7 +2,6 @@ import { useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useSessionState } from '@/hooks/useSessionState';
 import { useSessionDebugger } from '@/hooks/useSessionDebugger';
-import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { AuthStateManager } from './AuthStateManager';
 import { SessionInitializer } from './SessionInitializer';
 import LoadingSpinner from '../LoadingSpinner';
@@ -22,25 +21,21 @@ export const SessionHandler = () => {
     navigate,
   } = useSessionState();
 
-  useSessionDebugger(location, isLoading, sessionChecked, initialized);
-  useSessionTimeout(isLoading, setIsLoading, setSessionChecked, initialized);
-
   useEffect(() => {
-    // Verkort de timeout naar 1.5 seconden
     const timeoutId = setTimeout(() => {
-      if (isLoading && !initializationComplete) {
-        console.log('Session initialization timeout reached, forcing completion');
+      if (!initializationComplete) {
+        console.log('Forcing session initialization completion');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
       }
-    }, 1500); // Verlaagd van 3000 naar 1500ms
+    }, 1000); // Reduced to 1 second
 
     return () => clearTimeout(timeoutId);
-  }, [isLoading, initializationComplete, setIsLoading, setSessionChecked, initialized, toast]);
+  }, [initializationComplete, setIsLoading, setSessionChecked, initialized]);
 
-  // Toon de loading spinner alleen als we echt aan het laden zijn en nog niet geïnitialiseerd zijn
+  // Only show loading state briefly
   if (isLoading && !initializationComplete && !sessionChecked) {
     return <LoadingSpinner message="Even geduld..." />;
   }

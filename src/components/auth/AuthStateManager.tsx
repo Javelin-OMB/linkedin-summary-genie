@@ -23,7 +23,7 @@ export const AuthStateManager = ({
 }: AuthStateManagerProps) => {
   useEffect(() => {
     const handleAuthStateChange = async (event: string, session: any) => {
-      console.log('Auth state change:', event, 'Session:', session?.user?.email);
+      console.log('Auth state change:', event);
       
       if (event === 'SIGNED_IN' && session) {
         try {
@@ -32,7 +32,6 @@ export const AuthStateManager = ({
           initialized.current = true;
           
           if (location.pathname !== '/dashboard') {
-            console.log('Navigating to dashboard...');
             await navigate('/dashboard');
           }
         } catch (error) {
@@ -46,7 +45,6 @@ export const AuthStateManager = ({
           });
         }
       } else if (event === 'SIGNED_OUT') {
-        console.log('User signed out, resetting states...');
         setIsLoading(false);
         setSessionChecked(false);
         initialized.current = false;
@@ -60,10 +58,8 @@ export const AuthStateManager = ({
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
     authSubscription.current = subscription;
 
-    // Cleanup subscription on unmount
     return () => {
       if (authSubscription.current) {
-        console.log('Cleaning up auth subscription');
         authSubscription.current.unsubscribe();
       }
     };
