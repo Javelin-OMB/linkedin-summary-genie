@@ -11,9 +11,10 @@ import {
 interface UserMenuProps {
   isAdmin: boolean;
   handleLogout: () => void;
+  credits?: number | null;
 }
 
-const UserMenu = ({ isAdmin, handleLogout }: UserMenuProps) => {
+const UserMenu = ({ isAdmin, handleLogout, credits }: UserMenuProps) => {
   const navigate = useNavigate();
 
   return (
@@ -24,7 +25,7 @@ const UserMenu = ({ isAdmin, handleLogout }: UserMenuProps) => {
           className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
         >
           <User className="h-5 w-5 mr-1" />
-          Account
+          Account {credits !== null && credits !== undefined && `(${credits})`}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
