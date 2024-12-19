@@ -6,7 +6,7 @@ import { checkInitialSession } from './InitialSessionCheck';
 interface SessionInitializerProps {
   setIsLoading: (loading: boolean) => void;
   setSessionChecked: (checked: boolean) => void;
-  sessionChecked: boolean;  // Added this prop
+  sessionChecked: boolean;
   initialized: { current: boolean };
   navigate: NavigateFunction;
   toast: any;
@@ -16,7 +16,7 @@ interface SessionInitializerProps {
 export const SessionInitializer = ({
   setIsLoading,
   setSessionChecked,
-  sessionChecked,  // Added this prop
+  sessionChecked,
   initialized,
   navigate,
   toast,
@@ -24,38 +24,22 @@ export const SessionInitializer = ({
 }: SessionInitializerProps) => {
   useEffect(() => {
     const initializeSession = async () => {
-      if (initialized.current) {
-        console.log('Session already initialized, skipping...');
+      if (initialized.current || sessionChecked) {
+        console.log('Session already initialized or checked, skipping...');
         return;
       }
 
       try {
-        console.log('SessionHandler mounted, checking session state');
-        console.log('Current environment:', process.env.NODE_ENV);
-        console.log('Current URL:', window.location.href);
-        
+        console.log('Starting session initialization...');
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
-          console.log('Existing session found, refreshing...');
-          await supabase.auth.refreshSession();
-          
-          const { data: { session: refreshedSession } } = await supabase.auth.getSession();
-          if (refreshedSession) {
-            console.log('Setting refreshed session...');
-            await supabase.auth.setSession({
-              access_token: refreshedSession.access_token,
-              refresh_token: refreshedSession.refresh_token
-            });
-            
-            // Update state after successful session refresh
-            setIsLoading(false);
-            setSessionChecked(true);
-            initialized.current = true;
-          }
+          console.log('Setting session state...');
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
         } else {
-          console.log('No existing session found');
-          // Reset state when no session is found
+          console.log('No session found, resetting state...');
           setIsLoading(false);
           setSessionChecked(true);
           initialized.current = true;
@@ -64,16 +48,18 @@ export const SessionInitializer = ({
         await checkInitialSession(navigate, location.pathname, toast);
       } catch (error) {
         console.error('Session initialization error:', error);
-        localStorage.removeItem('supabase.auth.token');
-        sessionStorage.clear();
-        setSessionChecked(false);
         setIsLoading(false);
+        setSessionChecked(true);
         initialized.current = true;
+        toast({
+          title: "Er is een fout opgetreden",
+          description: "Probeer opnieuw in te loggen",
+          variant: "destructive",
+        });
       }
     };
 
-    if (!sessionChecked) {
-      console.log('Starting session initialization...');
+    if (!sessionChecked && !initialized.current) {
       initializeSession();
     }
   }, [setIsLoading, setSessionChecked, initialized, navigate, toast, location.pathname, sessionChecked]);

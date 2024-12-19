@@ -6,10 +6,12 @@ import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 import { AuthStateManager } from './AuthStateManager';
 import { SessionInitializer } from './SessionInitializer';
 import LoadingSpinner from '../LoadingSpinner';
+import { useToast } from "@/hooks/use-toast";
 
 export const SessionHandler = () => {
   const location = useLocation();
   const [initializationComplete, setInitializationComplete] = useState(false);
+  const { toast } = useToast();
   const {
     isLoading,
     setIsLoading,
@@ -18,7 +20,6 @@ export const SessionHandler = () => {
     initialized,
     authSubscription,
     navigate,
-    toast
   } = useSessionState();
 
   // Add debug logging
@@ -28,20 +29,52 @@ export const SessionHandler = () => {
   useSessionTimeout(isLoading, setIsLoading, setSessionChecked, initialized);
 
   useEffect(() => {
-    // Set a timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (!initializationComplete) {
-        console.log('Session initialization timeout reached');
+    let timeoutId: NodeJS.Timeout;
+
+    const initSession = async () => {
+      try {
+        // Set a timeout to prevent infinite loading
+        timeoutId = setTimeout(() => {
+          console.log('Session initialization timeout reached');
+          setInitializationComplete(true);
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
+          toast({
+            title: "Sessie timeout",
+            description: "Probeer de pagina te verversen",
+            variant: "destructive",
+          });
+        }, 3000); // 3 second timeout
+
+        // If initialization is already complete, clear timeout
+        if (initializationComplete || !isLoading || sessionChecked) {
+          clearTimeout(timeoutId);
+        }
+      } catch (error) {
+        console.error('Session initialization error:', error);
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
+        initialized.current = true;
+        toast({
+          title: "Er is een fout opgetreden",
+          description: "Probeer opnieuw in te loggen",
+          variant: "destructive",
+        });
       }
-    }, 5000); // 5 second timeout
+    };
 
-    return () => clearTimeout(timeoutId);
-  }, [initializationComplete, setIsLoading, setSessionChecked]);
+    if (!initializationComplete && isLoading) {
+      initSession();
+    }
 
-  // Show loading state for maximum 5 seconds
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [initializationComplete, isLoading, sessionChecked, setIsLoading, setSessionChecked, initialized, toast]);
+
+  // Show loading state for maximum 3 seconds
   if (isLoading && !initializationComplete) {
     return <LoadingSpinner message="Even geduld..." />;
   }
