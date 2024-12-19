@@ -2,6 +2,7 @@
 export const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:3000',
+  'https://8962ae1d-8eda-4b79-9777-6a519a56c322.lovableproject.com',
   window.location.origin
 ];
 
