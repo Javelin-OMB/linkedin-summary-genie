@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
 import { LOADING_TIMEOUT } from '@/utils/constants';
+import { Session, User } from '@supabase/supabase-js';
 
 export const checkInitialSession = async (
   navigate: NavigateFunction,
