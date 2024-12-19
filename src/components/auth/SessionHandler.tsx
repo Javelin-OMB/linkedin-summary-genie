@@ -44,8 +44,10 @@ export const SessionHandler = () => {
       await checkInitialSession(navigate, location.pathname, toast);
     };
 
-    initializeSession();
-  }, [navigate, location.pathname, toast]);
+    if (!sessionChecked) {
+      initializeSession();
+    }
+  }, [navigate, location.pathname, toast, sessionChecked]);
 
   return (
     <>

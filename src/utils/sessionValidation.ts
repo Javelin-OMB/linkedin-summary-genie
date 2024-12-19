@@ -1,6 +1,5 @@
 import { Session } from '@supabase/supabase-js';
 import { supabase } from "@/integrations/supabase/client";
-import { LOADING_TIMEOUT } from '@/utils/constants';
 
 export type SessionCheckResult = {
   data: {
@@ -15,20 +14,11 @@ export const isValidSession = (session: Session | null): session is Session => {
 };
 
 export const checkSession = async (): Promise<SessionCheckResult> => {
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    setTimeout(() => {
-      reject(new Error('Session check timed out'));
-    }, LOADING_TIMEOUT);
-  });
-
   try {
-    const result = await Promise.race([
-      supabase.auth.getSession(),
-      timeoutPromise
-    ]) as SessionCheckResult;
-
+    const result = await supabase.auth.getSession();
     return result;
   } catch (error) {
+    console.error('Session check error:', error);
     throw error;
   }
 };

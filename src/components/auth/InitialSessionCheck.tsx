@@ -11,12 +11,7 @@ export const checkInitialSession = async (
 ) => {
   try {
     console.log('Checking initial session...');
-    const { data: { session }, error } = await checkSession();
-
-    if (error) {
-      console.error('Session check error:', error);
-      throw error;
-    }
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (isValidSession(session)) {
       console.log('Valid session found for user:', session.user.email);
@@ -50,11 +45,14 @@ export const checkInitialSession = async (
     }
   } catch (error) {
     console.error('Session handling error:', error);
-    showToast({
-      title: "Sessie fout",
-      description: "Er was een probleem met je sessie. Probeer opnieuw in te loggen.",
-      variant: "destructive",
-    });
-    await safeNavigate(navigate, '/', { replace: true });
+    // Only show error toast and redirect if we're not already on the home page
+    if (currentPath !== '/') {
+      showToast({
+        title: "Sessie fout",
+        description: "Er was een probleem met je sessie. Probeer opnieuw in te loggen.",
+        variant: "destructive",
+      });
+      await safeNavigate(navigate, '/', { replace: true });
+    }
   }
 };
