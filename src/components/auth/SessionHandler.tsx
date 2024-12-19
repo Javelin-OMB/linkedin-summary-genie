@@ -4,6 +4,7 @@ import { useSessionState } from '@/hooks/useSessionState';
 import { SessionInitializer } from './SessionInitializer';
 import { SessionStateHandler } from './SessionStateHandler';
 import { checkInitialSession } from './InitialSessionCheck';
+import { ALLOWED_ORIGINS } from '@/utils/constants';
 
 export const SessionHandler = () => {
   const location = useLocation();
@@ -17,6 +18,25 @@ export const SessionHandler = () => {
     navigate,
     toast
   } = useSessionState();
+
+  // Add origin validation for postMessage
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      // Validate origin
+      if (!ALLOWED_ORIGINS.includes(event.origin)) {
+        console.error('Invalid origin:', event.origin);
+        return;
+      }
+      
+      // Handle the message
+      if (event.data?.type === 'AUTH_STATE_CHANGE') {
+        console.log('Received auth state change:', event.data);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
 
   useEffect(() => {
     const initializeSession = async () => {

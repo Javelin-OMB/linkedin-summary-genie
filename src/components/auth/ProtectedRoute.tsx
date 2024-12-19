@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
+import { LOADING_TIMEOUT } from '@/utils/constants';
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const session = useSession();
@@ -15,10 +16,26 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [sessionChecked, setSessionChecked] = useState(false);
   
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
     const checkSession = async () => {
       try {
         console.log('ProtectedRoute - Starting session check');
+
+        // Set up loading timeout
+        timeoutId = setTimeout(() => {
+          console.error('ProtectedRoute - Loading timeout reached');
+          setIsLoading(false);
+          toast({
+            title: "Laden duurde te lang",
+            description: "Probeer de pagina te verversen",
+            variant: "destructive",
+          });
+        }, LOADING_TIMEOUT);
+
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        clearTimeout(timeoutId);
         
         if (error) {
           console.error('ProtectedRoute - Session check error:', error);
@@ -47,6 +64,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         });
         await safeNavigate(navigate, '/', { replace: true });
       } finally {
+        clearTimeout(timeoutId);
         setIsLoading(false);
         setSessionChecked(true);
       }
@@ -58,6 +76,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
     // Cleanup function
     return () => {
+      clearTimeout(timeoutId);
       setSessionChecked(false);
       setIsLoading(true);
     };

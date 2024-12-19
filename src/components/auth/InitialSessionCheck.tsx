@@ -3,21 +3,40 @@ import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { initializeUserSession } from '@/utils/sessionInitializer';
 import { safeNavigate } from '@/utils/navigationUtils';
+import { LOADING_TIMEOUT } from '@/utils/constants';
 
 export const checkInitialSession = async (
   navigate: NavigateFunction,
   showToast: typeof toast,
   currentPath: string
 ) => {
+  let timeoutId: NodeJS.Timeout;
+
   try {
     console.log('Checking initial session...');
-    const { data: { session }, error } = await supabase.auth.getSession();
     
-    if (error) {
-      console.error('Error checking session:', error);
-      throw error;
+    // Set up loading timeout
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error('Session check timed out'));
+      }, LOADING_TIMEOUT);
+    });
+
+    // Race between the session check and timeout
+    const sessionResult = await Promise.race([
+      supabase.auth.getSession(),
+      timeoutPromise
+    ]);
+
+    clearTimeout(timeoutId);
+
+    if ('error' in sessionResult) {
+      console.error('Error checking session:', sessionResult.error);
+      throw sessionResult.error;
     }
 
+    const { data: { session } } = sessionResult as Awaited<ReturnType<typeof supabase.auth.getSession>>;
+    
     if (session?.user) {
       console.log('Valid session found for user:', session.user.email);
       
@@ -43,7 +62,10 @@ export const checkInitialSession = async (
       }
     } else {
       console.log('No active session found');
-      if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/about' && currentPath !== '/pricing') {
+      if (currentPath !== '/' && 
+          currentPath !== '/login' && 
+          currentPath !== '/about' && 
+          currentPath !== '/pricing') {
         console.log('On protected route without session, redirecting to home...');
         await safeNavigate(navigate, '/', { replace: true });
         showToast({
