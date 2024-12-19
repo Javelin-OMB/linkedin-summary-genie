@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const SESSION_TIMEOUT = 5000; // 5 seconds timeout
+const SESSION_TIMEOUT = 3000; // 3 seconds timeout
 
 export const useSessionTimeout = (
   isLoading: boolean,

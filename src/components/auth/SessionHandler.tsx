@@ -22,59 +22,28 @@ export const SessionHandler = () => {
     navigate,
   } = useSessionState();
 
-  // Add debug logging
   useSessionDebugger(location, isLoading, sessionChecked, initialized);
-
-  // Add timeout handling
   useSessionTimeout(isLoading, setIsLoading, setSessionChecked, initialized);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    const initSession = async () => {
-      try {
-        // Set a timeout to prevent infinite loading
-        timeoutId = setTimeout(() => {
-          console.log('Session initialization timeout reached');
-          setInitializationComplete(true);
-          setIsLoading(false);
-          setSessionChecked(true);
-          initialized.current = true;
-          toast({
-            title: "Sessie timeout",
-            description: "Probeer de pagina te verversen",
-            variant: "destructive",
-          });
-        }, 3000); // 3 second timeout
-
-        // If initialization is already complete, clear timeout
-        if (initializationComplete || !isLoading || sessionChecked) {
-          clearTimeout(timeoutId);
-        }
-      } catch (error) {
-        console.error('Session initialization error:', error);
+    const timeoutId = setTimeout(() => {
+      if (isLoading && !initializationComplete) {
+        console.log('Session initialization timeout reached');
         setInitializationComplete(true);
         setIsLoading(false);
         setSessionChecked(true);
         initialized.current = true;
         toast({
-          title: "Er is een fout opgetreden",
-          description: "Probeer opnieuw in te loggen",
+          title: "Sessie timeout",
+          description: "Probeer de pagina te verversen",
           variant: "destructive",
         });
       }
-    };
+    }, 3000);
 
-    if (!initializationComplete && isLoading) {
-      initSession();
-    }
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, initializationComplete, setIsLoading, setSessionChecked, initialized, toast]);
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [initializationComplete, isLoading, sessionChecked, setIsLoading, setSessionChecked, initialized, toast]);
-
-  // Show loading state for maximum 3 seconds
   if (isLoading && !initializationComplete) {
     return <LoadingSpinner message="Even geduld..." />;
   }
