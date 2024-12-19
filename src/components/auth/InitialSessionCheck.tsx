@@ -24,7 +24,13 @@ export const checkInitialSession = async (
     });
 
     // Race between the session check and timeout
-    type SessionResponse = Awaited<ReturnType<typeof supabase.auth.getSession>>;
+    type SessionResponse = {
+      data: {
+        session: Session | null;
+      };
+      error: Error | null;
+    };
+
     const sessionResult = await Promise.race([
       supabase.auth.getSession(),
       timeoutPromise
