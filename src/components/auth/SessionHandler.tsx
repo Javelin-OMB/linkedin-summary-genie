@@ -44,7 +44,7 @@ export const SessionHandler = () => {
       initialized.current = true;
 
       console.log('SessionHandler mounted, current path:', location.pathname);
-      await checkInitialSession(navigate, toast, location.pathname);
+      await checkInitialSession(navigate, location.pathname, toast);
     };
 
     initializeSession();
