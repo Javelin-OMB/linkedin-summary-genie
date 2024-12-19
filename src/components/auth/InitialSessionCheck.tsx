@@ -20,6 +20,21 @@ export const checkInitialSession = async (
 
     if (session?.user) {
       console.log('Valid session found for user:', session.user.email);
+      
+      // Refresh the session token
+      const { data: refreshedSession, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.error('Error refreshing session:', refreshError);
+        throw refreshError;
+      }
+
+      if (refreshedSession?.session) {
+        await supabase.auth.setSession({
+          access_token: refreshedSession.session.access_token,
+          refresh_token: refreshedSession.session.refresh_token
+        });
+      }
+
       await initializeUserSession(session.user.id, session.user.email);
       
       if (currentPath === '/') {

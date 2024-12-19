@@ -14,12 +14,12 @@ export const SessionHandler = () => {
   const authSubscription = useRef<any>(null);
 
   useEffect(() => {
-    if (initialized.current) return;
-    initialized.current = true;
-
-    console.log('SessionHandler mounted, current path:', location.pathname);
-    
     const initializeSession = async () => {
+      if (initialized.current) return;
+      initialized.current = true;
+
+      console.log('SessionHandler mounted, current path:', location.pathname);
+      
       try {
         console.log('Initializing session...');
         const { data: { session } } = await supabase.auth.getSession();
@@ -29,6 +29,12 @@ export const SessionHandler = () => {
           await checkInitialSession(navigate, toast, location.pathname);
         } else {
           console.log('No active session found');
+          if (location.pathname !== '/' && 
+              location.pathname !== '/login' && 
+              location.pathname !== '/about' && 
+              location.pathname !== '/pricing') {
+            await safeNavigate(navigate, '/', { replace: true });
+          }
         }
       } catch (error) {
         console.error('Session initialization error:', error);
@@ -37,11 +43,12 @@ export const SessionHandler = () => {
     };
 
     initializeSession();
-    
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event, 'Session:', session?.user?.email);
+      
       try {
         switch (event) {
           case 'SIGNED_IN':
@@ -52,6 +59,7 @@ export const SessionHandler = () => {
             break;
           case 'SIGNED_OUT':
             await handleSignOutEvent(navigate, location.pathname, toast);
+            initialized.current = false; // Reset initialization flag on sign out
             break;
           case 'TOKEN_REFRESHED':
             await handleTokenRefresh(session);
@@ -72,6 +80,7 @@ export const SessionHandler = () => {
       if (authSubscription.current) {
         authSubscription.current.unsubscribe();
       }
+      initialized.current = false;
     };
   }, [navigate, location.pathname, toast]);
 

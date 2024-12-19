@@ -12,13 +12,19 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const [sessionChecked, setSessionChecked] = useState(false);
   
   useEffect(() => {
     const checkSession = async () => {
       try {
         console.log('ProtectedRoute - Starting session check');
-        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
+        if (error) {
+          console.error('ProtectedRoute - Session check error:', error);
+          throw error;
+        }
+
         if (!currentSession?.user) {
           console.log('ProtectedRoute - No session found, redirecting to login');
           toast({
@@ -32,7 +38,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
         console.log('ProtectedRoute - Valid session found:', currentSession.user.email);
         await initializeUserSession(currentSession.user.id, currentSession.user.email);
-        setIsLoading(false);
       } catch (error) {
         console.error('ProtectedRoute - Error checking session:', error);
         toast({
@@ -41,14 +46,41 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           variant: "destructive",
         });
         await safeNavigate(navigate, '/', { replace: true });
+      } finally {
+        setIsLoading(false);
+        setSessionChecked(true);
       }
     };
 
-    checkSession();
-  }, [navigate, toast]);
+    if (!sessionChecked) {
+      checkSession();
+    }
 
-  if (!session && !isLoading) {
-    return null;
+    // Cleanup function
+    return () => {
+      setSessionChecked(false);
+      setIsLoading(true);
+    };
+  }, [navigate, toast, sessionChecked]);
+
+  // Add session state change listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('ProtectedRoute - Auth state changed:', event);
+      if (event === 'SIGNED_OUT') {
+        setSessionChecked(false);
+        setIsLoading(true);
+        await safeNavigate(navigate, '/', { replace: true });
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
+
+  if (!session && !sessionChecked) {
+    return <LoadingSpinner message="Sessie controleren..." />;
   }
 
   if (isLoading) {
