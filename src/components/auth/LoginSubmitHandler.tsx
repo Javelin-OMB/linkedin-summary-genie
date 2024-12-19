@@ -32,6 +32,12 @@ export const useLoginSubmitHandler = ({
         const user = await handleLogin(email, password);
         console.log('Login successful, user:', user?.email);
         
+        // Ensure session is persisted before proceeding
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          throw new Error('Session not persisted after login');
+        }
+        
         // Clear form
         setEmail('');
         setPassword('');
@@ -42,7 +48,10 @@ export const useLoginSubmitHandler = ({
           description: "Je wordt doorgestuurd naar het dashboard...",
         });
         
-        onSuccess?.();
+        // Wait a moment before calling onSuccess to ensure session is properly set
+        setTimeout(() => {
+          onSuccess?.();
+        }, 500);
       } catch (error: any) {
         console.error('Login error:', error);
         toast({

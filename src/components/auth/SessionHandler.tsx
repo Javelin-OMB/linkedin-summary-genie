@@ -20,15 +20,30 @@ export const SessionHandler = () => {
     toast
   } = useSessionState();
 
+  // Add debug logging
+  useEffect(() => {
+    console.log('SessionHandler - Current Path:', location.pathname);
+    console.log('SessionHandler - Session State:', { isLoading, sessionChecked, initialized: initialized.current });
+  }, [location.pathname, isLoading, sessionChecked]);
+
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (!ALLOWED_ORIGINS.includes(event.origin)) {
-        console.error('Invalid origin:', event.origin);
+      // Add more detailed origin checking
+      console.log('Received message from origin:', event.origin);
+      
+      const currentOrigin = window.location.origin;
+      console.log('Current origin:', currentOrigin);
+      
+      if (event.origin !== currentOrigin) {
+        console.warn('Origin mismatch:', { 
+          received: event.origin, 
+          expected: currentOrigin 
+        });
         return;
       }
       
       if (event.data?.type === 'AUTH_STATE_CHANGE') {
-        console.log('Received auth state change:', event.data);
+        console.log('Auth state change event received:', event.data);
       }
     };
 
@@ -39,28 +54,36 @@ export const SessionHandler = () => {
   // Initialize session on mount with environment checks
   useEffect(() => {
     const initializeSession = async () => {
-      if (initialized.current) return;
+      if (initialized.current) {
+        console.log('Session already initialized, skipping...');
+        return;
+      }
+      
       initialized.current = true;
 
       try {
         console.log('SessionHandler mounted, checking session state');
         console.log('Current environment:', process.env.NODE_ENV);
+        console.log('Current URL:', window.location.href);
         
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session) {
           console.log('Existing session found, refreshing...');
-          // Force session refresh to ensure it's valid in current environment
+          // Force session refresh to ensure it's valid
           await supabase.auth.refreshSession();
           
           // Then set the refreshed session
           const { data: { session: refreshedSession } } = await supabase.auth.getSession();
           if (refreshedSession) {
+            console.log('Setting refreshed session...');
             await supabase.auth.setSession({
               access_token: refreshedSession.access_token,
               refresh_token: refreshedSession.refresh_token
             });
           }
+        } else {
+          console.log('No existing session found');
         }
         
         await checkInitialSession(navigate, location.pathname, toast);
@@ -75,6 +98,7 @@ export const SessionHandler = () => {
     };
 
     if (!sessionChecked) {
+      console.log('Starting session initialization...');
       initializeSession();
     }
   }, [navigate, location.pathname, toast, sessionChecked]);
