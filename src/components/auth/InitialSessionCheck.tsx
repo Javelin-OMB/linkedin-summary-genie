@@ -16,17 +16,18 @@ export const checkInitialSession = async (
     console.log('Checking initial session...');
     
     // Set up loading timeout
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       timeoutId = setTimeout(() => {
         reject(new Error('Session check timed out'));
       }, LOADING_TIMEOUT);
     });
 
     // Race between the session check and timeout
+    type SessionResponse = Awaited<ReturnType<typeof supabase.auth.getSession>>;
     const sessionResult = await Promise.race([
       supabase.auth.getSession(),
       timeoutPromise
-    ]);
+    ]) as SessionResponse;
 
     clearTimeout(timeoutId);
 
@@ -35,7 +36,7 @@ export const checkInitialSession = async (
       throw sessionResult.error;
     }
 
-    const { data: { session } } = sessionResult as Awaited<ReturnType<typeof supabase.auth.getSession>>;
+    const { data: { session } } = sessionResult;
     
     if (session?.user) {
       console.log('Valid session found for user:', session.user.email);
