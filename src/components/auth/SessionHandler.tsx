@@ -7,6 +7,8 @@ import { checkInitialSession } from './InitialSessionCheck';
 import { ALLOWED_ORIGINS } from '@/utils/constants';
 import { supabase } from "@/integrations/supabase/client";
 
+const SESSION_TIMEOUT = 5000; // 5 seconds timeout
+
 export const SessionHandler = () => {
   const location = useLocation();
   const {
@@ -23,12 +25,29 @@ export const SessionHandler = () => {
   // Add debug logging
   useEffect(() => {
     console.log('SessionHandler - Current Path:', location.pathname);
-    console.log('SessionHandler - Session State:', { isLoading, sessionChecked, initialized: initialized.current });
+    console.log('SessionHandler - Session State:', { 
+      isLoading, 
+      sessionChecked, 
+      initialized: initialized.current 
+    });
   }, [location.pathname, isLoading, sessionChecked]);
+
+  // Add timeout handling
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.log('Session initialization timeout reached, resetting state');
+        setIsLoading(false);
+        setSessionChecked(true);
+        initialized.current = true;
+      }
+    }, SESSION_TIMEOUT);
+
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, setIsLoading, setSessionChecked]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      // Add more detailed origin checking
       console.log('Received message from origin:', event.origin);
       
       const currentOrigin = window.location.origin;
@@ -51,15 +70,13 @@ export const SessionHandler = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // Initialize session on mount with environment checks
+  // Initialize session on mount with improved state management
   useEffect(() => {
     const initializeSession = async () => {
       if (initialized.current) {
         console.log('Session already initialized, skipping...');
         return;
       }
-      
-      initialized.current = true;
 
       try {
         console.log('SessionHandler mounted, checking session state');
@@ -70,10 +87,8 @@ export const SessionHandler = () => {
         
         if (session) {
           console.log('Existing session found, refreshing...');
-          // Force session refresh to ensure it's valid
           await supabase.auth.refreshSession();
           
-          // Then set the refreshed session
           const { data: { session: refreshedSession } } = await supabase.auth.getSession();
           if (refreshedSession) {
             console.log('Setting refreshed session...');
@@ -81,19 +96,28 @@ export const SessionHandler = () => {
               access_token: refreshedSession.access_token,
               refresh_token: refreshedSession.refresh_token
             });
+            
+            // Update state after successful session refresh
+            setIsLoading(false);
+            setSessionChecked(true);
+            initialized.current = true;
           }
         } else {
           console.log('No existing session found');
+          // Reset state when no session is found
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
         }
         
         await checkInitialSession(navigate, location.pathname, toast);
       } catch (error) {
         console.error('Session initialization error:', error);
-        // Clear any potentially corrupted session data
         localStorage.removeItem('supabase.auth.token');
         sessionStorage.clear();
         setSessionChecked(false);
         setIsLoading(false);
+        initialized.current = true;
       }
     };
 
