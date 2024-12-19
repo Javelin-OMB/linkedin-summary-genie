@@ -50,19 +50,19 @@ export const checkInitialSession = async (
       }
 
       // Only redirect to dashboard if not already there
-      if (currentPath !== '/dashboard') {
+      if (currentPath === '/') {
         console.log('Redirecting to dashboard...');
-        navigate('/dashboard', { replace: true });
+        navigate('/dashboard');
       }
     } else {
       console.log('No active session found');
       // Only redirect to home if on a protected route
-      if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
+      if (currentPath !== '/' && currentPath !== '/login' && currentPath !== '/about' && currentPath !== '/pricing') {
         console.log('Redirecting to home...');
         navigate('/', { replace: true });
         toast({
-          title: "Session expired",
-          description: "Please log in again to continue",
+          title: "Sessie verlopen",
+          description: "Log opnieuw in om door te gaan",
           variant: "destructive",
         });
       }
@@ -70,8 +70,8 @@ export const checkInitialSession = async (
   } catch (error) {
     console.error('Session check error:', error);
     toast({
-      title: "Session error",
-      description: "There was a problem with your session. Please try logging in again.",
+      title: "Sessie fout",
+      description: "Er was een probleem met je sessie. Probeer opnieuw in te loggen.",
       variant: "destructive",
     });
     navigate('/', { replace: true });

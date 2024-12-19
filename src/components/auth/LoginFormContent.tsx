@@ -4,6 +4,7 @@ import LoginFormFields from './LoginFormFields';
 import { useLogin } from '@/hooks/useLogin';
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface LoginFormContentProps {
   onSuccess?: () => void;
@@ -47,7 +48,7 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       });
       
       // Navigate to dashboard
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
@@ -57,6 +58,10 @@ const LoginFormContent: React.FC<LoginFormContentProps> = ({ onSuccess }) => {
       });
     }
   };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Bezig met inloggen..." />;
+  }
 
   return (
     <form onSubmit={onSubmit} className="space-y-4 mt-4">

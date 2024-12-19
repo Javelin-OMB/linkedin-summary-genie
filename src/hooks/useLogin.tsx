@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useToast } from "@/components/ui/use-toast";
-import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { supabase } from "@/integrations/supabase/client";
 
 export const useLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const supabase = useSupabaseClient();
 
   const handleLogin = async (email: string, password: string) => {
     setIsLoading(true);
