@@ -1,67 +1,80 @@
 import { useEffect } from 'react';
+import { NavigateFunction } from 'react-router-dom';
 import { supabase } from "@/integrations/supabase/client";
-import { initializeUserSession } from '@/utils/sessionInitializer';
-import { safeNavigate } from '@/utils/navigationUtils';
+import { checkInitialSession } from './InitialSessionCheck';
 
 interface SessionInitializerProps {
   setIsLoading: (loading: boolean) => void;
   setSessionChecked: (checked: boolean) => void;
-  navigate: any;
+  initialized: { current: boolean };
+  navigate: NavigateFunction;
   toast: any;
-  currentPath: string;
+  location: { pathname: string };
 }
 
 export const SessionInitializer = ({
   setIsLoading,
   setSessionChecked,
+  initialized,
   navigate,
   toast,
-  currentPath
+  location
 }: SessionInitializerProps) => {
   useEffect(() => {
-    const initSession = async () => {
-      try {
-        console.log('SessionInitializer - Starting session check');
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('SessionInitializer - Session check error:', error);
-          throw error;
-        }
+    const initializeSession = async () => {
+      if (initialized.current) {
+        console.log('Session already initialized, skipping...');
+        return;
+      }
 
-        if (!session?.user) {
-          console.log('SessionInitializer - No session found, redirecting to login');
-          if (currentPath !== '/' && 
-              currentPath !== '/login' && 
-              currentPath !== '/about' && 
-              currentPath !== '/pricing') {
-            toast({
-              title: "Toegang geweigerd",
-              description: "Log in om deze pagina te bekijken",
-              variant: "destructive",
+      try {
+        console.log('SessionHandler mounted, checking session state');
+        console.log('Current environment:', process.env.NODE_ENV);
+        console.log('Current URL:', window.location.href);
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log('Existing session found, refreshing...');
+          await supabase.auth.refreshSession();
+          
+          const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+          if (refreshedSession) {
+            console.log('Setting refreshed session...');
+            await supabase.auth.setSession({
+              access_token: refreshedSession.access_token,
+              refresh_token: refreshedSession.refresh_token
             });
-            await safeNavigate(navigate, '/', { replace: true });
+            
+            // Update state after successful session refresh
+            setIsLoading(false);
+            setSessionChecked(true);
+            initialized.current = true;
           }
         } else {
-          console.log('SessionInitializer - Valid session found:', session.user.email);
-          await initializeUserSession(session.user.id, session.user.email);
+          console.log('No existing session found');
+          // Reset state when no session is found
+          setIsLoading(false);
+          setSessionChecked(true);
+          initialized.current = true;
         }
+        
+        await checkInitialSession(navigate, location.pathname, toast);
       } catch (error) {
-        console.error('SessionInitializer - Error:', error);
-        toast({
-          title: "Er is een fout opgetreden",
-          description: "Probeer opnieuw in te loggen",
-          variant: "destructive",
-        });
-        await safeNavigate(navigate, '/', { replace: true });
-      } finally {
+        console.error('Session initialization error:', error);
+        localStorage.removeItem('supabase.auth.token');
+        sessionStorage.clear();
+        setSessionChecked(false);
         setIsLoading(false);
-        setSessionChecked(true);
+        initialized.current = true;
       }
     };
 
-    initSession();
-  }, [setIsLoading, setSessionChecked, navigate, toast, currentPath]);
+    if (!sessionChecked) {
+      console.log('Starting session initialization...');
+      initializeSession();
+    }
+  }, [setIsLoading, setSessionChecked, initialized, navigate, toast, location.pathname, sessionChecked]);
 
   return null;
 };
