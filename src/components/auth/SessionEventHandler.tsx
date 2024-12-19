@@ -53,16 +53,17 @@ export const handleAuthEvent = async (
             }
           }
 
-          // Only redirect to dashboard if not already there
+          // Only redirect if not already on dashboard
           if (currentPath !== '/dashboard') {
             console.log('Redirecting to dashboard...');
+            // Use replace to prevent back navigation
             navigate('/dashboard', { replace: true });
           }
         } catch (error) {
           console.error('Error handling session:', error);
           toast({
-            title: "Something went wrong",
-            description: "Please try logging in again",
+            title: "Er ging iets mis",
+            description: "Probeer het opnieuw",
             variant: "destructive",
           });
         }
@@ -78,8 +79,8 @@ export const handleAuthEvent = async (
       if (!['/', '/login', '/about', '/pricing'].includes(currentPath)) {
         navigate('/', { replace: true });
         toast({
-          title: "Logged out",
-          description: "See you soon!",
+          title: "Uitgelogd",
+          description: "Tot ziens!",
         });
       }
       break;

@@ -9,7 +9,10 @@ export const useLogin = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (email: string, password: string) => {
-    if (isLoading) return; // Prevent multiple simultaneous login attempts
+    if (isLoading) {
+      console.log('Login already in progress, skipping...');
+      return;
+    }
     
     try {
       setIsLoading(true);
@@ -63,15 +66,12 @@ export const useLogin = () => {
         }
       }
 
-      // Show success message and navigate
+      // Show success message
       toast({
         title: "Succesvol ingelogd",
         description: "Je wordt doorgestuurd naar het dashboard...",
       });
 
-      // Use replace to prevent back navigation to login
-      navigate('/dashboard', { replace: true });
-      
       return data.user;
     } catch (error: any) {
       console.error('Login error:', error);
