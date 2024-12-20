@@ -1,11 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchLinkedInProfile } from "./linkedinService";
+import type { Database } from "@/integrations/supabase/types";
+
+type AnalysisStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 interface Analysis {
   id: string;
   linkedin_url: string;
   user_id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: AnalysisStatus;
   started_at: string;
   analysis: Record<string, any>;
 }
@@ -24,7 +27,7 @@ export const createAnalysis = async (url: string, userId: string): Promise<Analy
       id: analysisId,
       linkedin_url: url,
       user_id: userId,
-      status: 'processing',
+      status: 'processing' as AnalysisStatus,
       started_at: new Date().toISOString(),
       analysis: {}
     })
@@ -43,7 +46,7 @@ export const createAnalysis = async (url: string, userId: string): Promise<Analy
     throw new Error('Geen analyse data ontvangen na creatie');
   }
 
-  return newAnalysis;
+  return newAnalysis as Analysis;
 };
 
 export const updateAnalysisWithResults = async (analysisId: string, data: any) => {
@@ -51,7 +54,7 @@ export const updateAnalysisWithResults = async (analysisId: string, data: any) =
     .from('linkedin_analyses')
     .update({
       analysis: data,
-      status: 'completed'
+      status: 'completed' as AnalysisStatus
     })
     .eq('id', analysisId);
 
@@ -64,7 +67,7 @@ export const updateAnalysisWithResults = async (analysisId: string, data: any) =
 export const markAnalysisAsFailed = async (userId: string, url: string) => {
   const { error } = await supabase
     .from('linkedin_analyses')
-    .update({ status: 'failed' })
+    .update({ status: 'failed' as AnalysisStatus })
     .eq('user_id', userId)
     .eq('linkedin_url', url)
     .eq('status', 'processing');
@@ -87,7 +90,7 @@ export const checkExistingAnalysis = async (url: string): Promise<Analysis[] | n
     throw new Error('Kon analyse status niet controleren');
   }
 
-  return existingAnalyses;
+  return existingAnalyses as Analysis[] | null;
 };
 
 export const getUserCredits = async (userId: string): Promise<UserData> => {
