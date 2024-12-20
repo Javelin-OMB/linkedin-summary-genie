@@ -5,7 +5,8 @@ import Navigation from "@/components/Navigation";
 import SessionHandler from '@/components/dashboard/SessionHandler';
 import UserDataQuery from '@/components/dashboard/UserDataQuery';
 import DashboardContent from '@/components/dashboard/DashboardContent';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
+
 const Dashboard = () => {
   const [loadingTimeout, setLoadingTimeout] = useState<boolean>(false);
   const [activeSection, setActiveSection] = useState<string>("overview");
