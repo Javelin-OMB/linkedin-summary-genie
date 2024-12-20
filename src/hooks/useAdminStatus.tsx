@@ -40,6 +40,11 @@ export const useAdminStatus = () => {
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
+        toast({
+          title: "Error",
+          description: "Could not verify admin status",
+          variant: "destructive",
+        });
       }
     };
 
