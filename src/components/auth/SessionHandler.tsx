@@ -21,26 +21,26 @@ export const SessionHandler = () => {
     navigate,
   } = useSessionState();
 
-  // Single initialization attempt with shorter timeout
   useEffect(() => {
-    if (initializationAttempted.current) return;
-    
-    const timeoutId = setTimeout(() => {
-      if (!initializationComplete) {
-        console.log('Session initialization completed by timeout');
-        setInitializationComplete(true);
-        setIsLoading(false);
-        setSessionChecked(true);
-      }
-    }, 1000); // Reduced to 1 second
+    if (!initializationAttempted.current) {
+      initializationAttempted.current = true;
+      console.log('Starting session initialization...');
+      
+      const timeoutId = setTimeout(() => {
+        if (!initializationComplete) {
+          console.log('Session initialization timeout reached');
+          setInitializationComplete(true);
+          setIsLoading(false);
+          setSessionChecked(true);
+        }
+      }, 2000);
 
-    return () => {
-      clearTimeout(timeoutId);
-      initializationAttempted.current = false;
-    };
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    }
   }, [initializationComplete, setIsLoading, setSessionChecked]);
 
-  // Only show loading state briefly
   if (isLoading && !initializationComplete && !sessionChecked) {
     return <LoadingSpinner message="Even geduld..." />;
   }

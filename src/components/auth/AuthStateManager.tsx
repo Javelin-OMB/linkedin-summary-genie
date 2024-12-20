@@ -32,28 +32,44 @@ export const AuthStateManager = ({
     const handleAuthStateChange = async (event: string, session: any) => {
       if (!isMounted) return;
       
-      console.log('Auth state changed:', event);
+      console.log('Auth state changed:', event, 'Session:', session?.user?.email);
       
       switch (event) {
         case 'SIGNED_IN':
           if (session?.user) {
+            console.log('User signed in, updating state...');
             setIsLoading(false);
             setSessionChecked(true);
             initialized.current = true;
             
+            // Only navigate if we're not already on the dashboard
             if (location.pathname !== '/dashboard') {
-              await navigate('/dashboard');
+              console.log('Navigating to dashboard...');
+              await navigate('/dashboard', { replace: true });
             }
           }
           break;
           
         case 'SIGNED_OUT':
+          console.log('User signed out, cleaning up...');
           setIsLoading(false);
           setSessionChecked(false);
           initialized.current = false;
           
+          // Only navigate if we're not already on the home page
           if (location.pathname !== '/') {
-            await navigate('/');
+            console.log('Navigating to home...');
+            await navigate('/', { replace: true });
+          }
+          break;
+          
+        case 'TOKEN_REFRESHED':
+          console.log('Token refreshed');
+          if (session) {
+            await supabase.auth.setSession({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token
+            });
           }
           break;
           
@@ -64,15 +80,17 @@ export const AuthStateManager = ({
       }
     };
 
+    console.log('Setting up auth state subscription...');
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange);
     authSubscription.current = subscription;
 
     return () => {
+      console.log('Cleaning up auth subscription...');
       isMounted = false;
-      hasSubscribed.current = false;
       if (authSubscription.current) {
         authSubscription.current.unsubscribe();
       }
+      hasSubscribed.current = false;
     };
   }, [setIsLoading, setSessionChecked, initialized, authSubscription, navigate, location]);
 
