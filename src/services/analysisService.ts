@@ -2,10 +2,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchLinkedInProfile } from "./linkedinService";
 
 export const createAnalysis = async (url: string, userId: string) => {
+  // Generate a UUID for the analysis
+  const analysisId = crypto.randomUUID();
+  
   // Create a new analysis record
   const { data: newAnalysis, error: insertError } = await supabase
     .from('linkedin_analyses')
     .insert({
+      id: analysisId,
       linkedin_url: url,
       user_id: userId,
       status: 'processing',

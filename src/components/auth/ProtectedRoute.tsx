@@ -74,13 +74,11 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
       checkSession();
     }
 
-    // Cleanup function
+  // Cleanup function
     return () => {
       clearTimeout(timeoutId);
-      setSessionChecked(false);
-      setIsLoading(true);
     };
-  }, [navigate, toast, sessionChecked]);
+  }, [navigate, toast]);
 
   // Add session state change listener
   useEffect(() => {
@@ -98,11 +96,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     };
   }, [navigate]);
 
-  if (!session && !sessionChecked) {
-    return <LoadingSpinner message="Sessie controleren..." />;
-  }
-
-  if (isLoading) {
+  if (isLoading || (!session && !sessionChecked)) {
     return <LoadingSpinner message="Bezig met laden..." />;
   }
 

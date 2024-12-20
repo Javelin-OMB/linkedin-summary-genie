@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import DashboardOverview from './DashboardOverview';
 import DashboardAnalyses from './DashboardAnalyses';
+import DashboardPlan from './DashboardPlan';
+import DashboardSettings from './DashboardSettings';
 import { useSession } from '@supabase/auth-helpers-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -9,9 +11,10 @@ interface DashboardContentProps {
     is_admin?: boolean;
     credits?: number;
   };
+  activeSection: string;
 }
 
-const DashboardContent = ({ userData }: DashboardContentProps) => {
+const DashboardContent = ({ userData, activeSection }: DashboardContentProps) => {
   const session = useSession();
   const isMobile = useIsMobile();
 
@@ -35,8 +38,19 @@ const DashboardContent = ({ userData }: DashboardContentProps) => {
           </p>
         </div>
       )}
-      <DashboardOverview credits={userData?.credits} />
-      {isMobile && <DashboardAnalyses />}
+      {!isMobile ? (
+        <>
+          {activeSection === "overview" && <DashboardOverview credits={userData?.credits} />}
+          {activeSection === "analyses" && <DashboardAnalyses />}
+          {activeSection === "plan" && <DashboardPlan />}
+          {activeSection === "settings" && <DashboardSettings />}
+        </>
+      ) : (
+        <>
+          <DashboardOverview credits={userData?.credits} />
+          <DashboardAnalyses />
+        </>
+      )}
     </div>
   );
 };
