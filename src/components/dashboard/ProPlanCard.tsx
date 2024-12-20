@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 
 const ProPlanCard = () => {
   return (
-    <Card className="p-6 border-2 border-[#0177B5]">
+    <Card className="p-6 border-2 border-primary">
       <div className="mb-6">
         <h2 className="text-xl font-semibold mb-2">Pro Plan</h2>
         <div className="flex items-baseline">
@@ -16,19 +16,19 @@ const ProPlanCard = () => {
 
       <ul className="space-y-3 mb-6">
         <li className="flex items-center text-gray-600">
-          <Check className="w-5 h-5 text-[#0177B5] mr-2" />
+          <Check className="w-5 h-5 text-primary mr-2" />
           Unlimited LinkedIn analyses
         </li>
         <li className="flex items-center text-gray-600">
-          <Check className="w-5 h-5 text-[#0177B5] mr-2" />
+          <Check className="w-5 h-5 text-primary mr-2" />
           Advanced insights & recommendations
         </li>
         <li className="flex items-center text-gray-600">
-          <Check className="w-5 h-5 text-[#0177B5] mr-2" />
+          <Check className="w-5 h-5 text-primary mr-2" />
           Priority support
         </li>
         <li className="flex items-center text-gray-600">
-          <Check className="w-5 h-5 text-[#0177B5] mr-2" />
+          <Check className="w-5 h-5 text-primary mr-2" />
           Download & export options
         </li>
       </ul>

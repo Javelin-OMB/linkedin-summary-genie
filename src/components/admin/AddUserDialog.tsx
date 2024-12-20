@@ -53,7 +53,7 @@ const AddUserDialog = ({ onAddUser }: AddUserDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#0177B5] hover:bg-[#0177B5]/90">
+        <Button className="bg-primary hover:bg-primary/90">
           <UserPlus className="h-4 w-4 mr-2" />
           Nieuwe Gebruiker
         </Button>
@@ -82,7 +82,7 @@ const AddUserDialog = ({ onAddUser }: AddUserDialogProps) => {
             />
           </div>
           <Button 
-            className="w-full bg-[#0177B5] hover:bg-[#0177B5]/90"
+            className="w-full bg-primary hover:bg-primary/90"
             onClick={handleAddUser}
           >
             Gebruiker Toevoegen

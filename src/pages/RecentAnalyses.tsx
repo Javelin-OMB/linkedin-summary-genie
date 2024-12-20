@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { Card } from "@/components/ui/card";
 import { User, Linkedin } from "lucide-react";
+import { parseProfileData, extractProfileInfo } from "@/components/lead/ProfileParser";
 
 const RecentAnalyses = () => {
   const [analyses, setAnalyses] = useState<any[]>([]);
@@ -34,12 +35,11 @@ const RecentAnalyses = () => {
   }, [session, supabase]);
 
   const renderProfileSummary = (analysis: any) => {
-    const profileData = analysis.analysis?.output?.profile_data;
+    const profileData = analysis.analysis?.profile_data;
     if (!profileData) return null;
 
-    const sections = profileData.split('\n\n');
-    const profileInfo = sections[0]?.split('\n') || [];
-    const name = profileInfo[1]?.replace('- ', '') || 'Name not available';
+    const sections = parseProfileData(profileData);
+    const { name, functionTitle, company } = extractProfileInfo(sections);
 
     return (
       <Card key={analysis.id} className="mb-6 p-6">
@@ -48,6 +48,7 @@ const RecentAnalyses = () => {
             <User className="h-6 w-6 text-gray-500" />
             <div>
               <h3 className="text-lg font-medium">{name}</h3>
+              <p className="text-sm text-gray-600">{company !== '-' ? company : ''}</p>
               <a 
                 href={analysis.linkedin_url} 
                 target="_blank" 
@@ -62,19 +63,16 @@ const RecentAnalyses = () => {
         </div>
         
         <div className="mt-4 space-y-4">
-          {sections.map((section: string, index: number) => {
-            const [title, ...content] = section.split('\n');
-            return (
-              <div key={index} className="border-t pt-4 first:border-t-0 first:pt-0">
-                <h4 className="font-medium mb-2">{title}</h4>
-                {content.map((line: string, lineIndex: number) => (
-                  <p key={lineIndex} className="text-gray-600">
-                    {line.replace('- ', '')}
-                  </p>
-                ))}
-              </div>
-            );
-          })}
+          {Object.entries(sections).map(([title, content], index) => (
+            <div key={index} className="border-t pt-4 first:border-t-0 first:pt-0">
+              <h4 className="font-medium mb-2">{title}</h4>
+              {content.split('\n').map((line, lineIndex) => (
+                <p key={lineIndex} className="text-gray-600">
+                  {line.replace('- ', '')}
+                </p>
+              ))}
+            </div>
+          ))}
         </div>
       </Card>
     );

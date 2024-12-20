@@ -49,8 +49,8 @@ const Admin = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center gap-2 mb-6">
-        <Users className="h-6 w-6 text-[#0177B5]" />
-        <h1 className="text-2xl font-bold text-[#0177B5]">Gebruikers Beheer</h1>
+        <Users className="h-6 w-6 text-primary" />
+        <h1 className="text-2xl font-bold text-primary">Gebruikers Beheer</h1>
       </div>
 
       <AdminUserTable 

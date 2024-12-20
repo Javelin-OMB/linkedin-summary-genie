@@ -21,9 +21,9 @@ const DashboardContent = ({ userData, activeSection }: DashboardContentProps) =>
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <h1 className="text-2xl font-bold text-[#0177B5]">Your Dashboard</h1>
+        <h1 className="text-2xl font-bold text-primary">Your Dashboard</h1>
         {userData?.is_admin && (
-          <Badge variant="secondary" className="bg-[#0177B5] text-white">
+          <Badge variant="default">
             Administrator
           </Badge>
         )}

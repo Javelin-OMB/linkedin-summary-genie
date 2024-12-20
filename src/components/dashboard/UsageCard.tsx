@@ -28,23 +28,23 @@ const UsageCard = ({ credits, isLoading, maxFreeSearches }: UsageCardProps) => {
           <Progress value={usagePercentage} className="h-2" />
         </div>
 
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-[#0177B5] font-medium">
+        <div className="bg-primary/10 p-4 rounded-lg">
+          <p className="text font-medium">
             {isLoading ? "Loading..." : `${credits} analyses remaining`}
           </p>
         </div>
 
         <ul className="space-y-2">
           <li className="flex items-center text-gray-600">
-            <Check className="w-5 h-5 text-green-500 mr-2" />
+            <Check className="w-5 h-5 text-primary mr-2" />
             Basic LinkedIn profile analysis
           </li>
           <li className="flex items-center text-gray-600">
-            <Check className="w-5 h-5 text-green-500 mr-2" />
+            <Check className="w-5 h-5 text-primary mr-2" />
             Conversation starters
           </li>
           <li className="flex items-center text-gray-600">
-            <Check className="w-5 h-5 text-green-500 mr-2" />
+            <Check className="w-5 h-5 text-primary mr-2" />
             Basic insights
           </li>
         </ul>

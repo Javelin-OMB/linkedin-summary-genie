@@ -22,7 +22,7 @@ const UserMenu = ({ isAdmin, handleLogout, credits }: UserMenuProps) => {
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+          className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-black"
         >
           <User className="h-5 w-5 mr-1" />
           Account {credits !== null && credits !== undefined && `(${credits})`}

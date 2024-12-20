@@ -51,7 +51,7 @@ const HowItWorks = () => {
             <div className="text-center mt-12">
               <Button
                 onClick={() => navigate('/login?mode=signup')}
-                className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white px-8 py-6 text-lg"
+                className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-black px-8 py-6 text-lg"
               >
                 Start Free Trial
               </Button>

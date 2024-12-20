@@ -33,14 +33,14 @@ const DesktopMenuItems: React.FC<DesktopMenuItemsProps> = ({
           <Button 
             variant="outline" 
             onClick={onLoginClick}
-            className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+            className="text-linkedin-primary border-linkedin-primary hover:bg-linkedin-primary hover:text-black"
           >
             <LogIn className="w-4 h-4 mr-2" />
             Login
           </Button>
           <Button 
             onClick={() => navigate('/login?mode=signup')}
-            className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-white"
+            className="bg-linkedin-primary hover:bg-linkedin-primary/90 text-black"
           >
             <UserPlus className="w-4 h-4 mr-2" />
             Sign Up

@@ -30,12 +30,12 @@ const LinkedInSearchForm: React.FC<LinkedInSearchFormProps> = ({
           value={url}
           onChange={(e) => onUrlChange(e.target.value)}
           placeholder="Plak LinkedIn URL hier..."
-          className="w-full pr-24 h-12 text-lg border-[#0177B5] focus:ring-[#0177B5]"
+          className="w-full pr-24 h-12 text-lg border-primary focus:ring-primary"
         />
         <Button 
           onClick={onAnalyze}
           disabled={loading || disabled}
-          className="absolute right-0 top-0 h-full px-6 bg-[#0177B5] hover:bg-[#0177B5]/90 text-white"
+          className="absolute right-0 top-0 h-full px-6 bg-primary hover:bg-primary/90 text-white"
         >
           {loading ? 'Analyseren...' : !isLoggedIn ? 'Login Vereist' : credits === 0 ? 'Geen Credits' : 'Zoeken'}
         </Button>

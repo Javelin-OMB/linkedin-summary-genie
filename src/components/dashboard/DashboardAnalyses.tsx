@@ -53,7 +53,7 @@ const DashboardAnalyses = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-[#0177B5]">Recent Lead Summaries</h2>
+        <h2 className="text-2xl font-bold text-primary">Recent Lead Summaries</h2>
         <div className="text-gray-600">Loading...</div>
       </div>
     );
@@ -61,7 +61,7 @@ const DashboardAnalyses = () => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-[#0177B5]">Recent Lead Summaries</h2>
+      <h2 className="text-2xl font-bold text-primary">Recent Lead Summaries</h2>
       {analyses.length > 0 ? (
         <div className="space-y-4">
           {analyses.map((analysis) => (

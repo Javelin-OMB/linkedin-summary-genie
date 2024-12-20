@@ -20,8 +20,8 @@ export default {
     extend: {
       colors: {
         linkedin: {
-          primary: "#0077B5",
-          hover: "#006399",
+          primary: "#FEDB01",
+          hover: "#E5C501",
         },
         brand: {
           primary: "#FEDB01",

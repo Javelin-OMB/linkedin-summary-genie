@@ -1,3 +1,15 @@
+const SECTIONS = {
+  PROFILE: 'Profielinformatie',
+  COMPANY: 'Bedrijfsinformatie',
+  WEBSITE: 'Websitegegevens',
+} as const;
+
+const PROFILE_FIELDS = {
+  NAME: 1,
+  FUNCTION: 2,
+  COMPANY: 3,
+} as const;
+
 export const parseProfileData = (profileData: string): Record<string, string> => {
   return profileData.split('\n').reduce((acc: Record<string, string>, line: string) => {
     if (line.trim()) {
@@ -16,11 +28,17 @@ export const parseProfileData = (profileData: string): Record<string, string> =>
 };
 
 export const extractProfileInfo = (sections: Record<string, string>) => {
-  const firstSectionContent = Object.values(sections)[0] || '';
-  const profileLines = firstSectionContent.split('\n');
+  const allLines = Object.entries(sections).flatMap(([key, value]) => [key, ...value.split('\n')]);
+  
+  // Get values by index numbers defined in PROFILE_FIELDS
+  const getValue = (index: number): string => {
+    const line = allLines.find(line => line.includes(`${index}.`));
+    return line ? line.split(': ')[1] || '-' : '-';
+  };
+
   return {
-    name: profileLines[0]?.replace('- ', '') || '-',
-    functionTitle: profileLines[1]?.replace('- ', '') || '-',
-    company: profileLines[2]?.replace('- ', '') || '-',
+    name: getValue(PROFILE_FIELDS.NAME),
+    functionTitle: getValue(PROFILE_FIELDS.FUNCTION),
+    company: getValue(PROFILE_FIELDS.COMPANY),
   };
 };

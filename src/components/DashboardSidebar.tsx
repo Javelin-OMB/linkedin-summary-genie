@@ -52,7 +52,7 @@ const DashboardSidebar = ({ onSectionChange, isAdmin }: DashboardSidebarProps) =
             <Link to="/admin">
               <Button
                 variant="ghost"
-                className="w-full justify-start text-[#0177B5]"
+                className="w-full justify-start text-primary"
               >
                 <Users className="mr-2 h-4 w-4" />
                 Admin Panel

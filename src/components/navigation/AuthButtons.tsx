@@ -11,14 +11,14 @@ const AuthButtons = ({ onLoginClick, onSignupClick }: AuthButtonsProps) => {
     <>
       <Button 
         variant="outline" 
-        className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-white"
+        className="flex items-center border-linkedin-primary text-linkedin-primary hover:bg-linkedin-primary hover:text-black"
         onClick={onLoginClick}
       >
         <User className="h-5 w-5 mr-1" />
         Login
       </Button>
       <Button 
-        className="flex items-center bg-linkedin-primary text-white hover:bg-linkedin-hover"
+        className="flex items-center bg-linkedin-primary text-black hover:bg-linkedin-hover"
         onClick={onSignupClick}
       >
         Sign Up
