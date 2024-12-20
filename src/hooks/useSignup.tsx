@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useSignup = () => {
+const useSignup = (onSuccess?: () => void) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -31,8 +33,11 @@ export const useSignup = () => {
     }
   };
 
-  const performSignup = async (email: string, password: string) => {
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
+      setIsLoading(true);
       console.log('Starting signup process for email:', email);
       
       // First, create the auth user
@@ -69,10 +74,13 @@ export const useSignup = () => {
         description: "Je account is succesvol aangemaakt. Je kunt nu inloggen.",
       });
 
-      // Navigate to login
-      navigate('/login');
-
-      return data.user;
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        // Navigate to login
+        navigate('/login');
+      }
     } catch (error: any) {
       console.error('Signup error details:', error);
       
@@ -82,19 +90,9 @@ export const useSignup = () => {
         errorMessage = "Dit e-mailadres is al geregistreerd.";
       }
       
-      throw new Error(errorMessage);
-    }
-  };
-
-  const handleSignup = async (email: string, password: string) => {
-    try {
-      setIsLoading(true);
-      await performSignup(email, password);
-    } catch (error: any) {
-      console.error('Signup error details:', error);
       toast({
         title: "Registratie mislukt",
-        description: error.message || "Er is een fout opgetreden. Probeer het opnieuw.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -102,5 +100,14 @@ export const useSignup = () => {
     }
   };
 
-  return { handleSignup, isLoading };
+  return {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    isLoading,
+    handleSignup
+  };
 };
+
+export default useSignup;
