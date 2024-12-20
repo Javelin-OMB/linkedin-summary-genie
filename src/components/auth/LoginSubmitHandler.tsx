@@ -27,7 +27,6 @@ export const useLoginSubmitHandler = ({
   const debouncedSubmit = useCallback(
     debounce(async (email: string, password: string) => {
       console.log('Starting login process for:', email);
-      console.log('Auth state before login attempt:', await supabase.auth.getSession());
       
       try {
         startLoadingTimeout();
@@ -37,34 +36,26 @@ export const useLoginSubmitHandler = ({
           email: email.trim(),
           password: password.trim(),
         });
-        
-        console.log('Supabase login response:', { 
-          success: !!loginData, 
-          user: loginData?.user?.email,
-          error: loginError?.message 
-        });
 
-        if (loginError) throw loginError;
-        
-        // Verify session was created
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        console.log('Session check after login:', { 
-          hasSession: !!session, 
-          error: sessionError?.message 
-        });
-        
-        if (!session) {
-          console.error('No session created after successful login');
-          throw new Error('Session not persisted after login');
+        if (loginError) {
+          console.error('Login error:', loginError);
+          
+          // Handle specific error cases
+          if (loginError.message.includes('Invalid login credentials')) {
+            throw new Error('Onjuiste inloggegevens. Controleer je e-mailadres en wachtwoord.');
+          }
+          
+          if (loginError.message.includes('Email not confirmed')) {
+            throw new Error('Je account is nog niet geactiveerd. Check je inbox voor de activatielink.');
+          }
+          
+          throw loginError;
         }
-        
-        // Ensure session is persisted
-        console.log('Persisting session tokens...');
-        await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token
-        });
-        
+
+        if (!loginData.user) {
+          throw new Error('Geen gebruikersgegevens ontvangen na login.');
+        }
+
         // Clear form
         setEmail('');
         setPassword('');
@@ -82,13 +73,19 @@ export const useLoginSubmitHandler = ({
           console.log('Executing redirect callback...');
           onSuccess?.();
         }, 500);
+
       } catch (error: any) {
         console.error('Login error details:', error);
-        console.error('Full error object:', JSON.stringify(error, null, 2));
+        
+        let errorMessage = "Er ging iets mis tijdens het inloggen. Probeer het later opnieuw.";
+        
+        if (error.message) {
+          errorMessage = error.message;
+        }
         
         toast({
           title: "Login mislukt",
-          description: error.message || "Er ging iets mis tijdens het inloggen",
+          description: errorMessage,
           variant: "destructive",
         });
       } finally {
