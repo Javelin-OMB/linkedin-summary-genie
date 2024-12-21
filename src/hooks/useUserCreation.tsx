@@ -1,14 +1,15 @@
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useAdminCheck } from './useAdminCheck';
+import { supabase } from '../integrations/supabase/client';
+import { useToast } from '../components/ui/use-toast';
+import { useAuth } from './useAuth';
 
 export const useUserCreation = () => {
   const { toast } = useToast();
-  const { checkAdminStatus } = useAdminCheck();
+  const { requireAdmin } = useAuth();
 
   const addUser = async (email: string, initialCredits: number) => {
     try {
-      await checkAdminStatus();
+      // Verify admin status before proceeding
+      await requireAdmin();
 
       const { data: authData, error: authError } = await supabase.auth.admin.createUser({
         email: email,
@@ -36,11 +37,11 @@ export const useUserCreation = () => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding user:', error);
       toast({
         title: "Fout",
-        description: "Kon gebruiker niet toevoegen",
+        description: error.message || "Kon gebruiker niet toevoegen",
         variant: "destructive",
       });
       throw error;

@@ -20,14 +20,34 @@ export const handleSignInEvent = async (
         refresh_token: session.refresh_token
       });
       
-      // Initialize user session and handle navigation
-      await initializeUserSession(session.user.id, session.user.email);
-      
-      // Only navigate to dashboard if we're on a public route
-      const publicRoutes = ['/', '/login', '/about', '/pricing'];
-      if (publicRoutes.includes(currentPath)) {
-        console.log('On public route, navigating to dashboard...');
-        await safeNavigate(navigate, '/dashboard', { replace: true });
+      try {
+        // Initialize user session and handle navigation
+        await initializeUserSession(session.user.id, session.user.email);
+        
+        // Only navigate to dashboard if we're on a public route
+        const publicRoutes = ['/', '/login', '/about', '/pricing'];
+        if (publicRoutes.includes(currentPath)) {
+          console.log('On public route, navigating to dashboard...');
+          await safeNavigate(navigate, '/dashboard', { replace: true });
+        }
+      } catch (error: any) {
+        console.error('Session initialization error:', error);
+        
+        // Handle email verification error
+        if (error.message.includes('verify your email')) {
+          toast({
+            title: "Email verificatie vereist",
+            description: "Verifieer eerst je e-mailadres via de link in de verificatie e-mail.",
+            variant: "destructive"
+          });
+          
+          // Sign out the user since email isn't verified
+          await supabase.auth.signOut();
+          await safeNavigate(navigate, '/login', { replace: true });
+          return;
+        }
+        
+        throw error;
       }
     } catch (error) {
       console.error('Session handling error:', error);

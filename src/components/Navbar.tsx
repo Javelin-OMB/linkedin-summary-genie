@@ -1,51 +1,34 @@
 import { Home } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import { useSession, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useSession } from '@supabase/auth-helpers-react';
+import { useToast } from '../components/ui/use-toast';
 import LoginDialog from "./LoginDialog";
 import NavigationLinks from "./navigation/NavigationLinks";
 import UserMenu from "./navigation/UserMenu";
 import AuthButtons from "./navigation/AuthButtons";
-import { useAdminStatus } from "@/hooks/useAdminStatus";
+import { useAuth } from '../hooks/useAuth';
+import { logoutUser } from '../services/authService';
 
 const Navbar = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const session = useSession();
-  const isAdmin = useAdminStatus();
-  const supabase = useSupabaseClient();
+  const { isAdmin } = useAuth();
   const { toast } = useToast();
 
   const handleLogout = async () => {
     try {
-      console.log('Starting logout process...');
-      
-      localStorage.removeItem('supabase.auth.token');
-      sessionStorage.clear();
-      
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Logout error:', error);
-        toast({
-          title: "Uitloggen mislukt",
-          description: "Er is een fout opgetreden tijdens het uitloggen. Probeer het opnieuw.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('Logout successful');
+      await logoutUser();
       toast({
         title: "Uitgelogd",
         description: "Je bent succesvol uitgelogd.",
       });
     } catch (error) {
-      console.error('Unexpected logout error:', error);
+      console.error('Logout error:', error);
       toast({
         title: "Uitloggen mislukt",
-        description: "Er is een onverwachte fout opgetreden. Probeer het opnieuw.",
+        description: "Er is een fout opgetreden tijdens het uitloggen. Probeer het opnieuw.",
         variant: "destructive",
       });
     }

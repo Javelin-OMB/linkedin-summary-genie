@@ -40,7 +40,6 @@ const useSignup = (onSuccess?: () => void) => {
       setIsLoading(true);
       console.log('Starting signup process for email:', email);
       
-      // First, create the auth user
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password: password,
@@ -57,29 +56,22 @@ const useSignup = (onSuccess?: () => void) => {
         throw signUpError;
       }
 
-      console.log('Auth signup response:', data);
-
       if (!data.user) {
         throw new Error('No user data returned from signup');
       }
 
-      console.log('Auth signup successful. User ID:', data.user.id);
-
-      // Now create the user record in our users table
-      await createUserRecord(data.user.id, data.user.email!);
-
-      // Show success message
+      // Show email verification message
       toast({
-        title: "Account aangemaakt",
-        description: "Je account is succesvol aangemaakt. Je kunt nu inloggen.",
+        title: "Verificatie vereist",
+        description: "Er is een verificatie e-mail verzonden. Klik op de link in de e-mail om je account te activeren.",
       });
+
+      // Navigate to main page
+      navigate('/');
 
       // Call onSuccess callback if provided
       if (onSuccess) {
         onSuccess();
-      } else {
-        // Navigate to login
-        navigate('/login');
       }
     } catch (error: any) {
       console.error('Signup error details:', error);

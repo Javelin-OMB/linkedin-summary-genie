@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
-import { useAdminCheck } from './useAdminCheck';
+import { supabase } from '../integrations/supabase/client';
+import { useToast } from '../components/ui/use-toast';
+import { useAuth } from './useAuth';
 import { useSession } from '@supabase/auth-helpers-react';
 
 export const useUserCredits = () => {
   const [credits, setCredits] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
-  const { checkAdminStatus } = useAdminCheck();
+  const { requireAdmin } = useAuth();
   const session = useSession();
 
   useEffect(() => {
@@ -45,7 +45,8 @@ export const useUserCredits = () => {
 
   const updateCredits = async (userId: string, change: number) => {
     try {
-      await checkAdminStatus();
+      // Verify admin status before proceeding
+      await requireAdmin();
       
       const { data: user, error: fetchError } = await supabase
         .from('users')
@@ -73,11 +74,11 @@ export const useUserCredits = () => {
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating credits:', error);
       toast({
         title: "Error",
-        description: "Could not update credits",
+        description: error.message || "Could not update credits",
         variant: "destructive",
       });
       throw error;

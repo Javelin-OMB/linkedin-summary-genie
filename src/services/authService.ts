@@ -1,10 +1,10 @@
-import { supabase } from "@/integrations/supabase/client";
+import { User } from '../types/user';
+import { supabase } from '../integrations/supabase/client';
 
 export const loginUser = async (email: string, password: string) => {
   console.log('Attempting login with email:', email.trim());
   
   try {
-    // First, try to sign in the user
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: password.trim(),
@@ -14,7 +14,6 @@ export const loginUser = async (email: string, password: string) => {
       console.error('Login error details:', error);
       
       if (error.message.includes('Invalid login credentials')) {
-        // Check if the user exists to provide a more specific error message
         const { data: userCheck } = await supabase
           .from('users')
           .select('email')
@@ -43,10 +42,8 @@ export const loginUser = async (email: string, password: string) => {
       throw new Error("Er is een fout opgetreden tijdens het inloggen.");
     }
 
-    // After successful login, ensure user record exists
     await ensureUserRecord(data.user.id, data.user.email!);
     
-    // Set session persistence
     if (data.session) {
       await supabase.auth.setSession({
         access_token: data.session.access_token,
@@ -65,7 +62,6 @@ export const ensureUserRecord = async (userId: string, userEmail: string) => {
   try {
     console.log('Checking for existing user record:', userId);
     
-    // First check if user record exists
     const { data: existingUser, error: checkError } = await supabase
       .from('users')
       .select('*')
@@ -77,7 +73,6 @@ export const ensureUserRecord = async (userId: string, userEmail: string) => {
       throw new Error("Er is een fout opgetreden bij het controleren van je gebruikersgegevens.");
     }
 
-    // If user doesn't exist, create new record
     if (!existingUser) {
       console.log('Creating new user record...');
       
@@ -104,5 +99,75 @@ export const ensureUserRecord = async (userId: string, userEmail: string) => {
   } catch (error: any) {
     console.error('Error in ensureUserRecord:', error);
     throw error;
+  }
+};
+
+export const checkAdminStatus = async (userId: string): Promise<boolean> => {
+  if (!userId) {
+    return false;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error checking admin status:', error);
+      return false;
+    }
+    
+    return !!data?.is_admin;
+  } catch (error) {
+    console.error('Error checking admin status:', error);
+    return false;
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    console.log('Starting logout process...');
+    
+    localStorage.removeItem('supabase.auth.token');
+    sessionStorage.clear();
+    
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+      console.error('Logout error:', error);
+      throw error;
+    }
+
+    console.log('Logout successful');
+    return true;
+  } catch (error) {
+    console.error('Unexpected logout error:', error);
+    throw error;
+  }
+};
+
+export const getCurrentUser = async (userId: string): Promise<User | null> => {
+  if (!userId) {
+    return null;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (error) {
+      console.error('Error fetching user:', error);
+      return null;
+    }
+    
+    return data as User;
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    return null;
   }
 };

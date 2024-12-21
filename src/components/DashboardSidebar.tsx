@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 
 interface DashboardSidebarProps {
   onSectionChange: (section: string) => void;
+  activeSection: string;
   isAdmin?: boolean;
 }
 
-const DashboardSidebar = ({ onSectionChange, isAdmin }: DashboardSidebarProps) => {
+const DashboardSidebar = ({ onSectionChange, activeSection, isAdmin }: DashboardSidebarProps) => {
   const menuItems = [
     {
       title: "Dashboard",
@@ -40,8 +41,11 @@ const DashboardSidebar = ({ onSectionChange, isAdmin }: DashboardSidebarProps) =
           {menuItems.map((item) => (
             <Button
               key={item.section}
-              variant="ghost"
-              className="w-full justify-start"
+              variant={item.section === activeSection ? "secondary" : "ghost"}
+              className={cn(
+                "w-full justify-start",
+                item.section === activeSection && "bg-secondary"
+              )}
               onClick={() => onSectionChange(item.section)}
             >
               <item.icon className="mr-2 h-4 w-4" />

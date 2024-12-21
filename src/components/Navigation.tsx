@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Home, Info, DollarSign } from "lucide-react";
+import { Home } from "lucide-react";
 import LoginDialog from "./LoginDialog";
 import { useSession } from '@supabase/auth-helpers-react';
-import { useAdminStatus } from "@/hooks/useAdminStatus";
-import { useLogoutHandler } from "@/components/auth/LogoutHandler";
+import { useAuth } from "../hooks/useAuth";
+import { useLogoutHandler } from "./auth/LogoutHandler";
 import DesktopMenu from './navigation/DesktopMenu';
 import MobileMenu from './navigation/MobileMenu';
 
@@ -16,7 +16,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isSignupOpen, setIsSignupOpen] = useState(false);
   const session = useSession();
-  const isAdmin = useAdminStatus();
+  const { isAdmin, user } = useAuth();
   const handleLogout = useLogoutHandler();
 
   return (
@@ -33,7 +33,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
           <DesktopMenu 
             session={!!session}
             isAdmin={isAdmin}
-            credits={null}
+            credits={user?.credits ?? null}
             onLoginClick={onLoginClick}
             handleLogout={handleLogout}
           />
@@ -43,7 +43,7 @@ const Navigation: React.FC<NavigationProps> = ({ onLoginClick }) => {
             isAdmin={isAdmin}
             onLoginClick={onLoginClick}
             handleLogout={handleLogout}
-            credits={null}
+            credits={user?.credits ?? null}
           />
         </div>
       </div>

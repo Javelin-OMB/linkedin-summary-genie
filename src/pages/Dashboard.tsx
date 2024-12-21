@@ -38,7 +38,8 @@ const Dashboard = () => {
             <>
               <DashboardSidebar 
                 onSectionChange={handleSectionChange}
-                isAdmin={userData?.is_admin} 
+                activeSection={activeSection}
+                isAdmin={userData?.is_admin}
               />
               <div className="flex-1 md:ml-64">
                 <Navigation onLoginClick={() => {}} />
